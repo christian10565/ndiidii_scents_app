@@ -1,0 +1,150 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--oxblood-light);
+  outline-offset: 3px;
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Pill buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 28px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn--white {
+  background: #fff;
+  color: var(--ink);
+}
+.btn--white:hover {
+  background: #eee;
+}
+.btn--ghost-light {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.75);
+}
+.btn--ghost-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.btn--ghost-dark {
+  color: var(--ink);
+  border-color: var(--ink);
+  height: 40px;
+  padding: 0 24px;
+  font-size: 12px;
+}
+.btn--ghost-dark:hover {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* Small red underlined link, e.g. "VIEW ALL" */
+.link-red {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  border-bottom: 1px solid var(--oxblood);
+  padding-bottom: 1px;
+}
+
+.coming-soon {
+  padding-block: 140px;
+  text-align: center;
+}
+.coming-soon h1 {
+  font-size: 48px;
+  margin: 12px 0;
+}
+.coming-soon p:last-child {
+  color: var(--slate);
+}

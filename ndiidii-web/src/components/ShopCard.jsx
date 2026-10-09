@@ -1,0 +1,28 @@
+import { Link } from 'react-router-dom';
+import { FEATURES } from '../config/site.js';
+import { HeartIcon } from './Icons.jsx';
+import ProductImage from './ProductImage.jsx';
+
+export default function ShopCard({ p }) {
+  const soldOut = !p.inStock;
+  // No price on a perfume: the price belongs to its tier (shown in the Tier filter and on the tier badge's box).
+
+  return (
+    <article className={`scard ${soldOut ? 'is-sold-out' : ''}`}>
+      {p.tier && <span className="scard__tier serif">Tier {p.tier}</span>}
+      {FEATURES.wishlist && (
+        <button className="scard__heart" aria-label={`Add ${p.name} to wishlist`}>
+          <HeartIcon width={22} height={22} />
+        </button>
+      )}
+      <Link to={`/perfumes/${p.slug}`} className="scard__link">
+        <div className="scard__img">
+          <ProductImage src={p.imageUrl} alt={p.name} />
+        </div>
+        <h3 className="scard__name">{p.name}</h3>
+        {p.brand && <p className="scard__brand serif">{p.brand}</p>}
+        {soldOut && <p className="scard__status">Out of stock</p>}
+      </Link>
+    </article>
+  );
+}
