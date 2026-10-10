@@ -1,0 +1,26 @@
+:root {
+  /* Brand book colours */
+  --ink: #0a0a0a;
+  --warm-white: #fafaf8;
+  --oxblood: #a3223b; /* accent on LIGHT backgrounds only */
+  --oxblood-light: #d7405d; /* accent on BLACK backgrounds only */
+  --slate: #5a5f63; /* secondary text on light */
+  --slate-light: #9a9ea1; /* secondary text on black */
+
+  /* Sampled from the approved mockup */
+  --announce-bg: #c41e3a;
+  --nav-bg: #1d1d1d;
+  --line-dark: #202020;
+  --line-light: #e7e5e0;
+
+  /* Brand book typefaces: Amiri for headlines, Manrope for everything else.
+     The mockup's serif looks different from Amiri — to match the mockup instead,
+     change --font-serif here (e.g. 'Fraunces') and the Google Fonts link in index.html. */
+  --font-serif: 'Amiri', 'Times New Roman', serif;
+  --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+
+  --container: 1264px;
+  --gutter: 24px;
+  --announce-h: 37px;
+  --nav-h: 85px;
+}
