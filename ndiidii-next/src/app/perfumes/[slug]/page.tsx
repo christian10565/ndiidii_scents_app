@@ -39,7 +39,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
 
       <div className="pdp__grid">
         <div className="pdp__img">
-          <ProductImage src={p.imageUrl} alt={p.name} />
+          <ProductImage src={p.imageUrl} alt={p.name} variant="full" />
         </div>
 
         <div className="pdp__info">

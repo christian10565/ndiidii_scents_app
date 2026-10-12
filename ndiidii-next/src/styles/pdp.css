@@ -37,6 +37,20 @@
   border-radius: 4px;
   background: var(--shop-hero-fallback, #1a1714);
 }
+/* Placeholder bottle: don't stretch to fill the whole box — contain it as a
+   centered bottle graphic (the width:100% above is meant for real photos). */
+.pdp__img .pimg--empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  object-fit: contain;
+}
+.pdp__img .pimg--empty svg {
+  width: auto;
+  height: 62%;
+  max-width: 55%;
+}
 
 .pdp__brand {
   font-size: 15px;

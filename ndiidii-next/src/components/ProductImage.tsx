@@ -1,12 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { cloudinaryFull, cloudinaryThumb, isCloudinary } from '@/lib/cloudinary';
 
 /** Product photo with a quiet bottle placeholder for items with no image yet (or a broken link). */
-export default function ProductImage({ src, alt }: { src: string | null; alt: string }) {
+export default function ProductImage({
+  src,
+  alt,
+  variant = 'thumb',
+}: {
+  src: string | null;
+  alt: string;
+  variant?: 'thumb' | 'full';
+}) {
   const [failed, setFailed] = useState(false);
 
-  if (!src || failed) {
+  // Cloudinary images get a subject-crop transform so the bottle fills the
+  // frame (no dead whitespace, no cut cap). Non-Cloudinary URLs pass through.
+  const resolved =
+    src && isCloudinary(src) ? (variant === 'full' ? cloudinaryFull(src) : cloudinaryThumb(src)) : src;
+
+  if (!resolved || failed) {
     return (
       <div className="pimg pimg--empty" role="img" aria-label={alt}>
         <svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -18,5 +32,5 @@ export default function ProductImage({ src, alt }: { src: string | null; alt: st
     );
   }
 
-  return <img className="pimg" src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
+  return <img className="pimg" src={resolved} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
 }

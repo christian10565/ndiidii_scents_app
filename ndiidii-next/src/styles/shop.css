@@ -334,17 +334,17 @@
   display: grid;
   place-items: center;
   height: 270px;
-  padding-top: 14px;
   overflow: hidden; /* never let a tall image bleed into the text below */
 }
 .scard__img .pimg {
-  max-height: 100%;
-  max-width: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Cloudinary already subject-crops (g_auto,c_fill) so the image is square and
+     bottle-framed; cover just fills the card box cleanly. */
+  object-position: center;
 }
-/* Placeholder SVG: cap to the container height (percent height needs a definite parent). */
+/* Placeholder SVG: fills the area, capped so it never overflows. */
 .scard__img .pimg--empty {
   width: 100%;
   height: 100%;
