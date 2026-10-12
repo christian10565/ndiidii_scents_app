@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import { readTab } from './sheets';
+import { readTab, resolveTab } from './sheets';
 import {
   mapOilRow,
   mapPerfumeRow,
@@ -215,9 +215,9 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
-// The curated tab's real name has a LEADING SPACE (" Curated Discoovery Sets")
-// in the client's sheet — match it exactly or the range fails to parse.
-const CURATED_TAB = process.env.CURATED_TAB ?? ' Curated Discoovery Sets';
+// The curated tab's real name is " Curated Discovery Sets" (leading space,
+// correct "Discovery" spelling). Resolved against actual tab titles at read time.
+const CURATED_TAB = process.env.CURATED_TAB ?? 'Curated Discovery Sets';
 
 /**
  * Curated discovery sets from the sheet's curated tab.
@@ -235,7 +235,8 @@ export async function getCuratedSets(): Promise<CuratedSet[]> {
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
   try {
-    const rows = await readTab(CURATED_TAB);
+    const tab = await resolveTab(CURATED_TAB);
+    const rows = await readTab(tab);
     const perfumes = await getPerfumes();
     // Index catalog perfumes by normalised name for Option-1 joins.
     const byName = new Map<string, Perfume>();

@@ -10,7 +10,10 @@ export const instant = false;
 export default async function DiscoverySetPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sets = await getCuratedSets();
-  const set = sets.find((s) => s.slug === slug);
-  if (!set) notFound();
-  return <DiscoverySetDetail set={set} />;
+  const idx = sets.findIndex((s) => s.slug === slug);
+  if (idx < 0) notFound();
+  const set = sets[idx];
+  const prev = idx > 0 ? sets[idx - 1].slug : null;
+  const next = idx < sets.length - 1 ? sets[idx + 1].slug : null;
+  return <DiscoverySetDetail set={set} prev={prev} next={next} />;
 }

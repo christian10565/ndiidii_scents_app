@@ -48,15 +48,16 @@
 .dset-detail__nav { display: flex; justify-content: space-between; margin-bottom: 24px; }
 .dset-detail__nav a { font-size: 13px; color: var(--ink); text-decoration: none; }
 .dset-detail__nav a:hover { color: var(--oxblood); }
-.dset-detail__head { max-width: 640px; margin-bottom: 36px; }
+/* Right column: set details on top, black summary panel below. */
+.dset-detail__side { display: flex; flex-direction: column; gap: 24px; }
 .dset-detail__eyebrow { color: var(--oxblood); margin: 0 0 8px; }
-.dset-detail__title { font-size: 42px; line-height: 1.05; margin: 0 0 12px; }
+.dset-detail__title { font-size: 40px; line-height: 1.05; margin: 0 0 12px; }
 .dset-detail__intro { font-size: 15px; line-height: 1.6; color: var(--slate); margin: 0; }
 
 .dset-detail__layout { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
 
-/* the 4 slot cards (2x2) — capped so cards stay a reasonable size on wide screens */
-.dslots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 560px; }
+/* the 4 slot cards (2x2) — fill the left column width */
+.dslots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .dslot {
   background: #fff;
   border-radius: 16px;
@@ -65,16 +66,17 @@
   display: flex;
   flex-direction: column;
 }
-/* Fixed image box: every slot image is the same size (square), never fluid. */
+/* Fixed image box: every slot image is the same size. `contain` shows the WHOLE
+   bottle (cover was cropping the cap/base once the cards got wider). */
 .dslot__img {
   width: 100%;
-  height: 240px;
+  height: 380px;
   background: #f4f1ec;
   display: grid;
   place-items: center;
   overflow: hidden;
 }
-.dslot__img .pimg { width: 100%; height: 100%; object-fit: cover; }
+.dslot__img .pimg { width: 100%; height: 100%; object-fit: contain; }
 /* No-photo fallback (shared): quiet tonal block + monogram. Scales to its box. */
 .dnoimg {
   width: 100%;
@@ -95,16 +97,39 @@
 .dslot__perfume a { color: var(--ink); text-decoration: none; }
 .dslot__perfume a:hover { color: var(--oxblood); text-decoration: underline; }
 .dslot__desc { font-size: 13px; line-height: 1.6; color: var(--slate); margin: 0; }
-.dslot__attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 6px; }
-.dslot__attr { font-size: 11px; }
-.dslot__attr dt { color: var(--slate); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 3px; display: flex; align-items: center; gap: 5px; }
+/* Four attribute sections in a horizontal row, with vertical dividers between
+   them and the icon above each label (matches the mockup). No top divider. */
+.dslot__attrs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 12px;
+}
+.dslot__attr { font-size: 11px; padding: 0 10px; text-align: left; position: relative; }
+/* Vertical divider only spans the icon+label row (not the value text). */
+.dslot__attr + .dslot__attr::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 38px; /* ≈ icon + label height */
+  width: 1px;
+  background: var(--line-light, #ece7df);
+}
+.dslot__attr dt {
+  color: var(--slate);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
 .dslot__attr dt svg { color: var(--oxblood); flex: none; }
 .dslot__attr dd { margin: 0; color: var(--ink); line-height: 1.4; }
 
 /* the black summary panel */
 .dbox {
-  position: sticky;
-  top: 24px;
   background: var(--ink);
   color: #fff;
   border-radius: 16px;
@@ -118,8 +143,9 @@
 .dbox__thumb .pimg { width: 100%; height: 100%; object-fit: cover; }
 .dbox__item-name { font-size: 14px; line-height: 1.2; }
 .dbox__item-brand { font-size: 11px; color: #b9b3a8; }
-.dbox__total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.15); margin-bottom: 16px; }
-.dbox__total-label { font-size: 13px; color: #b9b3a8; }
+.dbox__status { display: flex; justify-content: space-between; font-size: 12px; color: #b9b3a8; margin-bottom: 14px; }
+.dbox__total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.dbox__total-label { font-size: 14px; color: #fff; }
 .dbox__total-price { font-size: 22px; font-weight: 700; }
 .dbox__cta { display: block; width: 100%; text-align: center; background: #fff; color: var(--ink); border: 0; border-radius: 999px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .dbox__cta:hover { background: var(--oxblood); color: #fff; }

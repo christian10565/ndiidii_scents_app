@@ -11,8 +11,20 @@ import Monogram from './Monogram';
 import { SeasonIcon, NotesIcon, GenderIcon, ProfileIcon } from './Icons';
 import type { CuratedSet } from '@/lib/catalog';
 
+/** Split a comma-separated sheet value into clean items, capped, each with its first word capitalized. */
+function capList(value: string | null, max: number): string[] {
+  if (!value) return [];
+  const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+  return value
+    .split(',')
+    .map((s) => s.trim().replace(/^(and|&)\s+/i, '').trim()) // drop a leading "and"
+    .filter(Boolean)
+    .map(cap)
+    .slice(0, max);
+}
+
 /** Detail page for one curated discovery set. */
-export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
+export default function DiscoverySetDetail({ set, prev, next }: { set: CuratedSet; prev: string | null; next: string | null }) {
   const { addDiscoverySet } = useCart();
   const router = useRouter();
   const [added, setAdded] = useState(false);
@@ -33,16 +45,17 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
   return (
     <div className="container dset-detail">
       <div className="dset-detail__nav">
-        <Link href="/discovery-sets">← All sets</Link>
+        {prev ? (
+          <Link href={`/discovery-sets/${prev}`}>← Back</Link>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <Link href={`/discovery-sets/${next}`}>Next →</Link>
+        ) : (
+          <span />
+        )}
       </div>
-
-      <header className="dset-detail__head">
-        <p className="eyebrow dset-detail__eyebrow">Curated Discovery Set</p>
-        <h1 className="serif dset-detail__title">{set.collection}</h1>
-        <p className="dset-detail__intro">
-          Four 10ml decants, curated around a single mood — {set.slots.map((s) => s.scentProfile).join(', ')}.
-        </p>
-      </header>
 
       <div className="dset-detail__layout">
         {/* the 4 slots */}
@@ -72,15 +85,19 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
                     {slot.perfume.season && (
                       <div className="dslot__attr">
                         <dt><SeasonIcon /> Season</dt>
-                        <dd>{slot.perfume.season}</dd>
+                        <dd>{capList(slot.perfume.season, 3).join(' · ')}</dd>
                       </div>
                     )}
-                    {slot.perfume.notes.base && (
-                      <div className="dslot__attr">
-                        <dt><NotesIcon /> Notes</dt>
-                        <dd>{slot.perfume.notes.base}</dd>
-                      </div>
-                    )}
+                    {(() => {
+                      const n = slot.perfume.notes;
+                      const items = capList([n.top, n.heart, n.base].filter(Boolean).join(','), 3);
+                      return items.length ? (
+                        <div className="dslot__attr">
+                          <dt><NotesIcon /> Notes</dt>
+                          <dd>{items.join(' · ')}</dd>
+                        </div>
+                      ) : null;
+                    })()}
                     {slot.perfume.gender && (
                       <div className="dslot__attr">
                         <dt><GenderIcon /> Gender</dt>
@@ -90,7 +107,7 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
                     {slot.perfume.scentProfile && (
                       <div className="dslot__attr">
                         <dt><ProfileIcon /> Scent Profile</dt>
-                        <dd>{slot.perfume.scentProfile}</dd>
+                        <dd>{capList(slot.perfume.scentProfile, 3).join(' · ')}</dd>
                       </div>
                     )}
                   </dl>
@@ -100,8 +117,18 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
           ))}
         </div>
 
-        {/* the black summary panel */}
-        <aside className="dbox">
+        {/* right column: set details on top, black summary panel below */}
+        <div className="dset-detail__side">
+          <header className="dset-detail__head">
+            <p className="eyebrow dset-detail__eyebrow">Curated Discovery Set</p>
+            <h1 className="serif dset-detail__title">{set.collection}</h1>
+            <p className="dset-detail__intro">
+              Four 10ml decants, curated around a single mood — {set.slots.map((s) => s.scentProfile).join(', ')}.
+            </p>
+          </header>
+
+          {/* the black summary panel */}
+          <aside className="dbox">
           <h2 className="dbox__title">Your 4-Decant Box</h2>
           <p className="dbox__sub">4 × 10ml decants · Perfume Option 1</p>
           <ul className="dbox__list">
@@ -117,20 +144,25 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
               </li>
             ))}
           </ul>
+          <div className="dbox__status">
+            <span>Select perfume</span>
+            <span>4/4 Selected</span>
+          </div>
           <div className="dbox__total">
-            <span className="dbox__total-label">Total</span>
+            <span className="dbox__total-label">Total Price</span>
             <span className="dbox__total-price">{formatNaira(DISCOVERY_SET_PRICE_NGN)}</span>
           </div>
           {added ? (
             <button className="dbox__cta" onClick={() => router.push('/checkout')}>
-              Added — Go to Checkout →
+              Proceed to Checkout
             </button>
           ) : (
             <button className="dbox__cta" onClick={addToCart}>
-              Add to Cart
+              Proceed to Checkout
             </button>
           )}
         </aside>
+        </div>
       </div>
     </div>
   );
