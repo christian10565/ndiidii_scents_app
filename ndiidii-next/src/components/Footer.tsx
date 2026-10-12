@@ -49,7 +49,9 @@ export default function Footer() {
 
       <div className="container">
         <div className="footer__bottom">
-          <p>© <Year /> Ndiidii Scents.</p>
+          {/* suppressHydrationWarning: the year renders after mount, so the
+              server HTML omits it — this tells React that's intentional. */}
+          <p suppressHydrationWarning>© <Year /> Ndiidii Scents.</p>
           <ul className="footer__pay">
             {FOOTER.payments.map((p) => (
               <li key={p}>{p}</li>

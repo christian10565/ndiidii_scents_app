@@ -65,6 +65,11 @@ export const MenuIcon = (p: React.SVGProps<SVGSVGElement>) => (
     <path d="M4 7h16M4 12h16M4 17h16" />
   </svg>
 );
+export const CheckIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}>
+    <path d="m5 13 4 4L19 7" />
+  </svg>
+);
 export const CloseIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg {...base} width={22} height={22} {...p}>
     <path d="M6 6l12 12M18 6 6 18" />

@@ -13,6 +13,7 @@ import {
   SearchIcon,
   UserIcon,
 } from './Icons';
+import CartBadge from './CartBadge';
 
 /** Text wordmark. Swap for the official logo file when you have it (the brand book forbids retyping it). */
 export function Wordmark() {
@@ -98,7 +99,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount
           )}
           <Link href="/checkout" className="icon-btn" aria-label={`Cart, ${cartCount} items`}>
             <BagIcon />
-            <span className="icon-btn__badge">{cartCount}</span>
+            <CartBadge />
           </Link>
         </div>
       </div>

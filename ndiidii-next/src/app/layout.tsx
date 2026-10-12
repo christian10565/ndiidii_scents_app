@@ -5,9 +5,12 @@ import '@/styles/global.css';
 import '@/styles/home.css';
 import '@/styles/shop.css';
 import '@/styles/pdp.css';
+import '@/styles/builder.css';
+import '@/styles/checkout.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnnouncementBar from '@/components/AnnouncementBar';
+import { CartProvider } from '@/lib/cart';
 import { Suspense } from 'react';
 
 const amiri = Amiri({
@@ -35,12 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${amiri.variable} ${manrope.variable}`}>
       <body>
-        <AnnouncementBar />
-        <Suspense fallback={null}>
-          <Header />
-        </Suspense>
-        <main>{children}</main>
-        <Footer />
+        <CartProvider>
+          <AnnouncementBar />
+          <Suspense fallback={null}>
+            <Header />
+          </Suspense>
+          <main>{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
