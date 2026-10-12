@@ -1,0 +1,33 @@
+/* Search page — reuses the shop grid; adds a hero + search bar. */
+
+.search { padding: 40px 24px 90px; max-width: 1264px; }
+.search__head { max-width: 620px; margin-bottom: 36px; }
+.search__eyebrow { color: var(--oxblood); margin: 0 0 8px; }
+.search__title { font-size: 42px; line-height: 1.05; margin: 0 0 20px; }
+
+.search__form { display: flex; gap: 10px; }
+.search__form input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  padding: 0 18px;
+  height: 48px;
+  border: 1px solid var(--line-light);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+}
+.search__form input:focus { outline: none; border-color: var(--ink); }
+.search__form .btn--white { background: var(--ink); color: #fff; flex: none; }
+.search__form .btn--white:hover { background: #000; }
+
+.search__count { font-size: 14px; color: var(--slate); margin: 0 0 24px; }
+.search__hint { font-size: 14px; color: var(--slate); line-height: 1.6; }
+.search__section { margin-bottom: 40px; }
+.search__section-title { font-size: 24px; margin: 0 0 18px; }
+
+@media (max-width: 600px) {
+  .search__form { flex-direction: column; }
+  .search__form .btn--white { width: 100%; }
+  .search__title { font-size: 34px; }
+}
