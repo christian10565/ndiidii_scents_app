@@ -1,0 +1,142 @@
+/* Product detail page. New — the mockup didn't have a PDP, so this reuses the existing
+   tokens and card vocabulary rather than inventing a new visual language. */
+
+.pdp {
+  padding: 40px 24px 80px;
+  max-width: 1100px;
+}
+
+.pdp__crumbs {
+  font-size: 12px;
+  color: var(--muted, #8a8378);
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+.pdp__crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+.pdp__crumbs a:hover {
+  color: var(--ink, #1a1714);
+}
+.pdp__crumbs span {
+  color: var(--ink, #1a1714);
+}
+
+.pdp__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.pdp__img .pimg {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--shop-hero-fallback, #1a1714);
+}
+
+.pdp__brand {
+  font-size: 15px;
+  color: var(--muted, #8a8378);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.pdp__name {
+  font-size: 34px;
+  line-height: 1.15;
+  margin: 0 0 18px;
+  color: var(--ink, #1a1714);
+}
+
+.pdp__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.pdp__gender {
+  font-size: 13px;
+  text-transform: capitalize;
+  color: var(--muted, #8a8378);
+}
+
+.pdp__stock {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pdp__stock.in {
+  color: #4a7c59;
+}
+.pdp__stock.out {
+  color: #a0522d;
+}
+
+.pdp__price {
+  font-size: 22px;
+  margin: 0 0 20px;
+  color: var(--ink, #1a1714);
+}
+.pdp__price small {
+  font-size: 13px;
+  color: var(--muted, #8a8378);
+}
+
+.pdp__scent {
+  font-size: 15px;
+  margin: 0 0 8px;
+  color: var(--ink, #1a1714);
+}
+
+.pdp__inspired {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted, #8a8378);
+  margin: 0 0 16px;
+}
+
+.pdp__desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #44403a;
+  margin: 0 0 24px;
+}
+
+.pdp__notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.pdp__notes h3 {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #8a8378);
+  margin: 0 0 6px;
+}
+.pdp__notes p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--ink, #1a1714);
+}
+
+@media (max-width: 760px) {
+  .pdp__grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .pdp__notes {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}

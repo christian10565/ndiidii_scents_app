@@ -1,0 +1,63 @@
+/* Brands A–Z index — minimal editorial layout from the mockup:
+   eyebrow + title + intro, a jump index of present letters, then letter
+   groups (large serif letter + rule + 4-column text links). */
+
+.brands { padding: 40px 24px 90px; max-width: 1100px; }
+
+.brands__head { max-width: 620px; margin-bottom: 30px; }
+.brands__eyebrow { color: var(--oxblood); margin: 0 0 8px; }
+.brands__title { font-size: 46px; line-height: 1.05; margin: 0 0 12px; }
+.brands__intro { font-size: 15px; line-height: 1.6; color: var(--slate); margin: 0; }
+
+/* jump index */
+.brands__index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line-light);
+  border-bottom: 1px solid var(--line-light);
+  margin-bottom: 40px;
+}
+.brands__index-letter {
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+.brands__index-letter:hover { color: var(--oxblood); }
+
+/* letter groups */
+.brands__groups { display: flex; flex-direction: column; gap: 44px; }
+.brands__group { scroll-margin-top: 24px; }
+.brands__letter {
+  font-size: 40px;
+  line-height: 1;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+.brands__rule { height: 1px; background: var(--line-light); margin-bottom: 20px; }
+.brands__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 24px;
+}
+.brands__list a {
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brands__list a:hover { color: var(--oxblood); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .brands__list { grid-template-columns: repeat(2, 1fr); }
+  .brands__title { font-size: 36px; }
+  .brands__letter { font-size: 32px; }
+}

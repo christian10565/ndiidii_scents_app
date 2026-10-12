@@ -1,0 +1,583 @@
+MATCH SUMMARY
+  confident (≥0.85): 426
+  review (0.6–0.85): 103
+  unmatched (<0.6 or no candidate): 471
+  total: 1000
+
+===== REVIEW THESE (103) =====
+  [Arabiyat] Al Faris  →  [ARABIYAT PRESTIGE] AL FARIS KENZ Edp  (0.75)
+  [Mahabub Perfumes] Marwa Amber Oud Midnight  →  [ARABIYAT PRESTIGE] MARWA EXTRAIT de parfum  (0.675)
+  [Mahabub Perfumes] Marwa Amber Oud Elixir  →  [ARABIYAT PRESTIGE] MARWA EXTRAIT de parfum  (0.675)
+  [Lattafa] Hayaati  →  [LATTAFA] HAYAATI FLORENCE Edp  (0.75)
+  [Lattafa Pride] Ishq Al Shuyukh Silver  →  [LATTAFA] ISHQ AL SHUYUKH GOLD EDP  (0.6)
+  [Lattafa Pride] Affection  →  [LATTAFA] AFFECTION LOVE Edp  (0.75)
+  [Lattafa Pride] Tharwah Gold  →  [LATTAFA] THARWAH GOLD Deodorant Bodyspray  (0.75)
+  [Lattafa Pride] Art of Arabia III  →  [LATTAFA] ART OF ARABIA I Edp  (0.75)
+  [Lattafa Pride] La Collection d’Antiquités 1910  →  [LATTAFA] D'ANTIQUITES 1910 BIKE Edp  (0.75)
+  [Khadlaj] Rose & Romance  →  [KHADLAJ] ROSE AND ROMANCE EDP  (0.667)
+  [Arabiyat Prestige] Qissat Al Najah Kiamichi  →  [ARABIYAT PRESTIGE] QISSAT AL NAJAH NEDAWI Edp  (0.6)
+  [Lattafa Pride] Art of Arabia II  →  [LATTAFA] ART OF ARABIA I Edp  (0.75)
+  [Lattafa Pride] Peace & Love  →  [LATTAFA] PEACE AND LOVE Air Freshener  (0.667)
+  [Lattafa] Ajayeb Dubai  →  [LATTAFA] AJAYEB DUBAI PORTRAIT BLACK Edp  (0.75)
+  [Lattafa] Ajayeb Dubai Portrait  →  [LATTAFA] AJAYEB DUBAI PORTRAIT BLACK Edp  (0.75)
+  [ATRALIA] ELIXIR  →  [RAYHAAN] ELIXIR Edp  (0.792)
+  [Rave] Oud Nuit  →  [ARMAF] CLUB DE NUIT OUD Edp  (0.6)
+  [Arabiyat Prestige] Aariz Intense  →  [ARABIYAT PRESTIGE] AARIZ Edp  (0.75)
+  [Maison Alhambra] Avant Ruby  →  [MAISON ALHAMBRA] AVANT Edp  (0.75)
+  [Arabiyat Prestige] Portrait  →  [ARABIYAT PRESTIGE] PORTRAIT CAFE NOIR Edp  (0.75)
+  [Maison Asrar] Aseel  →  [KHADLAJ] ASEEL AL OUD Perfume oil  (0.675)
+  [Arabiyat Prestige] Ramad Louban  →  [ARABIYAT PRESTIGE] RAMAD Edp  (0.75)
+  [Maison Asrar] Lumiere  →  [FRENCH AVENUE] LUMIERE GARCON Edp  (0.675)
+  [Khadlaj] Flor Oud  →  [KHADLAJ] MAISON FLOR OUD Edp  (0.667)
+  [Lattafa] Sheikh Shuyukh Supreme  →  [LATTAFA] SHEIKH AL SHUYUKH SUPREME Edp  (0.75)
+  [Lattafa] Ana Abiyedh Leather  →  [LATTAFA] ANA ABIYEDH Edp  (0.75)
+  [Maison Alhambra] La Charmante  →  [MAISON ALHAMBRA] LA CHARMANTE ECLATANT Edp  (0.75)
+  [Lattafa] Ana Abiyedh Poudre  →  [LATTAFA] ANA ABIYEDH Edp  (0.75)
+  [Khadlaj] Infini Absolute  →  [KHADLAJ] INFINI Edp  (0.75)
+  [Lattafa] Aura  →  [KHADLAJ] AURA PISTA DESSERT Edp  (0.675)
+  [Rayhaan] Tiger (Cal Cologne Edition)  →  [RAYHAAN] TIGER Extrait de parfum  (0.75)
+  [Armaf] Club De Nuit Iconic  →  [ARMAF] CLUB DE NUIT WOMEN Deodorant  (0.75)
+  [Afnan] 9PM Rebel  →  [AFNAN] 9PM ELIXIR Edp  (0.75)
+  [Afnan] 9PM Pour Femme  →  [AFNAN] 9PM ELIXIR Edp  (0.75)
+  [Armaf] King  →  [LATTAFA] KING OF ARABIA Gift Set  (0.675)
+  [Armaf] Club De Nuit LionHeart Women  →  [ARMAF] CLUB DE NUIT WOMEN Deodorant  (0.75)
+  [Armaf] Club De Nuit LionHeart Man  →  [ARMAF] CLUB DE NUIT WOMEN Deodorant  (0.75)
+  [Armaf] Club De Nuit Oud Collector's Pride  →  [ARMAF] CLUB DE NUIT WOMEN Deodorant  (0.75)
+  [Afnan] 9AM  →  [AFNAN] 9AM DIVE Edp  (0.75)
+  [Arabiyat Prestige] Ramad Myrrh  →  [ARABIYAT PRESTIGE] RAMAD Edp  (0.75)
+  [Khadlaj] Aura Kiss of Rose  →  [KHADLAJ] LA FEDE AURA KISS OF ROSE EDP  (0.8)
+  [Khadlaj] Aura Crisp Flower  →  [KHADLAJ] LA FEDE AURA CRISP FLOWER EDP  (0.75)
+  [Lattafa] Hayaati Al Maleky  →  [LATTAFA] HAYA Edp  (0.75)
+  [Maison Alhambra] Kismet For Women  →  [MAISON ALHAMBRA] KISMET MAGIC Edp  (0.75)
+  [Arabiyat] Lamsat Harir Gold  →  [MY PERFUMES] LAMSAT HARIR Edp  (0.675)
+  [Lattafa] Badee Al Oud Amethyst  →  [LATTAFA] BADEE AL OUD AMETHYST FUSION Edp  (0.8)
+  [Khadlaj] Floral  →  [AL HARAMAIN] FLORAL FAIR Extrait De Parfum  (0.675)
+  [Arabiyat Prestige] Qissati Al Najah Nedawi  →  [ARABIYAT PRESTIGE] QISSAT AL NAJAH NEDAWI Edp  (0.6)
+  [My Perfumes] Stellar  →  [KHADLAJ] STELLAR OUD EDP  (0.675)
+  [My Perfumes] Nero  →  [FRAGRANCE WORLD] NEROLI RIVIERA Edp  (0.675)
+  [Asdaaf] Andaleeb Flora  →  [ASDAAF] ANDALEEB Edp  (0.75)
+  [Maison Alhambra] Flame Aromatique  →  [ARMAF] FLAME Edp  (0.675)
+  [Gulf Orchid] Taraf  →  [ZIMAYA] TARAF BLACK Edp  (0.675)
+  [Dehnee Perfumes] Prestige No. 3  →  [VOLARE] PRESTIGE Edp  (0.675)
+  [Khadlaj] Intoxicate Blue Elixir  →  [KHADLAJ] LA FEDE INTOXICATE BLUE ELIXIR Edp  (0.667)
+  [Khadlaj] Opera Noir L'Or  →  [KHADLAJ] LA FEDE OPERA NOIR L'OR Edp  (0.8)
+  [Khadlaj] Opera Rose L'Or  →  [KHADLAJ] LA FEDE OPERA ROSE L'OR Edp  (0.8)
+  [Khadlaj] Nuha Bonbon  →  [KHADLAJ] NUHA EAU DE PARFUM  (0.75)
+  [Afnan] 9PM Night Out  →  [AFNAN] 9PM ELIXIR Edp  (0.75)
+  [Paris Corner] Khair  →  [PARIS CORNER] KHAIR FELICITY Gift set  (0.75)
+  [Rasasi] Hawas Ice  →  [RASASI] HAWAS ICE For Him Edp  (0.75)
+  [Rasasi] Hawas Black  →  [RASASI] HAWAS ELIXIR Edp  (0.75)
+  [French Avenue] Spectre  →  [FRENCH AVENUE] SPECTRE GHOST Edp  (0.75)
+  [Fragrance World] Pose as Roses  →  [FRAGRANCE WORLD] POSE AS ROSE Edp  (0.75)
+  [French Avenue] Glorious Oud Royal Blanc  →  [FRENCH AVENUE] GLORIOUS OUD Extrait de parfum  (0.75)
+  [French Avenue] Soleil Rose  →  [FRAGRANCE WORLD] EAU DE SOLEIL Edp  (0.675)
+  [Khadlaj] Musk Pure Musk Blend  →  [KHADLAJ] PURE MUSK EDP  (0.667)
+  [Maison Alhambra] Man Black Edition  →  [ARMAF] BLACK SAFFRON Edp  (0.675)
+  [Arabiyat Sugar] Sugar Mango Affogato  →  [ARABIYAT PRESTIGE] MANGO AFFOGATO Edp  (0.6)
+  [Arabiyat Sugar] Sugar Matcha Latte  →  [ARABIYAT PRESTIGE] MATCHA LATTE Edp  (0.6)
+  [Arabiyat Prestige] Noire  →  [ARABIYAT PRESTIGE] NOIRE ABSOLU Edp  (0.75)
+  [Arabiyat Prestige] Noire Absolute  →  [ARABIYAT PRESTIGE] NOIRE ABSOLU Edp  (0.75)
+  [Maison Alhambra] Your Touch Tobacco  →  [MAISON ALHAMBRA] YOUR TOUCH For Men Edp  (0.75)
+  [Lattafa] Oud Mood Reminiscence  →  [LATTAFA] OUD MOOD Edp  (0.75)
+  [Lattafa] Ejaazi Intensive Silver  →  [LATTAFA] EJAAZI Edp  (0.75)
+  [MPF] Spirit  →  [SWISS ARABIAN] SPIRIT OF VALENCIA EXTRAIT DE PARFUM  (0.675)
+  [Gissah] One &Only  →  [GISSAH] ONE and ONLY Edp  (0.667)
+  [MPF] Titanium  →  [KHADLAJ] TITAN Edp  (0.675)
+  [Hamidi] Maison Luxe Exotic Amber  →  [KHADLAJ] MAISON Edp  (0.675)
+  [Swiss Arabian] Shaghaf Oud Royal  →  [SWISS ARABIAN] SHAGHAF OUD EDP  (0.75)
+  [Swiss Arabian] Shaghaf Oud Amber Infusion  →  [SWISS ARABIAN] SHAGHAF AMBER INFUSION Edp  (0.75)
+  [Sapil] Elixir of Dubai  →  [SWISS ARABIAN] OPULENCE OF DUBAI Extrait de parfum  (0.6)
+  [Sapil] Elixir Intense  →  [FRENCH AVENUE] INTENSE ADDICTION Extrait de parfum  (0.675)
+  [Sapil] Royale Oud  →  [SWISS ARABIAN] SHAGHAF OUD ROYALE Edp  (0.6)
+  [Sapil] Sarab Glow  →  [KHADLAJ] SARA Extrait de parfum  (0.675)
+  [Sapil] Sarab Sheer  →  [KHADLAJ] SARA Extrait de parfum  (0.675)
+  [Rasasi] Hawas Thunder  →  [RASASI] HAWAS ELIXIR Edp  (0.75)
+  [Rasasi] Hawas Exotic  →  [RASASI] HAWAS ELIXIR Edp  (0.75)
+  [Rasasi] Hawas Lava Gold  →  [RASASI] HAWAS ELIXIR Edp  (0.75)
+  [French Avenue] Jour  →  [LATTAFA] JOURI Edp  (0.675)
+  [Fragrance World] Tanseeq Blue  →  [Athoor Al Alam] TANSEEQ Edp  (0.675)
+  [French Avenue] Pinnace  →  [FRENCH AVENUE] PINNACE ORYN Edp  (0.75)
+  [Fragrance World] Champion GOAT  →  [LAVERNE] CHAMPION Edp  (0.675)
+  [Fragrance World] Champion Money  →  [LAVERNE] CHAMPION Edp  (0.675)
+  [Zimaya] La rose  →  [ZIMAYA] ROSES ARE WHITE Edp  (0.75)
+  [Zimaya] Hayam  →  [LATTAFA] HAYA Edp  (0.675)
+  [Zimaya] Zahir Cobalt  →  [PARIS CORNER] ZAHI Edp  (0.675)
+  [Afnan] Turathi Brown  →  [AFNAN] TURATHI BROWN HOMME Edp  (0.75)
+  [Armaf] Club de Nuit Precieux IV  →  [ARMAF] CLUB DE NUIT WOMEN Deodorant  (0.75)
+  [Fragrance World] Jour  →  [LATTAFA] JOURI Edp  (0.675)
+  [Fragrance World] Elysia Vanilla Sugar  →  [FRAGRANCE WORLD] ELYSIA VANILLA Edp  (0.75)
+  [Rasasi] Hawas Reina  →  [RASASI] HAWAS ELIXIR Edp  (0.75)
+  [Rasasi] Hawas Tropical  →  [RASASI] HAWAS TROPICAL For Him Edp  (0.75)
+
+===== UNMATCHED (471) =====
+  [Ard Al Zaafaran] Mousuf
+  [Ard Al Zaafaran] Al Dirgham Limited Edition
+  [Maison Alhambra] Infini Oud
+  [Maison Alhambra] Kismet Moscow
+  [Maison Alhambra] Opera Rouge
+  [Khadlaj] Musk Al Sabah
+  [Arabiyat] Intense Musk
+  [Lattafa] Ramz Silver
+  [Maison Alhambra] Dark Door Intense
+  [Maison Alhambra] Zaffiro Collection Regale
+  [Deora] Gentle Dreamer
+  [Lattafa] Lail Maleki
+  [Arabiyat] Intense Oud
+  [Lattafa Pride] Tharwah Silver
+  [Lattafa] Maahir Black
+  [Lattafa Pride] Al Qiam Silver
+  [Lattafa] Emaan
+  [Lattafa Pride] Breeze
+  [Lattafa Pride] Shaheen Gold
+  [Lattafa Pride] La Collection d'Antiquités 1505
+  [Lattafa Pride] Ajwaa
+  [Lattafa Pride] Shaheen Silver
+  [Oud Khaleeji] King Valley Red
+  [Ard Al Zaafaran] Fakhar Al Oud
+  [JC Perfumes] Sugar Pop
+  [Rave] Nardo Black
+  [Arabiyat Prestige] Nyla Suede
+  [Maison Alhambra] Philos Opus Noir
+  [Lattafa Pride] Royal Sapphire
+  [Lattafa Pride] Maharjan Gold
+  [Lattafa Pride] Ansaam Silver
+  [Lattafa Pride] Lahdath
+  [Lattafa] Musk Mood
+  [Lattafa Pride] Fakhar Black
+  [Lattafa] Maahir Gold
+  [Lattafa] Tamima
+  [RiiFFS] Exclusive Prive Rouge
+  [Hamidi] Addicted Intense
+  [Maison Alhambra] Oud Noir
+  [Rave] Now
+  [Rave] Now Intense
+  [Rave] Now White
+  [Rave] Now Woman
+  [Rave] Nardo Red
+  [Khadlaj] Karus Blue Spice
+  [Maison Alhambra] Sceptre Bronzite
+  [Maison Alhambra] Sceptre Oceana
+  [Gulf Orchid] Yacht Club
+  [Maison Asrar] Vanilla Voyage
+  [Maison Asrar] Cascade Blue
+  [Maison Alhambra] Smoked Oud and Vanilla
+  [Arabiyat Prestige] Portrait Oud
+  [Arabiyat Prestige] Hamdan The Brave
+  [Gulf Orchid] Love & Beyond
+  [Maison Asrar] Khayyal
+  [Maison Asrar] Mohra
+  [Maison Asrar] Timeless
+  [Lattafa] Velvet Oud
+  [RiiFFS] Exclusive Prive Gold
+  [RiiFFS] Al Noor
+  [Arabiyat Prestige] Nyla Vanille
+  [Lattafa] Opulent Oud
+  [Lattafa] Velvet Musk
+  [Lattafa] Nasmaat
+  [Khadlaj] Coveted Diamond
+  [Arabiyat Prestige] La Di Da For Her
+  [Arabiyat Prestige] Lutfah First Love
+  [RiiFFS] Exclusive Prive Bleu Intense
+  [RiiFFS] Exclusive Prive Mystique Noir
+  [Arabiyat Prestige] Oud Al Faris Elixir
+  [Arabiyat Prestige] Hypnotic Amber
+  [Maison Asrar] Joy
+  [Lattafa Pride] Taureau de Combat
+  [Rayhaan] Her Aqua
+  [Gulf Orchid] Whisper
+  [Khadlaj] L'Imaginaire
+  [Khadlaj] Epoque Artistique
+  [Arabiyat Prestige] Oud Al Faris
+  [Maison Asrar] Red Carpet
+  [Gulf Orchid] Evening Dance
+  [RiiFFS] Patchouli De Oro
+  [Arabiyat Prestige] Swar Venin
+  [Arabiyat Prestige] Portrait Azure
+  [Arabiyat] Intense Musk
+  [Arabiyat] Intense Oud
+  [Rayhaan] Senorita
+  [Rayhaan] Fresh Wave
+  [Rayhaan] Bluetiful
+  [Rayhaan] Ell Wood
+  [Rayhaan] Wood Noir
+  [Rayhaan] Back To Black
+  [Rayhaan] Cordova
+  [Afnan] Souvenir Desert Rose
+  [Afnan] Ornament Purple Allure
+  [Afnan] Noor Al Shams Silver
+  [Afnan] Rare Pour Femme
+  [Armaf] SHK I
+  [Armaf] SHK II
+  [Armaf] Magnificent Pour Homme
+  [Armaf] Rugir
+  [Armaf] Monarque
+  [Armaf] Connoisseur Woman
+  [Armaf] Connoisseur
+  [Afnan] Portrait - Revival
+  [Armaf] Féroce
+  [Armaf] Oros Uomo
+  [Afnan] Portrait - Abstract
+  [Afnan] Supremacy Silver
+  [Afnan] 9AM Pour Femme
+  [Afnan] Supremacy Incense
+  [Afnan] Supremacy Gold
+  [Afnan] Supremacy Noir
+  [Afnan] Supremacy In Oud
+  [Afnan] Supremacy Pink Pour Femme
+  [Afnan] Supremacy In Heaven
+  [Afnan] Rare Carbon
+  [Afnan] Supremacy Purple
+  [Asdaaf] Golden Oud
+  [Gulf Orchid] Riwaya
+  [Khadlaj] Sensuous Night
+  [Arabiyat] Widaa Pour Femme
+  [Arabiyat Prestige] Sawaar Vanille Blanc
+  [Gulf Orchid] Laith Elixir
+  [Ard Al Zaafaran] Al Ghazal
+  [Asdaaf] Reem
+  [Maison Alhambra] Eclat De Lune
+  [Gulf Orchid] Highness
+  [Maison Asrar] Fairyland
+  [Asdaaf] Fouad
+  [Asdaaf] Sa'ud
+  [Asdaaf] Salamah
+  [Arabiyat Prestige] Lamsat Dubai Chocolate
+  [Khadlaj] Marasin Al Shaikh
+  [Flavia] Prive No. 4
+  [RiiFFS] Coastal Di Amalfi
+  [Lattafa Niche Emarati] Remas
+  [Khadlaj] Mansion
+  [RiiFFS] Bella Rouge
+  [Maison Asrar] Masterpiece
+  [Arabiyat Prestige] Mahad Al Dhahab
+  [Atralia] Magma Ember Dusk
+  [Arabiyat Prestige] Ashaa Mauve
+  [Arabiyat Prestige] Ashaa Amethyst
+  [Arabiyat Prestige] Ashaa Neroli
+  [Arabiyat Prestige] Ashaa Blanc
+  [Khadlaj] Bella Reve Dolce Flore
+  [Arabiyat Prestige] Nisma
+  [Arabiyat Prestige] Rihla
+  [Arabiyat Prestige] Zuhd
+  [Arabiyat Prestige] Talab Al Oud
+  [My Perfumes] Rose Bourbon
+  [My Perfumes] Wow Oud 53
+  [My Perfumes] Bergamot
+  [My Perfumes] Echoes In Saffron
+  [My Perfumes] Fleur De Hypnotic
+  [My Perfumes] Kingdom
+  [My Perfumes] Oud Memoir
+  [Dehnee Perfumes] Rajwan Silver
+  [My Perfumes] Untold Love Of Leather
+  [Maison Alhambra] Monocline 05
+  [Arabiyat Prestige] Musk Al Youm
+  [Noir Paris] Amali Ombre Oud
+  [Mahabub] Arabian Night Blue
+  [Mahabub] Arabian Night Pink
+  [Mahabub] Arabian Night White
+  [Mahabub] Arabian Nights Purple
+  [Mahabub] Arabian Nights Red
+  [Mahabub] Arabian Midnight
+  [Mahabub] Arabian Night
+  [Arabiyat Prestige] Musk Ahmar
+  [Maison Alhambra] Monocline 01
+  [Maison Alhambra] Monocline 02
+  [MPF] Aurora
+  [Deora] Embera
+  [Noir Paris] Amali Ombre Tonka
+  [Maison Alhambra] Incense Ebony
+  [La Fede] Pink Lace
+  [Khadlaj] Cotton Candy
+  [Arabiyat Prestige] Attar Al Youm
+  [Lattafa] Fakhar Black
+  [Arabiyat Prestige] Al Shujae
+  [Arabiyat Prestige] Oud Al Youm
+  [Maison Asrar] Trophy
+  [Arabiyat Prestige] Nayel King
+  [Arabiyat Prestige] Nayel Queen
+  [Arabiyat Prestige] Bahiyat Garnet
+  [Arabiyat Prestige] Bedour Extrait
+  [Arabiyat Prestige] Hamdan The Hero
+  [Gulf Orchid] Sweet Cherry Kiss
+  [Maison Asrar] Sunset In Capri
+  [Khadlaj] Cashmere Sunshine Musk
+  [La Fede Khadlaj] Celebrity Fame
+  [La Fede] Celeste Aqua
+  [La Fede] Celeste Fleur
+  [La Fede] Celeste Joice
+  [Khadlaj] Onyx Silver
+  [Khadlaj] Opus Reborn
+  [Atyaab] Qamar
+  [Khadlaj] Stella Oud
+  [Maison Alhambra] Glossy
+  [Gulf Orchid] Huyam
+  [Lattafa Niche Emarati] Al Noble Safeer
+  [Reef Perfumes] Reef 33
+  [Maison de Milan] Faith
+  [Reef Perfumes] Obaiah
+  [Arabiyat Prestige] Ishakar Citrus Oud
+  [Arabiyat Prestige] Nayel Her Majesty
+  [Arabiyat Prestige] Nayel Oud
+  [La Fede Khadlaj] Celebrity Crush
+  [Khadlaj] Celeste Toffee
+  [Khadlaj] Embrace Rose
+  [Khadlaj] Embrace White
+  [Khadlaj] Ghadeer Gold
+  [Khadlaj] Ghadeer Silver
+  [Khadlaj] Intoxicate
+  [Khadlaj] Musk Pour Amber
+  [Khadlaj] Oud Al Sabah
+  [Khadlaj] Stella Musk
+  [Dehnee Perfumes] Rajwan Gold
+  [Reef Perfumes] Reef 19
+  [Reef Perfumes] Princess
+  [Riiffs] Desert De Sahara
+  [Oud Khaleeji] Arabian Sands
+  [Oud Khaleeji] Royal Amber
+  [Oud Khaleeji] Golden Orchid
+  [La Fede Khadlaj] Embrace Pink
+  [Ard Al Zaafaran] Oud Al Shams
+  [Oud Khaleeji] Zahrat Al Layali
+  [Paris Corner] Wowie
+  [Paris Corner] Qissa Blue
+  [Paris Corner] Oud Royal
+  [Paris Corner] Oud Satin
+  [Paris Corner] Thailand Oud In Cairo
+  [Paris Corner] Gingerique
+  [French Avenue] Moonstone Bleu
+  [French Avenue] Zenith Deep
+  [French Avenue] Zenith Blue
+  [French Avenue] Obisidian
+  [French Avenue] Essence de Noire
+  [Aromatix X French Avenue] Tease Me
+  [French Avenue] Amber D'or
+  [Fragrance World] Midnight Oud
+  [Fragrance World] Sexy Vanilla
+  [Fragrance World] Intense Gold
+  [Fragrance World] Intense Noir
+  [French Avenue] Roses D'Emotion
+  [French Avenue] Eldorado
+  [Fragrance World] Indonesian Oud
+  [Fragrance World] Signature Brown
+  [Fragrance World] Signature Pearl
+  [French Avenue] Sultry Woods (100ml)
+  [French Avenue] Sultry Woods (80ml)
+  [FA Paris Niche] The Fire
+  [FA Paris Niche] The Night
+  [FA Paris Niche] The Shadow
+  [FA Paris Niche] The Promise
+  [Fragrance World] Dolores
+  [Fragrance World] Abraaj Enclosure
+  [Fragrance World] Abraaj Carmine
+  [Fragrance World] Abraaj Valour
+  [Fragrance World] Barakkat Rouge 540 Extrait
+  [Fragrance World] Elysia Elegance
+  [Fragrance World] Oud Intense
+  [Fragrance World] Shalina Exclusive Royal Essence
+  [La Fede] Celebrity Fame
+  [Reef] Reef Princess
+  [Gulf Orchid] Attri Lara
+  [Maison Alhambra] Extravagant Lover
+  [Maison Alhambra] Jean Lowe Fraiche
+  [La Fede] Crystallia Imperio
+  [Maison Alhambra] Forbidden Love
+  [La Fede] Crystallia Primaso
+  [Maison Alhambra] Maitre De Blue
+  [Maison Alhambra] Jean Lowe Matiere
+  [Maison Asrar] DXB
+  [Maison Alhambra] Eternal Touch
+  [Maison Alhambra] Aromatic Rouge
+  [Maison Alhambra] Modern Musk
+  [Maison Alhambra] Herculean Leather
+  [Khadlaj] Magnate Noble
+  [Khadlaj] Magnate Premier
+  [Lattafa Pride] New York City Of Dreams
+  [Gissah] Akoya
+  [Mahabub Perfumes] Musk Al Oud
+  [Rave] Now Rouge
+  [Atralia] Absolute Noir
+  [Maison Alhambra] Rose Origami
+  [Atralia] Amore Serenity
+  [Atralia] Rouge Orchard
+  [Arabiyat Prestige] Areej Nectar
+  [Arabiyat Prestige] Areej
+  [Khalis Perfumes] The Sheik Gold Edition No. 77
+  [Khalis Perfumes] The Sheik Silver Edition No. 70
+  [Khalis Perfumes] Atheer Niche Collection
+  [Khalis Perfumes] Andra Niche Collection
+  [Arabiyat Prestige] Mutheer
+  [Arabiyat Prestige] Mutheer Elixir
+  [Arabiyat Prestige] Yumun
+  [Maison Alhambra] Signature IV
+  [Hamidi] ALYA
+  [Maison Alhambra] Signature No II
+  [Hamidi] MAYSARA
+  [Maison Alhambra] Spectrum
+  [Hamidi] Midnight Amber
+  [Maison Alhambra] Luminous Vivid
+  [MPF] Murano
+  [MPF] Murano Crystal
+  [Lattafa] Khaltaat Al Arabia Royal Blends
+  [Maison Alhambra] Kingsman
+  [Lattafa] Sutoor
+  [Lattafa] Mohra
+  [Riiffs] Inspiro Man
+  [Maison Alhambra] Opera Noir
+  [Riiffs] Inspiro Women
+  [Khalis] Adam
+  [Maison Alhambra] Jorge Di Aqua
+  [Maison Alhambra] Floral Ambrosia
+  [Lattafa] My Story Qissati Vol. II
+  [Maison Alhambra] Jorge Di Profumo
+  [Maison Alhambra] Vogue Night
+  [Maison Alhambra] Vogue Party
+  [Maison Alhambra] Corel Blush
+  [Fragrance World] SOULMATE INTENSE
+  [MPF] Ideal Intense
+  [MPF] BEFORE MIDNIGHT FOR HER
+  [MPF] Wild Deep
+  [Gulf Orchid] Honey Moon
+  [MPF] Might You Noir
+  [Lattafa Pride] Stop Wait Go Kids Perfume
+  [La Fede] SYMBOL OF LOVE
+  [Rave] Royal Supreme Noble
+  [Hamidi] ADDICTED MADAME
+  [MPF] GOLD AND BLACK
+  [Lattafa] Awaan gold
+  [Lattafa Pride] Play kids Perfume
+  [Lattafa Pride] Riders kids Perfume
+  [Lattafa Pride] Sing kids Perfume
+  [Gulf Orchid] Sweet Heaven Tobacco
+  [Gulf Orchid] Sweet Heaven
+  [Gulf Orchid] Sweet Heaven Ice
+  [Le Gazelle] Kaira Rose Gold
+  [Rayhaan] Torquin Giza
+  [Rayhaan] Opulence Chandos
+  [Rayhaan] Cal Cologne Tiger
+  [Swiss Arabian] Essence of Casablanca
+  [Sapil] Carnal Essence
+  [Sapil] Mystic Elixir
+  [Sapil] Eternal Potion
+  [Sapil] Bound
+  [Sapil] Elixir Fusion
+  [Sapil] Royale Flair
+  [Sapil] Royale Charm
+  [Sapil] Naughty Vanilla Oud
+  [Sapil] Yummy Pistachio Oud
+  [Sapil] Cheeky Cherry Oud
+  [Sapil] Ember Blaze
+  [Sapil] Inferno Rush
+  [Sapil] Fiery Passion
+  [Sapil] Ombre Turquoise
+  [Sapil] Ombre Smoky Quartz
+  [Sapil] Ombre Flame Aura
+  [Armaf] DuneScape
+  [Rasasi] La Yuqawam Homme
+  [Rasasi] La Yuqawam Tobacco Blaze
+  [Rasasi] La Yuqawam Ambergris Showers
+  [French Avenue] Zenith Noire
+  [French Avenue] Liquid Bruin Extrait Limited Edition 2pc
+  [French Avenue] Zenith Tobacco
+  [Fragrance World] Elysia Apple Rouge
+  [French Avenue] Brone
+  [French Avenue] Atom Grey
+  [Fragrance World] Oud DeBoise
+  [French Avenue] Pinnace Noir
+  [French Avenue] Sultan The Conqueror
+  [French Avenue] Sultan The Founder
+  [Fragrance World] Lapis Lazuli
+  [Fragrance World] Shamokhi
+  [Fragrance World] Amber & Neroli
+  [French Avenue] Mystical Gryphon
+  [FA Paris] Paradox vertiver
+  [FA Paris] Paradox rose
+  [FA Paris] Paradox Azure
+  [FA Paris] Paradox Orient
+  [French Avenue] Jade
+  [French Avenue] Jade Giallo
+  [Fragrance World] Oud Al Shams Black
+  [Fragrance World] Oud Al Shams
+  [Fragrance World] Oud Al Shams Gold
+  [Fragrance World] Delicious weekend
+  [Fragrance World] Lazurde rouge
+  [Fragrance World] Majestic Oud: His Majesty
+  [Fragrance World] Special oud
+  [FA Paris] Rose D'Prive
+  [French Avenue] Soir
+  [Fragrance World] Al Rabab
+  [Fragrance World] Lady magnifique
+  [Fragrance World] Private incenso
+  [Fragrance World] Essencia Girl Power
+  [Maison Des Parfums] Nocturne Black mamba
+  [Maison Des Parfums] Nocturne wild hunt
+  [Maison Des Parfums] Individuelle Green
+  [Maison Des Parfums] Individuelle black
+  [Maison Des Parfums] Individuelle brown
+  [Fragrance World] Barakkat rouge 540
+  [Fragrance World] Barakkat satin oud
+  [Fragrance World] Oud Ispahan
+  [Fragrance World] Grey Mountain
+  [Fragrance World] Silver Wood
+  [Fragrance World] Velvet rouge
+  [Fragrance World] Gris the one & only
+  [Fragrance World] Feroce pour Homme
+  [Fragrance World] Ambroise pour Femme
+  [Fragrance World] Champion Sugar
+  [Zimaya] Ghyoom
+  [Zimaya] Ghuyath
+  [Zimaya] Fairytale
+  [Zimaya] Al fouz
+  [Zimaya] Inekas Sous
+  [Zimaya] Siada Regal
+  [Zimaya] Reserved oud
+  [Zimaya] Charisma Pour Homme
+  [Zimaya] Charisma Pour Femme
+  [Zimaya] Zahir Gold
+  [Zimaya] Rose of dreams
+  [Zimaya] Phantom paragon
+  [Zimaya] Reflection
+  [Afnan] Souvenir Floral Bouquet
+  [Afnan] Edict Ouddiction
+  [Afnan] Historic Doria
+  [Afnan] Historic Olmeda
+  [Afnan] Turathi Purple
+  [Afnan] Turathi Red
+  [Armaf] Perle d'Or
+  [Armaf] Ombre d'Or
+  [Armaf] Dubai Nights Midnight
+  [Aromatix X French Avenue] Sunkissed
+  [Maison Des Rêves (FA Paris)] Velours Lolite
+  [Maison Des Rêves (FA Paris)] Velours Turquoise
+  [Fragrance World] Cuero Pura
+  [Fragrance World] Terro Pura
+  [Fragrance World] Absolute Gold
+  [Fragrance World] Celestia Blu
+  [Fragrance World] Intense Noir
+  [Fragrance World] Intense Gold
+  [FA Paris] Monarch Queen
+  [Fragrance World] Night Club Absolut
+  [Fragrance World] Soir
+  [Fragrance World] Queen of Red
+  [Fragrance World] Elysia Mashmallow
+  [Fragrance World] Elysia Lychee
+  [Athoor Al Alam] Ayra
+  [Athoor Al Alam] Ayra Fiore
+  [Fragrance World] My Beloved Noir
+  [Fragrance World] Shalina Exclusive
+  [Fragrance World] Shalina Royal Essence
+  [Athoor Al Alam] IIGHRA'A
+  [Fragrance World] NUDO Sweet Berries
+  [Fragrance World] NUDO Exotic Flowers
+  [Fragrance World] NUDO Green Iris
+  [French Avenue] Jasmere
+  [Fragrance World] Tobacco Gourmand
+  [Fragrance World] Amwaaj Interwood
+  [Fragrance World] The New White Oud
+  [Fragrance World] Champ de Rose
+  [Fragrance World] Mastermind Intense
+  [Fragrance World] Intense Man Deluxe Edition
+  [Hekayat Attar] BACCHUS PARADISO
+  [Hekayat Attar] YES TONIGHT
+  [Hekayat Attar] CHERRIES
+  [Hekayat Attar] LATTE ABYAD
+  [Hekayat Attar] MILLE DOUCE
