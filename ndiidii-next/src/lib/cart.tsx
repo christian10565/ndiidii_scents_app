@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN, type Tier } from '@/lib/store.config';
+import { BOX_SIZE, TIER_BOX_PRICE_NGN, DISCOVERY_SET_PRICE_NGN, type Tier } from '@/lib/store.config';
 
 /**
  * Cart + in-progress "sets" for the Collection Builder. No backend and no user
@@ -21,12 +21,23 @@ export interface CartLine {
   unitPrice: number; // TIER_BOX_PRICE_NGN[tier]
 }
 
+/** A curated discovery set added to the cart (parallel to tier lines). */
+export interface DiscoveryLine {
+  id: string;
+  collection: string;
+  slug: string;
+  items: { name: string; slug: string | null; imageUrl: string | null }[];
+  qty: number;
+  unitPrice: number; // DISCOVERY_SET_PRICE_NGN
+}
+
 interface CartState {
   drafts: Record<Tier, string[]>;
   lines: CartLine[];
+  discovery: DiscoveryLine[];
 }
 
-const EMPTY: CartState = { drafts: { 1: [], 2: [], 3: [] }, lines: [] };
+const EMPTY: CartState = { drafts: { 1: [], 2: [], 3: [] }, lines: [], discovery: [] };
 const STORAGE_KEY = 'ndiidii-cart-v1';
 
 function load(): CartState {
@@ -38,6 +49,7 @@ function load(): CartState {
     return {
       drafts: { 1: parsed.drafts?.[1] ?? [], 2: parsed.drafts?.[2] ?? [], 3: parsed.drafts?.[3] ?? [] },
       lines: Array.isArray(parsed.lines) ? parsed.lines : [],
+      discovery: Array.isArray(parsed.discovery) ? parsed.discovery : [],
     };
   } catch {
     return EMPTY;
@@ -47,6 +59,7 @@ function load(): CartState {
 interface CartApi {
   drafts: Record<Tier, string[]>;
   lines: CartLine[];
+  discovery: DiscoveryLine[];
   toggleDraft: (tier: Tier, slug: string) => void;
   clearDraft: (tier: Tier) => void;
   draftCount: (tier: Tier) => number;
@@ -54,6 +67,8 @@ interface CartApi {
   addSetToCart: (tier: Tier, qty?: number) => void;
   removeLine: (id: string) => void;
   setQty: (id: string, qty: number) => void;
+  addDiscoverySet: (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty?: number) => void;
+  removeDiscovery: (id: string) => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -106,7 +121,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         qty: Math.max(1, qty),
         unitPrice: TIER_BOX_PRICE_NGN[tier],
       };
-      return { drafts: { ...s.drafts, [tier]: [] }, lines: [...s.lines, line] };
+      return { ...s, drafts: { ...s.drafts, [tier]: [] }, lines: [...s.lines, line] };
     });
   }, []);
 
@@ -121,11 +136,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addDiscoverySet = useCallback((line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty = 1) => {
+    setState((s) => ({
+      ...s,
+      discovery: [
+        ...s.discovery,
+        { ...line, id: `disc-${line.slug}-${Date.now()}`, qty: Math.max(1, qty), unitPrice: DISCOVERY_SET_PRICE_NGN },
+      ],
+    }));
+  }, []);
+
+  const removeDiscovery = useCallback((id: string) => {
+    setState((s) => ({ ...s, discovery: s.discovery.filter((l) => l.id !== id) }));
+  }, []);
+
   const api = useMemo<CartApi>(() => {
     const draftCount = (t: Tier) => state.drafts[t].length;
     return {
       drafts: state.drafts,
       lines: state.lines,
+      discovery: state.discovery,
       toggleDraft,
       clearDraft,
       draftCount,
@@ -133,13 +163,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addSetToCart,
       removeLine,
       setQty,
+      addDiscoverySet,
+      removeDiscovery,
       // Before hydration the server rendered an empty cart, so report 0 to keep
       // the first client paint identical (avoids a hydration mismatch). Real
       // values appear the moment localStorage has been read.
-      cartCount: mounted ? state.lines.reduce((n, l) => n + l.qty, 0) : 0,
-      cartTotal: mounted ? state.lines.reduce((n, l) => n + l.qty * l.unitPrice, 0) : 0,
+      cartCount: mounted
+        ? state.lines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0)
+        : 0,
+      cartTotal: mounted
+        ? state.lines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
+          state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0)
+        : 0,
     };
-  }, [state, mounted, toggleDraft, clearDraft, addSetToCart, removeLine, setQty]);
+  }, [state, mounted, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery]);
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;
 }
