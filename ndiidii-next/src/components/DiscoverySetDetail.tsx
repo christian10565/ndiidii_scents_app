@@ -8,6 +8,7 @@ import { DISCOVERY_SET_PRICE_NGN } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
 import ProductImage from './ProductImage';
 import Monogram from './Monogram';
+import { SeasonIcon, NotesIcon, GenderIcon, ProfileIcon } from './Icons';
 import type { CuratedSet } from '@/lib/catalog';
 
 /** Detail page for one curated discovery set. */
@@ -68,16 +69,28 @@ export default function DiscoverySetDetail({ set }: { set: CuratedSet }) {
                 <p className="dslot__desc">{slot.description}</p>
                 {slot.perfume && (
                   <dl className="dslot__attrs">
+                    {slot.perfume.season && (
+                      <div className="dslot__attr">
+                        <dt><SeasonIcon /> Season</dt>
+                        <dd>{slot.perfume.season}</dd>
+                      </div>
+                    )}
                     {slot.perfume.notes.base && (
                       <div className="dslot__attr">
-                        <dt>Base Notes</dt>
+                        <dt><NotesIcon /> Notes</dt>
                         <dd>{slot.perfume.notes.base}</dd>
                       </div>
                     )}
                     {slot.perfume.gender && (
                       <div className="dslot__attr">
-                        <dt>Gender</dt>
+                        <dt><GenderIcon /> Gender</dt>
                         <dd>{slot.perfume.gender}</dd>
+                      </div>
+                    )}
+                    {slot.perfume.scentProfile && (
+                      <div className="dslot__attr">
+                        <dt><ProfileIcon /> Scent Profile</dt>
+                        <dd>{slot.perfume.scentProfile}</dd>
                       </div>
                     )}
                   </dl>

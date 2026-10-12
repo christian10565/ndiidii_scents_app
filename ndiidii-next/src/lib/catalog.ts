@@ -43,6 +43,7 @@ export interface Perfume {
   tier: 1 | 2 | 3 | null;
   scentProfile: string | null;
   inspiredBy: string | null;
+  season: string | null;
   notes: { top: string | null; heart: string | null; base: string | null };
   description: string | null;
   extra: Record<string, string>;
@@ -96,6 +97,7 @@ function mapPerfumes(rows: Awaited<ReturnType<typeof readTab>>): Perfume[] {
       tier: m.tier,
       scentProfile: m.scentProfile,
       inspiredBy: m.inspiredBy,
+      season: m.season,
       notes: { top: m.topNotes, heart: m.heartNotes, base: m.baseNotes },
       description: m.description,
       extra: m.extra,

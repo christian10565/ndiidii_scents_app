@@ -20,6 +20,7 @@ const ALIASES = {
   heartNotes: ['heartnotes', 'middlenotes'],
   baseNotes: ['basenotes'],
   description: ['description', 'about'],
+  season: ['season', 'seasons'],
   stock: ['stock', 'quantity', 'qty', 'inventory', 'available', 'unitsavailable'],
   image: ['image', 'imageurl', 'photo', 'picture', 'imagelink'],
 } as const;
@@ -110,6 +111,7 @@ export interface MappedPerfume extends MappedBase {
   topNotes: string | null;
   heartNotes: string | null;
   baseNotes: string | null;
+  season: string | null;
   description: string | null;
   tier: 1 | 2 | 3 | null;
 }
@@ -146,6 +148,7 @@ export const mapPerfumeRow = (row: SheetRow, index: number): MappedPerfume | nul
     topNotes: pick(row, 'topNotes'),
     heartNotes: pick(row, 'heartNotes'),
     baseNotes: pick(row, 'baseNotes'),
+    season: pick(row, 'season'),
     description: pick(row, 'description'),
     tier: parseTier(pick(row, 'tier')),
   };

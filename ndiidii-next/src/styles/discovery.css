@@ -95,9 +95,10 @@
 .dslot__perfume a { color: var(--ink); text-decoration: none; }
 .dslot__perfume a:hover { color: var(--oxblood); text-decoration: underline; }
 .dslot__desc { font-size: 13px; line-height: 1.6; color: var(--slate); margin: 0; }
-.dslot__attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+.dslot__attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 6px; }
 .dslot__attr { font-size: 11px; }
-.dslot__attr dt { color: var(--slate); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 3px; }
+.dslot__attr dt { color: var(--slate); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 3px; display: flex; align-items: center; gap: 5px; }
+.dslot__attr dt svg { color: var(--oxblood); flex: none; }
 .dslot__attr dd { margin: 0; color: var(--ink); line-height: 1.4; }
 
 /* the black summary panel */
