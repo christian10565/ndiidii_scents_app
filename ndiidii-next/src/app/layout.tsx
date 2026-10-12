@@ -7,6 +7,7 @@ import '@/styles/shop.css';
 import '@/styles/pdp.css';
 import '@/styles/builder.css';
 import '@/styles/checkout.css';
+import '@/styles/brands.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnnouncementBar from '@/components/AnnouncementBar';
