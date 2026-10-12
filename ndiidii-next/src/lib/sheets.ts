@@ -31,7 +31,9 @@ function client() {
   const auth = new google.auth.JWT({
     email,
     key: key.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    // Read+write: the site reads the sheet, and the image-pipeline scripts
+    // write Cloudinary URLs back into the Image column.
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   // Built once and reused. The auth client caches its own access token
   // internally and refreshes it only when it expires, so rebuilding the

@@ -43,3 +43,6 @@ next-env.d.ts
 # e2e test artifacts (screenshots)
 scripts/*.png
 
+
+# Zaoud catalog cache — re-fetchable via scripts/fetch-zaoud.mjs, don't commit (12MB)
+data/zaoud-products.json
