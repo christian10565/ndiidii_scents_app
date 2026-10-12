@@ -19,7 +19,10 @@ export interface SheetRow {
 export const normaliseHeader = (h: string): string =>
   h.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+let sheetsClient: ReturnType<typeof google.sheets> | null = null;
+
 function client() {
+  if (sheetsClient) return sheetsClient;
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const key = process.env.GOOGLE_PRIVATE_KEY;
   if (!email || !key) {
@@ -30,7 +33,11 @@ function client() {
     key: key.replace(/\\n/g, '\n'),
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
-  return google.sheets({ version: 'v4', auth });
+  // Built once and reused. The auth client caches its own access token
+  // internally and refreshes it only when it expires, so rebuilding the
+  // client per call just repeats the token handshake (~1-2s each time).
+  sheetsClient = google.sheets({ version: 'v4', auth });
+  return sheetsClient;
 }
 
 /** Reads one tab. Row 1 is treated as the header row. Fully blank rows are dropped. */

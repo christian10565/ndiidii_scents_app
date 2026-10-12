@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { readTab } from './sheets';
 import {
@@ -6,13 +7,17 @@ import {
   type Gender,
   type OilCategory,
 } from './mappers';
-import { UNKNOWN_STOCK_IS_AVAILABLE } from './store.config';
+import { DEFAULT_STOCK, UNKNOWN_STOCK_IS_AVAILABLE } from './store.config';
+import { loadSnapshot, saveSnapshot, type Snapshot } from './snapshot';
 
 /**
  * The catalog: the Google Sheet, mapped and normalized, served server-side.
  * Every product entry is derived fresh from the sheet (the sheet IS the truth —
  * no DB). Cached with `use cache` and revalidated on the 5-minute window, or
  * immediately via the /api/revalidate ping from Apps Script (revalidateTag).
+ *
+ * If the sheet read fails, the last good snapshot is served instead (see
+ * snapshot.ts) so a dead sheet never blanks the site.
  */
 
 /**
@@ -76,19 +81,8 @@ function withSlugs<T extends { sheetId: string; slugBase: string }>(mapped: (T |
   return out;
 }
 
-export async function getPerfumes(): Promise<Perfume[]> {
-  'use cache';
-  cacheTag('catalog');
-  cacheLife({ revalidate: 300, expire: 3600 });
-
-  let rows;
-  try {
-    rows = await readTab(PERFUME_TAB);
-  } catch {
-    return [];
-  }
-  const mapped = withSlugs(rows.map((row, i) => mapPerfumeRow(row, i)));
-  return mapped.map((m) => {
+function mapPerfumes(rows: Awaited<ReturnType<typeof readTab>>): Perfume[] {
+  return withSlugs(rows.map((row, i) => mapPerfumeRow(row, i))).map((m) => {
     const stock = resolveStock(m.sheetStock);
     return {
       id: m.sheetId,
@@ -109,19 +103,8 @@ export async function getPerfumes(): Promise<Perfume[]> {
   });
 }
 
-export async function getOils(): Promise<Oil[]> {
-  'use cache';
-  cacheTag('catalog');
-  cacheLife({ revalidate: 300, expire: 3600 });
-
-  let rows;
-  try {
-    rows = await readTab(OIL_TAB);
-  } catch {
-    return [];
-  }
-  const mapped = withSlugs(rows.map((row, i) => mapOilRow(row, i)));
-  return mapped.map((m) => {
+function mapOils(rows: Awaited<ReturnType<typeof readTab>>): Oil[] {
+  return withSlugs(rows.map((row, i) => mapOilRow(row, i))).map((m) => {
     const stock = resolveStock(m.sheetStock);
     return {
       id: m.sheetId,
@@ -138,13 +121,65 @@ export async function getOils(): Promise<Oil[]> {
   });
 }
 
+/**
+ * Fetch the whole catalog from the live sheet with snapshot fallback.
+ *
+ * Wrapped in React `cache()` so that within a single render pass every getter
+ * (getPerfumes / getOils / getBrands / getPerfume) shares ONE network fetch
+ * instead of each firing its own. The homepage renders NewInStore and
+ * TierShowcase side by side, so without this a single page load could hit the
+ * Sheets API two or three times (~3s each on a cold call).
+ */
+const readCatalog = cache(async (): Promise<Snapshot<Perfume>> => {
+  try {
+    const [perfumeRows, oilRows] = await Promise.all([
+      readTab(PERFUME_TAB),
+      readTab(OIL_TAB),
+    ]);
+    const snapshot: Snapshot<Perfume> = {
+      savedAt: new Date().toISOString(),
+      perfumes: mapPerfumes(perfumeRows),
+      oils: mapOils(oilRows),
+    };
+    await saveSnapshot(snapshot);
+    return snapshot;
+  } catch (err) {
+    const cached = await loadSnapshot<Perfume>();
+    if (cached && (cached.perfumes.length > 0 || cached.oils.length > 0)) {
+      console.warn(
+        `[catalog] live sheet read failed (${(err as Error).message}); ` +
+          `serving snapshot from ${cached.savedAt}`,
+      );
+      return cached;
+    }
+    // No snapshot either — genuinely empty. Log so it's not silent.
+    console.error(`[catalog] sheet read failed and no snapshot exists: ${(err as Error).message}`);
+    return { savedAt: new Date().toISOString(), perfumes: [], oils: [] };
+  }
+});
+
+export async function getPerfumes(): Promise<Perfume[]> {
+  'use cache';
+  cacheTag('catalog');
+  cacheLife({ revalidate: 300, expire: 3600 });
+  const snap = await readCatalog();
+  return snap.perfumes;
+}
+
+export async function getOils(): Promise<Oil[]> {
+  'use cache';
+  cacheTag('catalog');
+  cacheLife({ revalidate: 300, expire: 3600 });
+  const snap = await readCatalog();
+  return snap.oils as Oil[];
+}
+
 export async function getPerfume(slug: string): Promise<Perfume | null> {
   'use cache';
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
-
-  const all = await getPerfumes();
-  return all.find((p) => p.slug === slug) ?? null;
+  const snap = await readCatalog();
+  return snap.perfumes.find((p: Perfume) => p.slug === slug) ?? null;
 }
 
 export interface BrandCount {
@@ -157,8 +192,10 @@ export async function getBrands(): Promise<BrandCount[]> {
   'use cache';
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
+  const snap = await readCatalog();
+  const perfumes = snap.perfumes;
+  const oils = snap.oils as Oil[];
 
-  const [perfumes, oils] = await Promise.all([getPerfumes(), getOils()]);
   const merged = new Map<string, { brand: string; perfumes: number; oils: number }>();
   const key = (b: string) => b.trim().toLowerCase();
   for (const p of perfumes) {
