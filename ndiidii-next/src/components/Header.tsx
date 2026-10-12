@@ -28,10 +28,15 @@ export function Wordmark() {
 // TODO(step 2): replace with the real counts from the cart / wishlist state.
 export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount?: number; wishlistCount?: number }) {
   const [open, setOpen] = useState(false);
+  // Which top-level dropdown is expanded (mobile accordion). null = none.
+  const [openSub, setOpenSub] = useState<string | null>(null);
   const pathname = usePathname();
 
-  // Close the mobile menu after navigating
-  useEffect(() => setOpen(false), [pathname]);
+  // Close the mobile menu (and any open dropdown) after navigating
+  useEffect(() => {
+    setOpen(false);
+    setOpenSub(null);
+  }, [pathname]);
 
   const items = NAV.filter((i) => !i.feature || FEATURES[i.feature as keyof typeof FEATURES]);
 
@@ -52,29 +57,45 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount
 
         <nav id="main-nav" className={`nav ${open ? 'nav--open' : ''}`} aria-label="Main">
           <ul className="nav__list">
-            {items.map((item) => (
-              <li
-                key={item.label}
-                className={`nav__item ${item.children ? 'nav__item--parent' : ''}`}
-              >
-                <Link
-                  href={item.to}
-                  className={`nav__link ${pathname === item.to ? 'is-active' : ''}`}
+            {items.map((item) => {
+              const subOpen = openSub === item.label;
+              return (
+                <li
+                  key={item.label}
+                  className={`nav__item ${item.children ? 'nav__item--parent' : ''} ${
+                    item.children && subOpen ? 'is-open' : ''
+                  }`}
                 >
-                  {item.label}
-                  {item.children && <ChevronDown />}
-                </Link>
-                {item.children && (
-                  <ul className="nav__menu">
-                    {item.children.map((c) => (
-                      <li key={c.label}>
-                        <Link href={c.to}>{c.label}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
+                  <Link
+                    href={item.to}
+                    className={`nav__link ${pathname === item.to ? 'is-active' : ''}`}
+                  >
+                    {item.label}
+                  </Link>
+                  {item.children && (
+                    <>
+                      {/* Mobile: tap to expand/collapse. Desktop: chevron is decorative (hover opens). */}
+                      <button
+                        type="button"
+                        className="nav__toggle"
+                        aria-expanded={subOpen}
+                        aria-label={`${subOpen ? 'Collapse' : 'Expand'} ${item.label} menu`}
+                        onClick={() => setOpenSub(subOpen ? null : item.label)}
+                      >
+                        <ChevronDown />
+                      </button>
+                      <ul className="nav__menu">
+                        {item.children.map((c) => (
+                          <li key={c.label}>
+                            <Link href={c.to}>{c.label}</Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 

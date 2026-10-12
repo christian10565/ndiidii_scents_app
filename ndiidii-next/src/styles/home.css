@@ -137,6 +137,11 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+/* Mobile expand/collapse toggle — hidden on desktop (hover opens the menu there). */
+.nav__toggle {
+  display: none;
+}
+
 .header__tools {
   display: flex;
   align-items: center;
@@ -1003,6 +1008,34 @@
     padding: 0 0 6px 14px;
     border: 0;
     box-shadow: none;
+    /* Collapsed by default on mobile; .is-open reveals it. */
+    display: none;
+  }
+  .nav__item.is-open > .nav__menu {
+    display: block;
+  }
+  /* The parent row: label + toggle button side by side. */
+  .nav__item--parent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: 0;
+    color: #e8e8e8;
+    cursor: pointer;
+  }
+  .nav__toggle svg {
+    transition: transform 0.18s;
+  }
+  .nav__item.is-open > .nav__toggle svg {
+    transform: rotate(180deg);
   }
 
   .hero {
