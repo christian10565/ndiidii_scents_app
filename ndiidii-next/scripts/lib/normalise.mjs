@@ -20,8 +20,12 @@ const NOISE = new Set([
   'eau', 'toilette', 'cologne', 'parfumee',
   'for', 'men', 'women', 'man', 'woman', 'unisex',
   'gift', 'set', 'collection', 'giftset',
-  'deodorant', 'body', 'spray', 'freshener', 'air',
   'mini', 'pcs', 'pc', 'ml', 'oz', 'limited', 'edition',
+  'perfume', 'perfumes', 'fragrance', 'scent',
+  // NOTE: do NOT strip 'deodorant', 'sample', 'air freshener', 'body spray',
+  // 'oil', etc. — those are DIFFERENT products; stripping them caused the
+  // matcher to pick a deodorant/sample for a full-bottle perfume. They must
+  // survive so the name won't score as an exact match.
 ]);
 
 /** Lowercase, strip accents, remove punctuation → spaces, collapse whitespace. */
@@ -32,14 +36,29 @@ function base(s) {
     .replace(/[\u0300-\u036f]/g, '') // accents
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\bamp\b/g, 'and') // "Rose & Romance" vs "Rose and Romance"
+    .replace(/([a-z])(\d)/g, '$1 $2') // "100ml" → "100 ml", "50ml" → "50 ml"
+    .replace(/(\d)([a-z])/g, '$1 $2')
     .trim();
 }
 
 /** Full key for a product name: drop noise tokens, keep the identity words. */
 export function normaliseName(name) {
   const words = base(name).split(' ').filter(Boolean);
-  const kept = words.filter((w) => !NOISE.has(w));
+  const kept = words.filter((w) => !NOISE.has(w) && !/^\d+$/.test(w));
   return kept.join(' ') || words.join(' ');
+}
+
+/** Drop a trailing brand token (vendors append their own name to titles). */
+export function dropTrailingBrand(nameKey, brandKey) {
+  if (!brandKey) return nameKey;
+  const brandWords = brandKey.split(' ').filter(Boolean);
+  const words = nameKey.split(' ').filter(Boolean);
+  for (let n = Math.min(brandWords.length, words.length); n > 0; n--) {
+    const tail = words.slice(words.length - n).join(' ');
+    const head = brandWords.slice(0, n).join(' ');
+    if (tail === head) return words.slice(0, words.length - n).join(' ') || nameKey;
+  }
+  return nameKey;
 }
 
 /** Brand key: normalised, with a couple of known spelling variants folded. */

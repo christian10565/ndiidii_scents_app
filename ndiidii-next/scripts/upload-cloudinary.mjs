@@ -19,6 +19,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { config } from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
+import { google } from 'googleapis';
 
 config();
 
@@ -39,6 +40,30 @@ function argVal(flag, dflt) {
 const has = (f) => process.argv.includes(f);
 const LIMIT = has('--limit') ? Number(argVal('--limit', '5')) : Infinity;
 const MIN_SCORE = Number(argVal('--min-score', '0.85'));
+const ONLY_MISSING = has('--only-missing');
+
+// ---- read sheet: which rows already have an image? ----
+// With --only-missing we skip rows whose Image column is already filled, so a
+// re-run after adding new supplier sources only uploads the genuinely new ones.
+let filledNames = new Set();
+if (ONLY_MISSING) {
+  const auth = new google.auth.JWT({
+    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range: 'Perfumes' });
+  const rows = res.data.values ?? [];
+  const headers = rows[0].map((h) => String(h ?? '').trim());
+  const iName = headers.findIndex((h) => /name/i.test(h) && !/oil/i.test(h));
+  const iImg = headers.findIndex((h) => /image/i.test(h));
+  for (const r of rows.slice(1)) {
+    const name = String(r[iName] ?? '').trim();
+    if (name && String(r[iImg] ?? '').trim()) filledNames.add(name.toLowerCase());
+  }
+  console.log(`sheet: ${filledNames.size} rows already have an image — these will be skipped`);
+}
 
 // ---- normalise for a stable public_id ----
 const slug = (s) =>
@@ -52,9 +77,10 @@ const slug = (s) =>
 
 // ---- load match map ----
 const map = JSON.parse(await readFile(join(process.cwd(), 'data', 'match-map.json'), 'utf8'));
-const todo = map.filter((m) => m.matched && m.matched.score >= MIN_SCORE && m.matched.imageUrl);
+let todo = map.filter((m) => m.matched && m.matched.score >= MIN_SCORE && m.matched.imageUrl);
+if (ONLY_MISSING) todo = todo.filter((m) => !filledNames.has(m.sheetName.toLowerCase()));
 const targets = LIMIT === Infinity ? todo : todo.slice(0, LIMIT);
-console.log(`matches >= ${MIN_SCORE}: ${todo.length}; uploading ${targets.length} this run\n`);
+console.log(`matches >= ${MIN_SCORE}${ONLY_MISSING ? ' (new only)' : ''}: ${todo.length}; uploading ${targets.length} this run\n`);
 
 const out = map.map((m) => ({ ...m })); // preserve everything, add cloudinaryUrl
 let ok = 0;

@@ -340,8 +340,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Cloudinary already subject-crops (g_auto,c_fill) so the image is square and
-     bottle-framed; cover just fills the card box cleanly. */
   object-position: center;
 }
 /* Placeholder SVG: fills the area, capped so it never overflows. */
@@ -361,12 +359,20 @@
   font-size: 15.5px;
   font-weight: 400;
   color: #6b6b6b;
+  /* TEMP: opaque backdrop so the text stays readable if the image above is
+     bleeding/overlapping. Remove once the image framing is sorted. */
+  background: #fff;
+  position: relative;
+  z-index: 1;
 }
 .scard__brand {
   margin-top: 4px;
   font-size: 24px;
   line-height: 1.2;
   font-weight: 700;
+  background: #fff;
+  position: relative;
+  z-index: 1;
 }
 .scard__price {
   margin-top: 8px;

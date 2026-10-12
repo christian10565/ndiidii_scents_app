@@ -46,3 +46,6 @@ scripts/*.png
 
 # Zaoud catalog cache — re-fetchable via scripts/fetch-zaoud.mjs, don't commit (12MB)
 data/zaoud-products.json
+
+# Shopify supplier catalog caches — re-fetchable via scripts/fetch-shopify.mjs, don't commit
+data/shopify-*.json

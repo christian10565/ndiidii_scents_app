@@ -16,7 +16,7 @@ export function isCloudinary(url: string | null | undefined): url is string {
 }
 
 /** Card-thumbnail transform: subject-cropped square, webp/auto-quality. */
-export function cloudinaryThumb(url: string, size = 600): string {
+export function cloudinaryThumb(url: string, size = 900): string {
   // Insert the transform right after /image/upload/
   return url.replace('/image/upload/', `/image/upload/g_auto,c_fill,w_${size},h_${size},q_auto,f_auto/`);
 }

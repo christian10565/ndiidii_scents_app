@@ -26,8 +26,23 @@
 .search__section { margin-bottom: 40px; }
 .search__section-title { font-size: 24px; margin: 0 0 18px; }
 
+/* Match the shop's grid with the filter panel collapsed (4-up) — the look we
+   want on search. A standalone .shop__grid defaults to 3-up, so force 4 here. */
+.search .shop__grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 26px;
+}
+
 @media (max-width: 600px) {
   .search__form { flex-direction: column; }
   .search__form .btn--white { width: 100%; }
   .search__title { font-size: 34px; }
+}
+
+/* Match the shop's responsive grid: 2-up on mobile (same 560px breakpoint). */
+@media (max-width: 560px) {
+  .search .shop__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
 }

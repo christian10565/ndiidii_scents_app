@@ -8,25 +8,47 @@
 //   node scripts/match.mjs
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readdir } from 'node:fs/promises';
 import { config } from 'dotenv';
 import { google } from 'googleapis';
-import { normaliseName, normaliseBrand, similarity } from './lib/normalise.mjs';
+import { normaliseName, normaliseBrand, similarity, dropTrailingBrand } from './lib/normalise.mjs';
 
 config();
 
 const CONFIDENT = 0.85; // auto-accept at/above this
 const LOOSE = 0.6;      // still report these as "review" candidates
 
-// ---- load Zaoud catalog (cached) ----
-const zaoud = JSON.parse(await readFile(join(process.cwd(), 'data', 'zaoud-products.json'), 'utf8'));
-// Index by brand → list of {nameKey, product}. Brand-scoped so we never cross houses.
-const byBrand = new Map();
-for (const p of zaoud) {
-  const b = normaliseBrand(p.vendor);
-  if (!byBrand.has(b)) byBrand.set(b, []);
-  byBrand.get(b).push({ nameKey: normaliseName(p.title), product: p });
+// ---- load supplier catalogs (all cached sources in data/) ----
+// Each entry: { vendor, title, imageUrl, source }. Zaoud's file uses the raw
+// Shopify shape (product.images[0].src); the generic fetcher normalizes already.
+const dataDir = join(process.cwd(), 'data');
+const sourceFiles = (await readdir(dataDir))
+  .filter((f) => f === 'zaoud-products.json' || f.startsWith('shopify-'))
+  .filter((f) => f.endsWith('.json'));
+
+const pool = [];
+for (const f of sourceFiles) {
+  const raw = JSON.parse(await readFile(join(dataDir, f), 'utf8'));
+  const source = f === 'zaoud-products.json' ? 'zaoud' : f.replace(/^shopify-|\.json$/g, '');
+  for (const p of raw) {
+    const imageUrl = p.imageUrl ?? (p.images && p.images[0] && p.images[0].src) ?? null;
+    if (!imageUrl) continue;
+    pool.push({ vendor: p.vendor || '', title: p.title || '', imageUrl, source });
+  }
+  console.log(`loaded ${raw.length} from ${f}`);
 }
-console.log(`Zaoud catalog: ${zaoud.length} products across ${byBrand.size} brands`);
+
+// Index by brand → list of {nameKey, entry}. Brand-scoped so we never cross houses.
+const byBrand = new Map();
+for (const p of pool) {
+  const b = normaliseBrand(p.vendor);
+  if (!b) continue;
+  // Strip a trailing brand token from the title (vendors append their own name).
+  const nameKey = dropTrailingBrand(normaliseName(p.title), b);
+  if (!byBrand.has(b)) byBrand.set(b, []);
+  byBrand.get(b).push({ nameKey, entry: p });
+}
+console.log(`Total pool: ${pool.length} products across ${byBrand.size} brands`);
 
 // ---- load sheet ----
 const auth = new google.auth.JWT({
@@ -54,17 +76,17 @@ function bestMatch(name, brand) {
   const b = normaliseBrand(brand);
   const candidates = byBrand.get(b) ?? [];
   const nk = normaliseName(name);
-  let best = { score: 0, product: null };
+  let best = { score: 0, entry: null };
   for (const c of candidates) {
     const s = similarity(nk, c.nameKey);
-    if (s > best.score) best = { score: s, product: c.product };
+    if (s > best.score) best = { score: s, entry: c.entry };
   }
-  // Brand not in Zaoud at all → try any brand (last resort, still reported with brand mismatch)
-  if (!best.product) {
+  // Brand not in the pool at all → try any brand (last resort, penalised)
+  if (!best.entry) {
     for (const [zb, list] of byBrand) {
       for (const c of list) {
         const s = similarity(nk, c.nameKey) * 0.9; // penalise cross-brand
-        if (s > best.score) best = { score: s, product: c.product };
+        if (s > best.score) best = { score: s, entry: c.entry };
       }
     }
   }
@@ -74,23 +96,24 @@ function bestMatch(name, brand) {
 const results = [];
 const report = { confident: [], review: [], unmatched: [] };
 for (const row of sheetRows) {
-  const { score, product } = bestMatch(row.name, row.brand);
-  const entry = {
+  const { score, entry } = bestMatch(row.name, row.brand);
+  const out = {
     sheetName: row.name,
     sheetBrand: row.brand,
-    matched: product
+    matched: entry
       ? {
-          zaoudTitle: product.title,
-          zaoudVendor: product.vendor,
-          imageUrl: (product.images || [])[0]?.src ?? null,
+          title: entry.title,
+          vendor: entry.vendor,
+          imageUrl: entry.imageUrl,
+          source: entry.source,
           score: Number(score.toFixed(3)),
         }
       : null,
   };
-  results.push(entry);
-  if (!product || score < LOOSE) report.unmatched.push(entry);
-  else if (score < CONFIDENT) report.review.push(entry);
-  else report.confident.push(entry);
+  results.push(out);
+  if (!entry || score < LOOSE) report.unmatched.push(out);
+  else if (score < CONFIDENT) report.review.push(out);
+  else report.confident.push(out);
 }
 
 // ---- write outputs ----
@@ -105,7 +128,7 @@ lines.push(`  unmatched (<${LOOSE} or no candidate): ${report.unmatched.length}`
 lines.push(`  total: ${results.length}`);
 lines.push('');
 lines.push(`===== REVIEW THESE (${report.review.length}) =====`);
-for (const e of report.review) lines.push(`  [${e.sheetBrand}] ${e.sheetName}  →  [${e.matched.zaoudVendor}] ${e.matched.zaoudTitle}  (${e.matched.score})`);
+for (const e of report.review) lines.push(`  [${e.sheetBrand}] ${e.sheetName}  →  [${e.matched.vendor}] ${e.matched.title}  (${e.matched.score}, ${e.matched.source})`);
 lines.push('');
 lines.push(`===== UNMATCHED (${report.unmatched.length}) =====`);
 for (const e of report.unmatched) lines.push(`  [${e.sheetBrand}] ${e.sheetName}`);
