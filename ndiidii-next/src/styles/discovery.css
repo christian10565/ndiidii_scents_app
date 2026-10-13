@@ -147,8 +147,20 @@
 .dbox__total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
 .dbox__total-label { font-size: 14px; color: #fff; }
 .dbox__total-price { font-size: 22px; font-weight: 700; }
+.dbox__qty { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: #b9b3a8; margin-bottom: 16px; }
+.dbox__qty input {
+  width: 64px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: center;
+}
 .dbox__cta { display: block; width: 100%; text-align: center; background: #fff; color: var(--ink); border: 0; border-radius: 999px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .dbox__cta:hover { background: var(--oxblood); color: #fff; }
+.dbox__checkout { display: block; width: 100%; margin-top: 12px; background: none; border: 0; cursor: pointer; text-align: center; color: var(--oxblood-light); font-size: 13px; }
+.dbox__checkout:hover { color: #fff; }
 
 @media (max-width: 860px) {
   .dset-detail__layout { grid-template-columns: 1fr; }

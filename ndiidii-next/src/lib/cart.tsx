@@ -89,14 +89,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Hydrate from localStorage after mount (avoids SSR mismatch).
   useEffect(() => setState(load()), []);
 
-  // Persist on every change.
+  // Persist on every change — but only AFTER hydration, so the initial EMPTY
+  // state doesn't clobber the stored cart before load() reads it.
   useEffect(() => {
+    if (!mounted) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       /* storage full/blocked — non-fatal */
     }
-  }, [state]);
+  }, [state, mounted]);
 
   const toggleDraft = useCallback((tier: Tier, slug: string) => {
     setState((s) => {

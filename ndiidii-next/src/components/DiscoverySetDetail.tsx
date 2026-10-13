@@ -25,20 +25,27 @@ function capList(value: string | null, max: number): string[] {
 
 /** Detail page for one curated discovery set. */
 export default function DiscoverySetDetail({ set, prev, next }: { set: CuratedSet; prev: string | null; next: string | null }) {
-  const { addDiscoverySet } = useCart();
+  const { addDiscoverySet, discovery } = useCart();
   const router = useRouter();
   const [added, setAdded] = useState(false);
+  const [qty, setQty] = useState(1);
+
+  // Already in the cart (e.g. added on a previous visit)?
+  const inCart = discovery.some((d) => d.slug === set.slug);
 
   const addToCart = () => {
-    addDiscoverySet({
-      collection: set.collection,
-      slug: set.slug,
-      items: set.slots.map((s) => ({
-        name: s.perfumeName,
-        slug: s.perfume?.slug ?? null,
-        imageUrl: s.perfume?.imageUrl ?? null,
-      })),
-    });
+    addDiscoverySet(
+      {
+        collection: set.collection,
+        slug: set.slug,
+        items: set.slots.map((s) => ({
+          name: s.perfumeName,
+          slug: s.perfume?.slug ?? null,
+          imageUrl: s.perfume?.imageUrl ?? null,
+        })),
+      },
+      qty,
+    );
     setAdded(true);
   };
 
@@ -152,13 +159,16 @@ export default function DiscoverySetDetail({ set, prev, next }: { set: CuratedSe
             <span className="dbox__total-label">Total Price</span>
             <span className="dbox__total-price">{formatNaira(DISCOVERY_SET_PRICE_NGN)}</span>
           </div>
-          {added ? (
-            <button className="dbox__cta" onClick={() => router.push('/checkout')}>
-              Proceed to Checkout
-            </button>
-          ) : (
-            <button className="dbox__cta" onClick={addToCart}>
-              Proceed to Checkout
+          <label className="dbox__qty">
+            <span>Quantity</span>
+            <input type="number" min={1} max={99} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
+          </label>
+          <button className="dbox__cta" onClick={addToCart}>
+            {added || inCart ? 'Added' : 'Add to Cart'}
+          </button>
+          {(added || inCart) && (
+            <button className="dbox__checkout link-red" onClick={() => router.push('/checkout')}>
+              Go to Checkout
             </button>
           )}
         </aside>

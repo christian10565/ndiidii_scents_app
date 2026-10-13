@@ -9,6 +9,7 @@
 
 .checkout__empty { text-align: center; padding: 60px 0; display: flex; flex-direction: column; gap: 18px; align-items: center; }
 .checkout__empty .btn--white { background: var(--ink); color: #fff; }
+.checkout__empty-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
 .checkout__layout { display: grid; grid-template-columns: 1fr 340px; gap: 34px; align-items: start; }
 
