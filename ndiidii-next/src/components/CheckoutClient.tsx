@@ -25,8 +25,10 @@ function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: stri
 
 export default function CheckoutClient({
   catalog,
+  testMode = false,
 }: {
   catalog: { slug: string; name: string; imageUrl: string | null }[];
+  testMode?: boolean;
 }) {
   const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount } = useCart();
   const [paying, setPaying] = useState(false);
@@ -188,6 +190,13 @@ export default function CheckoutClient({
               </label>
               <label>Order notes (optional)<textarea rows={3} value={form.notes} onChange={set('notes')} /></label>
               {payError && <p className="cform__error" role="alert">{payError}</p>}
+              {testMode && (
+                <p className="cform__testmode" role="note">
+                  <strong>Test mode.</strong> This is a Paystack <em>test</em> account — no real money
+                  will leave your account. Use test card <code>4084 0840 8408 4081</code>, any future
+                  expiry, CVV <code>408</code>.
+                </p>
+              )}
               <button type="submit" className="btn btn--white cform__submit" disabled={paying}>
                 {paying ? 'Redirecting to payment…' : 'Pay now'}
               </button>

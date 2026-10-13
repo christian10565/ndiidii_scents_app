@@ -62,6 +62,8 @@
 .cform__submit:hover { background: #000; }
 .cform__submit:disabled { opacity: 0.6; cursor: not-allowed; }
 .cform__error { color: #b00020; font-size: 13px; margin: 8px 0 0; }
+.cform__testmode { background: #fff7e6; border: 1px solid #f0c36d; color: #7a5b13; font-size: 12px; line-height: 1.5; margin: 10px 0 0; padding: 10px 12px; border-radius: 6px; }
+.cform__testmode code { background: #ffe9bf; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
 .cform__disclaimer { font-size: 11px; color: var(--slate); margin: 0; line-height: 1.5; }
 
 /* ---- success ---- */
