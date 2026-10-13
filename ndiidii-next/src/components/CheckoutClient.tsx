@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN, NIGERIA_STATES, type Tier } from '@/lib/store.config';
+import { BOX_SIZE, TIER_BOX_PRICE_NGN, VAT_RATE, NIGERIA_STATES, type Tier } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
 import ProductImage from '@/components/ProductImage';
 
@@ -51,7 +51,9 @@ export default function CheckoutClient({
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const shipping = cartTotal > 150000 ? 0 : cartTotal > 0 ? 2500 : 0;
-  const total = cartTotal + shipping;
+  const subtotal = cartTotal + shipping;
+  const vat = Math.round(subtotal * VAT_RATE);
+  const total = subtotal + vat;
 
   return (
     <div className="container checkout">
@@ -131,6 +133,7 @@ export default function CheckoutClient({
               <p className="csummary__title eyebrow">Order Summary</p>
               <div className="csummary__row"><span>{cartCount} item{cartCount > 1 ? 's' : ''}</span><span>{formatNaira(cartTotal)}</span></div>
               <div className="csummary__row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : formatNaira(shipping)}</span></div>
+              <div className="csummary__row"><span>VAT (7.5%)</span><span>{formatNaira(vat)}</span></div>
               <div className="csummary__row csummary__row--total"><span>Total</span><strong className="serif">{formatNaira(total)}</strong></div>
               <p className="csummary__note">Free shipping over ₦150,000.</p>
             </div>

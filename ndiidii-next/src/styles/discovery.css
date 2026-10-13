@@ -18,13 +18,11 @@
   flex-direction: column;
   background: #fff;
   border-radius: 16px;
+  border: 1px solid #e2ddd4;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  transition: box-shadow 0.2s, transform 0.2s;
   text-decoration: none;
   color: inherit;
 }
-.dset:hover { box-shadow: 0 8px 26px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
 /* 2x2 mosaic of the set's 4 perfume images */
 .dset__mosaic {
   display: grid;

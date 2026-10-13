@@ -20,7 +20,10 @@ export const TIER_BOX_PRICE_NGN: Record<Tier, number> = {
 export const OIL_BOX_PRICE_NGN: number | null = null;
 
 // Price of one curated discovery set (4 x 10ml decants, Perfume Option 1 only).
-export const DISCOVERY_SET_PRICE_NGN = 35000;
+export const DISCOVERY_SET_PRICE_NGN = 40000;
+
+// VAT added to every order's final total (Nigeria standard rate).
+export const VAT_RATE = 0.075;
 
 export const NIGERIA_STATES: string[] = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
