@@ -75,6 +75,7 @@
 .cgift__row button:disabled { opacity: 0.5; cursor: not-allowed; }
 .cgift__applied { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff7e6; border: 1px solid #f0c36d; border-radius: 8px; padding: 10px 12px; font-size: 13px; }
 .cgift__error { color: #b00020; font-size: 12px; margin: 8px 0 0; }
+.cgift__note { font-size: 12px; color: var(--slate); line-height: 1.5; margin: 10px 0 0; }
 .csummary__row--gift span:last-child { color: #2e7d32; font-weight: 600; }
 
 /* ---- success ---- */

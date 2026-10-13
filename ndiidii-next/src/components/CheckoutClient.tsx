@@ -185,6 +185,11 @@ export default function CheckoutClient({
                 </div>
               )}
               {giftError && <p className="cgift__error">{giftError}</p>}
+              {giftApplied && (
+                <p className="cgift__note">
+                  Gift card applied. Complete the delivery details below to finish — {total > 0 ? `you'll pay the remaining ${formatNaira(total)}.` : 'no further payment is needed.'}
+                </p>
+              )}
             </div>
 
             <div className="csummary">
@@ -292,10 +297,14 @@ export default function CheckoutClient({
                 </p>
               )}
               <button type="submit" className="btn btn--white cform__submit" disabled={paying}>
-                {paying ? 'Redirecting to payment…' : 'Pay now'}
+                {paying
+                  ? total > 0 ? 'Redirecting to payment…' : 'Completing…'
+                  : total > 0 ? 'Pay now' : 'Complete Transaction'}
               </button>
               <p className="cform__disclaimer">
-                You'll be redirected to Paystack to pay securely by card, transfer, or USSD.
+                {total > 0
+                  ? "You'll be redirected to Paystack to pay securely by card, transfer, or USSD."
+                  : 'Your gift card covers this order in full — no payment needed.'}
               </p>
             </form>
           </aside>
