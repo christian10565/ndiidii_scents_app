@@ -76,30 +76,31 @@ interface CartApi {
 
 const CartContext = createContext<CartApi | null>(null);
 
-/** True only after the component has mounted on the client. */
-function useMounted() {
-  const [m, setM] = useState(false);
-  useEffect(() => setM(true), []);
-  return m;
-}
-
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<CartState>(EMPTY);
-  const mounted = useMounted();
+  // Flips true only after localStorage has been read into state. Until then we
+  // neither report counts (avoids SSR mismatch) nor persist (so the initial
+  // EMPTY state can't clobber the stored cart before it's read).
+  const [hydrated, setHydrated] = useState(false);
 
-  // Hydrate from localStorage after mount (avoids SSR mismatch).
-  useEffect(() => setState(load()), []);
-
-  // Persist on every change — but only AFTER hydration, so the initial EMPTY
-  // state doesn't clobber the stored cart before load() reads it.
+  // Hydrate from localStorage once on mount.
   useEffect(() => {
-    if (!mounted) return;
+    setState(load());
+    setHydrated(true);
+  }, []);
+
+  // Persist on every change — only after hydration. Also announce the change so
+  // components inside a Suspense boundary (e.g. the header cart badge) can
+  // re-read the count even though context updates don't cross that boundary.
+  useEffect(() => {
+    if (!hydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       /* storage full/blocked — non-fatal */
     }
-  }, [state, mounted]);
+    window.dispatchEvent(new Event('ndiidii-cart-change'));
+  }, [state, hydrated]);
 
   const toggleDraft = useCallback((tier: Tier, slug: string) => {
     setState((s) => {
@@ -176,18 +177,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addDiscoverySet,
       removeDiscovery,
       setDiscoveryQty,
-      // Before hydration the server rendered an empty cart, so report 0 to keep
-      // the first client paint identical (avoids a hydration mismatch). Real
-      // values appear the moment localStorage has been read.
-      cartCount: mounted
-        ? state.lines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0)
-        : 0,
-      cartTotal: mounted
-        ? state.lines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
-          state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0)
-        : 0,
+      // Computed straight from state: 0 on the server/first paint (state is EMPTY,
+      // matching SSR), then updates once the hydrate effect reads localStorage.
+      cartCount: state.lines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0),
+      cartTotal:
+        state.lines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
+        state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0),
     };
-  }, [state, mounted, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty]);
+  }, [state, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty]);
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;
 }

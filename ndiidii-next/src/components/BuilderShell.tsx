@@ -27,6 +27,8 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
   const [activeTier, setActiveTier] = useState<Tier>(1);
   const { drafts, toggleDraft, draftCount, clearDraft, isFull, addSetToCart } = useCart();
   const router = useRouter();
+  // True once a set has been added to the cart from this tier; gates Go to Checkout.
+  const [justAdded, setJustAdded] = useState(false);
 
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
   const selected = drafts[activeTier];
@@ -64,7 +66,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               role="tab"
               aria-selected={activeTier === t.tier}
               className={`tiercard ${activeTier === t.tier ? 'is-active' : ''}`}
-              onClick={() => setActiveTier(t.tier)}
+              onClick={() => { setActiveTier(t.tier); setJustAdded(false); }}
             >
               <span className="tiercard__label eyebrow">{t.label}</span>
               <span className="tiercard__price serif">{formatNaira(TIER_BOX_PRICE_NGN[t.tier])}</span>
@@ -171,12 +173,13 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               onClick={() => {
                 const qty = Number((document.getElementById('builder-qty') as HTMLInputElement)?.value) || 1;
                 addSetToCart(activeTier, qty);
+                setJustAdded(true);
               }}
             >
               <BagIcon width={16} height={16} />
               {full ? 'Add Set to Cart' : `Pick ${BOX_SIZE - count} More`}
             </button>
-            {full && (
+            {justAdded && (
               <button className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
                 Go to Checkout
               </button>
