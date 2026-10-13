@@ -104,6 +104,9 @@
 .bcard.is-selected { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
 .bcard__img { position: relative; }
 .bcard__img .pimg { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 4px; background: #f0eee9; }
+/* Placeholder (no image yet): keep the bottle mark small inside the card box. */
+.bcard__img .pimg--empty { display: grid; place-items: center; }
+.bcard__img .pimg--empty svg { width: 40%; height: auto; max-height: 60%; }
 .bcard__check {
   position: absolute;
   top: 8px;

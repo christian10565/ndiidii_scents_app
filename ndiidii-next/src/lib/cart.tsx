@@ -69,6 +69,7 @@ interface CartApi {
   setQty: (id: string, qty: number) => void;
   addDiscoverySet: (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty?: number) => void;
   removeDiscovery: (id: string) => void;
+  setDiscoveryQty: (id: string, qty: number) => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -152,6 +153,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, discovery: s.discovery.filter((l) => l.id !== id) }));
   }, []);
 
+  const setDiscoveryQty = useCallback((id: string, qty: number) => {
+    setState((s) => ({
+      ...s,
+      discovery: s.discovery.map((l) => (l.id === id ? { ...l, qty: Math.max(1, Math.min(99, qty)) } : l)),
+    }));
+  }, []);
+
   const api = useMemo<CartApi>(() => {
     const draftCount = (t: Tier) => state.drafts[t].length;
     return {
@@ -167,6 +175,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setQty,
       addDiscoverySet,
       removeDiscovery,
+      setDiscoveryQty,
       // Before hydration the server rendered an empty cart, so report 0 to keep
       // the first client paint identical (avoids a hydration mismatch). Real
       // values appear the moment localStorage has been read.
@@ -178,7 +187,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0)
         : 0,
     };
-  }, [state, mounted, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery]);
+  }, [state, mounted, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty]);
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;
 }

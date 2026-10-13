@@ -28,7 +28,7 @@ export default function CheckoutClient({
 }: {
   catalog: { slug: string; name: string; imageUrl: string | null }[];
 }) {
-  const { lines, discovery, removeLine, setQty, removeDiscovery, cartTotal, cartCount } = useCart();
+  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount } = useCart();
   const [placed, setPlaced] = useState(false);
   // The cart is localStorage-backed; render an empty shell until it hydrates so
   // server and client agree on first paint (no hydration mismatch).
@@ -127,7 +127,9 @@ export default function CheckoutClient({
                 </div>
                 <div className="cline__side">
                   <div className="cline__qty">
+                    <button aria-label="Decrease" onClick={() => setDiscoveryQty(d.id, d.qty - 1)}>−</button>
                     <span>{d.qty}</span>
+                    <button aria-label="Increase" onClick={() => setDiscoveryQty(d.id, d.qty + 1)}>+</button>
                   </div>
                   <p className="cline__price serif">{formatNaira(d.qty * d.unitPrice)}</p>
                   <p className="cline__unit">{formatNaira(d.unitPrice)} each</p>

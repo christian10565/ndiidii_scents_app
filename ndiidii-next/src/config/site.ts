@@ -43,7 +43,7 @@ export const NAV = [
     label: 'Collection Builder',
     to: '/collection-builder',
     children: [
-      { label: 'Perfume Collection', to: '/collection-builder/perfume' },
+      { label: 'Perfume Collection', to: '/collection-builder' },
       { label: 'Perfume Oils Collection', to: '/collection-builder/oils' },
     ],
   },

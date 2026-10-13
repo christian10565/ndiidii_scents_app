@@ -28,8 +28,8 @@ export default function DiscoverySetDetail({ set, prev, next }: { set: CuratedSe
   const { addDiscoverySet, discovery } = useCart();
   const router = useRouter();
   const [added, setAdded] = useState(false);
-  const [qty, setQty] = useState(1);
-
+  const [qtyStr, setQtyStr] = useState('1');
+  const qty = Math.max(1, Math.min(99, Number(qtyStr) || 1));
   // Already in the cart (e.g. added on a previous visit)?
   const inCart = discovery.some((d) => d.slug === set.slug);
 
@@ -161,7 +161,7 @@ export default function DiscoverySetDetail({ set, prev, next }: { set: CuratedSe
           </div>
           <label className="dbox__qty">
             <span>Quantity</span>
-            <input type="number" min={1} max={99} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
+            <input type="number" min={1} max={99} value={qtyStr} onChange={(e) => setQtyStr(e.target.value)} />
           </label>
           <button className="dbox__cta" onClick={addToCart}>
             {added || inCart ? 'Added' : 'Add to Cart'}
