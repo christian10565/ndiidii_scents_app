@@ -70,6 +70,7 @@ interface CartApi {
   addDiscoverySet: (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty?: number) => void;
   removeDiscovery: (id: string) => void;
   setDiscoveryQty: (id: string, qty: number) => void;
+  clearCart: () => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -161,6 +162,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Empty the whole cart (used after a successful payment).
+  const clearCart = useCallback(() => {
+    setState({ drafts: { 1: [], 2: [], 3: [] }, lines: [], discovery: [] });
+  }, []);
+
   const api = useMemo<CartApi>(() => {
     const draftCount = (t: Tier) => state.drafts[t].length;
     return {
@@ -177,6 +183,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addDiscoverySet,
       removeDiscovery,
       setDiscoveryQty,
+      clearCart,
       // Computed straight from state: 0 on the server/first paint (state is EMPTY,
       // matching SSR), then updates once the hydrate effect reads localStorage.
       cartCount: state.lines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0),
@@ -184,7 +191,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         state.lines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
         state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0),
     };
-  }, [state, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty]);
+  }, [state, toggleDraft, clearDraft, addSetToCart, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty, clearCart]);
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;
 }

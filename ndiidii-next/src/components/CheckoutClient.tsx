@@ -29,7 +29,8 @@ export default function CheckoutClient({
   catalog: { slug: string; name: string; imageUrl: string | null }[];
 }) {
   const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount } = useCart();
-  const [placed, setPlaced] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   // The cart is localStorage-backed; render an empty shell until it hydrates so
   // server and client agree on first paint (no hydration mismatch).
   const [hydrated, setHydrated] = useState(false);
@@ -49,23 +50,6 @@ export default function CheckoutClient({
 
   const shipping = cartTotal > 150000 ? 0 : cartTotal > 0 ? 2500 : 0;
   const total = cartTotal + shipping;
-
-  if (placed) {
-    return (
-      <div className="container checkout">
-        <div className="checkout__done">
-          <p className="eyebrow" style={{ color: 'var(--oxblood)' }}>Order received</p>
-          <h1 className="serif">Thank you{form.name ? `, ${form.name.split(' ')[0]}` : ''}!</h1>
-          <p>
-            Your order is being prepared. This is a test checkout — no payment
-            was taken. In production this is where Paystack would confirm payment and the order would be
-            emailed to you.
-          </p>
-          <Link href="/collection-builder" className="btn btn--ghost-dark">Build another set</Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container checkout">
@@ -151,9 +135,40 @@ export default function CheckoutClient({
 
             <form
               className="cform"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                setPlaced(true);
+                setPayError(null);
+                setPaying(true);
+                try {
+                  const items = [
+                    ...lines.map((l) => ({ name: `Tier ${l.tier} set`, qty: l.qty, price: l.unitPrice })),
+                    ...discovery.map((d) => ({ name: d.collection, qty: d.qty, price: d.unitPrice })),
+                  ];
+                  const res = await fetch('/api/paystack/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      email: form.email,
+                      amountNaira: total,
+                      items,
+                      delivery: {
+                        name: form.name,
+                        phone: form.phone,
+                        address: form.address,
+                        city: form.city,
+                        state: form.state,
+                        notes: form.notes,
+                      },
+                    }),
+                  });
+                  const json = await res.json();
+                  if (!res.ok) throw new Error(json.error || 'Could not start payment');
+                  // Redirect to Paystack's hosted checkout (or the mock page).
+                  window.location.href = json.authorization_url;
+                } catch (err) {
+                  setPayError(err instanceof Error ? err.message : 'Payment could not be started');
+                  setPaying(false);
+                }
               }}
             >
               <p className="csummary__title eyebrow">Delivery details</p>
@@ -172,10 +187,12 @@ export default function CheckoutClient({
                 </select>
               </label>
               <label>Order notes (optional)<textarea rows={3} value={form.notes} onChange={set('notes')} /></label>
-              <button type="submit" className="btn btn--white cform__submit">Place order (test)</button>
+              {payError && <p className="cform__error" role="alert">{payError}</p>}
+              <button type="submit" className="btn btn--white cform__submit" disabled={paying}>
+                {paying ? 'Redirecting to payment…' : 'Pay now'}
+              </button>
               <p className="cform__disclaimer">
-                Test checkout — no payment is taken. Paystack (card/transfer) wires in here once the client is
-                ready.
+                You'll be redirected to Paystack to pay securely by card, transfer, or USSD.
               </p>
             </form>
           </aside>

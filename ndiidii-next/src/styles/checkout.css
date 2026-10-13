@@ -60,6 +60,8 @@
 .cform input:focus, .cform select:focus, .cform textarea:focus { outline: none; border-color: var(--ink); }
 .cform__submit { width: 100%; background: var(--ink); color: #fff; margin-top: 6px; }
 .cform__submit:hover { background: #000; }
+.cform__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.cform__error { color: #b00020; font-size: 13px; margin: 8px 0 0; }
 .cform__disclaimer { font-size: 11px; color: var(--slate); margin: 0; line-height: 1.5; }
 
 /* ---- success ---- */
