@@ -66,6 +66,17 @@
 .cform__testmode code { background: #ffe9bf; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
 .cform__disclaimer { font-size: 11px; color: var(--slate); margin: 0; line-height: 1.5; }
 
+/* ---- gift card at checkout ---- */
+.cgift { margin-bottom: 20px; }
+.cgift__row { display: flex; gap: 8px; }
+.cgift__row input { flex: 1; border: 1px solid var(--line, #ddd6cb); border-radius: 8px; padding: 10px 12px; font-size: 13px; letter-spacing: 0.03em; }
+.cgift__row button { background: #fff; color: var(--ink); border: 1px solid var(--ink); border-radius: 8px; padding: 0 16px; font-size: 13px; cursor: pointer; }
+.cgift__row button:hover { background: var(--ink); color: #fff; }
+.cgift__row button:disabled { opacity: 0.5; cursor: not-allowed; }
+.cgift__applied { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff7e6; border: 1px solid #f0c36d; border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.cgift__error { color: #b00020; font-size: 12px; margin: 8px 0 0; }
+.csummary__row--gift span:last-child { color: #2e7d32; font-weight: 600; }
+
 /* ---- success ---- */
 .checkout__done { text-align: center; padding: 70px 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; max-width: 480px; margin-inline: auto; }
 .checkout__done h1 { font-size: 40px; margin: 0; }

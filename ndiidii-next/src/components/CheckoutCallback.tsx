@@ -19,6 +19,12 @@ export default function CheckoutCallback() {
   const cleared = useRef(false);
 
   useEffect(() => {
+    // Fully covered by a gift card — no Paystack reference; already redeemed.
+    const giftOnly = params.get('giftonly');
+    if (giftOnly === '1') {
+      setState('success');
+      return;
+    }
     if (!reference) {
       setState('failed');
       setDetail('No payment reference found.');
@@ -31,7 +37,66 @@ export default function CheckoutCallback() {
         const json = await res.json();
         if (cancelled) return;
         if (res.ok && json.status === 'success') {
+          let redeemedGiftCode: string | null = null;
+          // Handle a pending gift-card action (purchase a new card, or redeem a
+          // card that partially covered this order).
+          try {
+            const pending = sessionStorage.getItem('ndiidii-giftcard-pending');
+            if (pending) {
+              const p = JSON.parse(pending);
+              if (p.reference === reference) {
+                sessionStorage.removeItem('ndiidii-giftcard-pending');
+                if (p.redeem) {
+                  // Redeem the card portion, then finish as a normal order.
+                  await fetch('/api/giftcard/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: p.code, amountNaira: p.amountNaira, orderRef: reference }),
+                  });
+                  redeemedGiftCode = p.code;
+                } else {
+                  // Create a brand-new gift card and reveal its code.
+                  const gres = await fetch('/api/giftcard/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amountNaira: p.amountNaira, note: p.note, orderRef: reference }),
+                  });
+                  const gjson = await gres.json();
+                  if (gres.ok && gjson.code) {
+                    window.location.href = `/gift-cards?reveal=${encodeURIComponent(gjson.code)}&amount=${p.amountNaira}`;
+                    return;
+                  }
+                }
+              }
+            }
+          } catch {
+            /* fall through to normal order success */
+          }
           setState('success');
+          // Record the order in the Redis audit ledger (best-effort).
+          try {
+            const summary = sessionStorage.getItem('ndiidii-order-summary');
+            if (summary) {
+              sessionStorage.removeItem('ndiidii-order-summary');
+              const s = JSON.parse(summary);
+              await fetch('/api/orders/record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ref: reference,
+                  email: s.email,
+                  items: s.items,
+                  delivery: s.delivery,
+                  amountCharged: json.amountNaira ?? s.total,
+                  total: s.grandTotal ?? s.total,
+                  giftCard: s.giftCredit > 0 && redeemedGiftCode ? { code: redeemedGiftCode, amount: s.giftCredit } : undefined,
+                  method: s.giftCredit > 0 ? (json.amountNaira > 0 ? 'mixed' : 'giftcard') : 'paystack',
+                }),
+              });
+            }
+          } catch {
+            /* ledger write is best-effort */
+          }
           // Clear the cart once, on confirmed success.
           if (!cleared.current) {
             cleared.current = true;

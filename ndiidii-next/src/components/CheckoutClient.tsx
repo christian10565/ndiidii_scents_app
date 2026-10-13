@@ -30,9 +30,14 @@ export default function CheckoutClient({
   catalog: { slug: string; name: string; imageUrl: string | null }[];
   testMode?: boolean;
 }) {
-  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount } = useCart();
+  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount, clearCart } = useCart();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  // Gift card applied at checkout (deducts from the total).
+  const [giftCode, setGiftCode] = useState('');
+  const [giftApplied, setGiftApplied] = useState<{ code: string; balance: number } | null>(null);
+  const [giftChecking, setGiftChecking] = useState(false);
+  const [giftError, setGiftError] = useState<string | null>(null);
   // The cart is localStorage-backed; render an empty shell until it hydrates so
   // server and client agree on first paint (no hydration mismatch).
   const [hydrated, setHydrated] = useState(false);
@@ -51,9 +56,13 @@ export default function CheckoutClient({
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const shipping = cartTotal > 150000 ? 0 : cartTotal > 0 ? 2500 : 0;
-  const subtotal = cartTotal + shipping;
-  const vat = Math.round(subtotal * VAT_RATE);
-  const total = subtotal + vat;
+  const preVat = cartTotal + shipping;
+  const vat = Math.round(preVat * VAT_RATE);
+  const grandTotal = preVat + vat;
+  // Gift card deducts from the final total. Paystack charges only the remainder;
+  // if the card fully covers it, nothing is charged.
+  const giftCredit = giftApplied ? Math.min(giftApplied.balance, grandTotal) : 0;
+  const total = grandTotal - giftCredit;
 
   return (
     <div className="container checkout">
@@ -129,11 +138,61 @@ export default function CheckoutClient({
 
           {/* Summary + form */}
           <aside className="checkout__side">
+            {/* Gift card */}
+            <div className="cgift">
+              {giftApplied ? (
+                <div className="cgift__applied">
+                  <span>
+                    Gift card <strong>{giftApplied.code}</strong> applied — {formatNaira(giftCredit)} off
+                  </span>
+                  <button type="button" className="link-red" onClick={() => { setGiftApplied(null); setGiftCode(''); }}>
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="cgift__row">
+                  <input
+                    value={giftCode}
+                    onChange={(e) => setGiftCode(e.target.value)}
+                    placeholder="Gift card code (NDII-XXXX-XXXX)"
+                    aria-label="Gift card code"
+                  />
+                  <button
+                    type="button"
+                    disabled={giftChecking || !giftCode.trim()}
+                    onClick={async () => {
+                      setGiftChecking(true);
+                      setGiftError(null);
+                      try {
+                        const res = await fetch(`/api/giftcard/balance?code=${encodeURIComponent(giftCode)}`);
+                        const json = await res.json();
+                        if (res.ok && json.found) {
+                          setGiftApplied({ code: json.code, balance: json.balance });
+                        } else if (res.status === 404) {
+                          setGiftError('No gift card found with that code.');
+                        } else {
+                          setGiftError(json.error || 'Could not check that code.');
+                        }
+                      } catch {
+                        setGiftError('Could not check that code.');
+                      } finally {
+                        setGiftChecking(false);
+                      }
+                    }}
+                  >
+                    {giftChecking ? '…' : 'Apply'}
+                  </button>
+                </div>
+              )}
+              {giftError && <p className="cgift__error">{giftError}</p>}
+            </div>
+
             <div className="csummary">
               <p className="csummary__title eyebrow">Order Summary</p>
               <div className="csummary__row"><span>{cartCount} item{cartCount > 1 ? 's' : ''}</span><span>{formatNaira(cartTotal)}</span></div>
               <div className="csummary__row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : formatNaira(shipping)}</span></div>
               <div className="csummary__row"><span>VAT (7.5%)</span><span>{formatNaira(vat)}</span></div>
+              {giftApplied && <div className="csummary__row csummary__row--gift"><span>Gift card</span><span>−{formatNaira(giftCredit)}</span></div>}
               <div className="csummary__row csummary__row--total"><span>Total</span><strong className="serif">{formatNaira(total)}</strong></div>
               <p className="csummary__note">Free shipping over ₦150,000.</p>
             </div>
@@ -149,6 +208,38 @@ export default function CheckoutClient({
                     ...lines.map((l) => ({ name: `Tier ${l.tier} set`, qty: l.qty, price: l.unitPrice })),
                     ...discovery.map((d) => ({ name: d.collection, qty: d.qty, price: d.unitPrice })),
                   ];
+                  const delivery = {
+                    name: form.name,
+                    phone: form.phone,
+                    address: form.address,
+                    city: form.city,
+                    state: form.state,
+                    notes: form.notes,
+                  };
+                  // Stash the full order summary so the callback can record it to
+                  // the Redis ledger once payment confirms.
+                  sessionStorage.setItem(
+                    'ndiidii-order-summary',
+                    JSON.stringify({ email: form.email, items, delivery, total, grandTotal, giftCredit }),
+                  );
+
+                  // Fully covered by the gift card → no Paystack. Redeem server-side
+                  // and finish. (The redeem endpoint deducts the exact credit.)
+                  if (total <= 0 && giftApplied) {
+                    const rres = await fetch('/api/giftcard/redeem', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ code: giftApplied.code, amountNaira: giftCredit }),
+                    });
+                    if (!rres.ok) {
+                      const rj = await rres.json();
+                      throw new Error(rj.error || 'Could not redeem gift card');
+                    }
+                    clearCart();
+                    window.location.href = '/checkout/callback?giftonly=1';
+                    return;
+                  }
+
                   const res = await fetch('/api/paystack/initialize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -156,18 +247,18 @@ export default function CheckoutClient({
                       email: form.email,
                       amountNaira: total,
                       items,
-                      delivery: {
-                        name: form.name,
-                        phone: form.phone,
-                        address: form.address,
-                        city: form.city,
-                        state: form.state,
-                        notes: form.notes,
-                      },
+                      delivery,
                     }),
                   });
                   const json = await res.json();
                   if (!res.ok) throw new Error(json.error || 'Could not start payment');
+                  // Stash any gift-card portion to redeem after payment confirms.
+                  if (giftApplied && giftCredit > 0) {
+                    sessionStorage.setItem(
+                      'ndiidii-giftcard-pending',
+                      JSON.stringify({ redeem: true, code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
+                    );
+                  }
                   // Redirect to Paystack's hosted checkout (or the mock page).
                   window.location.href = json.authorization_url;
                 } catch (err) {
