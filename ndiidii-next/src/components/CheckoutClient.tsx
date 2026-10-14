@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN, VAT_RATE, NIGERIA_STATES, type Tier } from '@/lib/store.config';
+import { BOX_SIZE, TIER_BOX_PRICE_NGN, VAT_RATE, NIGERIA_STATES, TIER_LABELS, type Tier } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
 import ProductImage from '@/components/ProductImage';
 
-const TIER_LABEL: Record<Tier, string> = { 1: 'Tier One', 2: 'Tier Two', 3: 'Tier Three' };
+const TIER_LABEL: Record<Tier, string> = TIER_LABELS;
 
 /** Resolve product thumbnails by slug from a passed-in catalog snapshot. */
 function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: string; name: string; imageUrl: string | null }[] }) {
@@ -86,16 +86,16 @@ export default function CheckoutClient({
         <div className="checkout__layout">
           {/* Lines */}
           <section className="checkout__lines" aria-label="Your sets">
-            {lines.map((l) => (
+            {lines.map((l) => {
+              const items = l.items
+                .map((s) => catalog.find((p) => p.slug === s))
+                .filter((p): p is { slug: string; name: string; imageUrl: string | null } => Boolean(p));
+              return (
               <article key={l.id} className="cline">
                 <div className="cline__info">
                   <p className="cline__tier eyebrow">{TIER_LABEL[l.tier]} Set · {BOX_SIZE} decants</p>
                   <LineThumbs slugs={l.items} catalog={catalog} />
-                  <p className="cline__names">
-                    {l.items
-                      .map((s) => catalog.find((p) => p.slug === s)?.name ?? s)
-                      .join(' · ')}
-                  </p>
+                  <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
                 </div>
                 <div className="cline__side">
                   <div className="cline__qty">
@@ -108,7 +108,8 @@ export default function CheckoutClient({
                   <button className="cline__remove link-red" onClick={() => removeLine(l.id)}>Remove</button>
                 </div>
               </article>
-            ))}
+              );
+            })}
             {discovery.map((d) => (
               <article key={d.id} className="cline">
                 <div className="cline__info">

@@ -20,12 +20,10 @@ export const isConfigured = (): boolean => Boolean(URL_ && TOKEN);
 
 /** Run a Redis command via the Upstash REST command-array endpoint. */
 async function kv<T = unknown>(...args: (string | number)[]): Promise<T> {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) throw new Error('KV is not configured (missing KV_REST_API_URL / KV_REST_API_TOKEN)');
-  const res = await fetch(url, {
+  if (!URL_ || !TOKEN) throw new Error('KV is not configured (missing KV_REST_API_URL / KV_REST_API_TOKEN)');
+  const res = await fetch(URL_, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(args.map((a) => String(a))),
   });
   const json = await res.json();
