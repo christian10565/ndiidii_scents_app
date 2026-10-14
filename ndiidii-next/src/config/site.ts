@@ -52,24 +52,10 @@ export const NAV = [
   { label: 'Guide', to: '/guide', feature: 'guide' },
 ];
 
-// Add real photos to /public/images and these paths just work. Until then a dark gradient shows.
+// Hero background lives at /public/images/hero.png (from the Home mockup).
 export const HERO_SLIDES = [
   {
-    image: '/images/hero-1.jpg',
-    eyebrow: 'Middle Eastern perfume decants',
-    titleTop: 'Your scents.',
-    titleItalic: 'One story, told your way.',
-    text: 'Pick a bundle size, then choose every scent yourself or let us surprise you.',
-  },
-  {
-    image: '/images/hero-2.jpg',
-    eyebrow: 'Middle Eastern perfume decants',
-    titleTop: 'Your scents.',
-    titleItalic: 'One story, told your way.',
-    text: 'Pick a bundle size, then choose every scent yourself or let us surprise you.',
-  },
-  {
-    image: '/images/hero-3.jpg',
+    image: '/images/hero.png',
     eyebrow: 'Middle Eastern perfume decants',
     titleTop: 'Your scents.',
     titleItalic: 'One story, told your way.',
