@@ -9,7 +9,7 @@ import ProductImage from './ProductImage';
 import { BagIcon, CheckIcon } from './Icons';
 import type { Oil } from '@/lib/catalog';
 
-export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
+export function OilBuilderShell({ oils }: { oils: Oil[] }) {
   const { addOilSetToCart, toggleOil, clearOil } = useCart();
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
@@ -17,14 +17,14 @@ export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
 
   const brands = ['Niche', 'Designer'];
   const filtered = activeBrand
-    ? allOils.filter((o) => (activeBrand === 'Niche' ? o.category === 'niche' : o.category === 'designer'))
-    : allOils;
+    ? oils.filter((o) => (activeBrand === 'Niche' ? o.category === 'niche' : o.category === 'designer'))
+    : oils;
 
   const selectedCount = oils.length;
   const setReady = selectedCount >= BOX_SIZE;
   const price = OIL_BOX_PRICE_NGN ?? 0;
 
-  const isSelected = (slug: string) => oils.includes(slug);
+  const isSelected = (slug: string): boolean => oils.some((o) => o.slug === slug);
 
   const toggle = (o: Oil) => toggleOil(o.slug);
   const clear = () => clearOil();
@@ -113,8 +113,8 @@ export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
 
             <div className="yourset__slots">
               {Array.from({ length: BOX_SIZE }, (_, i) => {
-                const slug = oils[i];
-                const prod = slug ? allOils.find((o) => o.slug === slug) : null;
+                const slug = oils[i]?.slug ?? '';
+                const prod = slug ? oils.find((o: Oil) => o.slug === slug) : null;
                 return (
                   <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
                     {prod ? (

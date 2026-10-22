@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
-import { BOX_SIZE } from '@/lib/store.config';
+import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
 import { getOils } from '@/lib/catalog';
 import OilCartSet from '@/components/OilCartSet';
 
