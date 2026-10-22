@@ -94,7 +94,7 @@ export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
                     aria-pressed={sel}
                   >
                     <span className="bcard__img">
-                      {o.imageUrl ? <ProductImage src={o.imageUrl} alt={o.name} /> : <div className="bcard__img--empty" />}
+                      {o.imageUrl ? <ProductImage src={o.imageUrl} alt={o.name} /> : <img src="/images/oil-placeholder.jpg" alt={`${o.name} placeholder`} />}
                       {sel && <span className="bcard__check" aria-hidden="true"><CheckIcon width={16} height={16} /></span>}
                     </span>
                     <span className="bcard__name">{o.name}</span>
