@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getBrands, getPerfumes } from '@/lib/catalog';
+import { getBrands, getPerfumes, getOils } from '@/lib/catalog';
 import ShopShell from '@/components/ShopShell';
 
 // Caching + revalidation live on the data functions in @/lib/catalog
@@ -10,10 +10,10 @@ import ShopShell from '@/components/ShopShell';
 // prerender correctly. The fallback shows a neutral shop-height block while
 // the shell streams in.
 export default async function ShopPage() {
-  const [perfumes, brands] = await Promise.all([getPerfumes(), getBrands()]);
+  const [perfumes, brands, oils] = await Promise.all([getPerfumes(), getBrands(), getOils()]);
   return (
     <Suspense fallback={<div className="shop" style={{ minHeight: '80vh' }} />}>
-      <ShopShell initial={perfumes} brands={brands} />
+      <ShopShell initial={perfumes} oils={oils} brands={brands} />
     </Suspense>
   );
 }

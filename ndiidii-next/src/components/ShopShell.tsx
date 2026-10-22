@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import FilterPanel from './FilterPanel';
 import { FilterIcon } from './Icons';
 import ShopCard from './ShopCard';
+import ProductImage from './ProductImage';
 import { SHOP } from '@/config/site';
 import {
   countActive,
@@ -12,14 +13,14 @@ import {
   writeFilters,
   type Filters,
 } from '@/lib/shopQuery';
-import type { Perfume } from '@/lib/catalog';
+import type { Perfume, Oil } from '@/lib/catalog';
 
 /**
  * The shop shell. Filtering/sorting/pagination happen over the full catalog,
  * which the server already handed us as `initial` (SSR — SEO-friendly).
  * Filters live in the URL and re-filter client-side; no per-change network call.
  */
-export default function ShopShell({ initial, brands }: { initial: Perfume[]; brands: import('@/lib/catalog').BrandCount[] }) {
+export default function ShopShell({ initial, oils, brands }: { initial: Perfume[]; oils: Oil[]; brands: import('@/lib/catalog').BrandCount[] }) {
   const sp = useSearchParams();
   const router = useRouter();
 
@@ -50,6 +51,8 @@ export default function ShopShell({ initial, brands }: { initial: Perfume[]; bra
   // ---- Filter the catalog (client-side, instant) ----
   const filtered = useMemo(() => {
     let out = initial;
+    if (filters.collection === 'perfumes') out = out.filter((p) => p.tier !== null);
+    if (filters.collection === 'oils') out = out.filter((p) => p.tier === null);
     if (filters.gender.length) out = out.filter((p) => p.gender && filters.gender.includes(p.gender));
     if (filters.tier.length) out = out.filter((p) => p.tier && filters.tier.includes(String(p.tier)));
     if (filters.brand.length) out = out.filter((p) => p.brand && filters.brand.some((b) => b.toLowerCase() === p.brand!.toLowerCase()));
@@ -128,7 +131,7 @@ export default function ShopShell({ initial, brands }: { initial: Perfume[]; bra
                 <div className="empty">
                   <p>{activeCount > 0 ? 'No scents match these filters.' : 'New scents are on the way.'}</p>
                   {activeCount > 0 && (
-                    <button className="btn btn--ghost-dark" onClick={() => setFilters({ ...filters, stock: [], tier: [], gender: [], brand: [] })}>
+                    <button className="btn btn--ghost-dark" onClick={() => setFilters({ ...filters, stock: [], tier: [], gender: [], brand: [], collection: null })}>
                       Clear all filters
                     </button>
                   )}
@@ -139,6 +142,21 @@ export default function ShopShell({ initial, brands }: { initial: Perfume[]; bra
                 <ShopCard key={p.id} p={p} />
               ))}
             </div>
+
+            {filters.collection === 'oils' && (
+              <div className="shop__grid" style={{ marginTop: 'var(--space-4)' }}>
+                {oils.map((o) => (
+                  <article key={o.id} className="scard">
+                    <div className="scard__img">
+                      <ProductImage src={o.imageUrl} alt={o.name} />
+                    </div>
+                    <h3 className="scard__name">{o.name}</h3>
+                    {o.brand && <p className="scard__brand serif">{o.brand}</p>}
+                    <p className="scard__status">{o.inStock ? 'In stock' : 'Out of stock'}</p>
+                  </article>
+                ))}
+              </div>
+            )}
 
             {total > 0 && (
               <div className="shop__more">

@@ -9,6 +9,7 @@
 export type SortValue = 'featured' | 'newest' | 'name';
 
 export interface Filters {
+  collection: string | null;
   stock: string[]; // 'in' | 'out'
   tier: string[]; // '1' | '2' | '3'
   gender: string[]; // 'men' | 'women' | 'unisex'
@@ -25,11 +26,12 @@ export const SORTS = [
 const list = (v: string | null): string[] =>
   (v ? v.split(',') : []).map((s) => s.trim()).filter(Boolean);
 
-export const EMPTY_FILTERS: Filters = { stock: [], tier: [], gender: [], brand: [], sort: 'featured' };
+export const EMPTY_FILTERS: Filters = { collection: null, stock: [], tier: [], gender: [], brand: [], sort: 'featured' };
 
 export function readFilters(sp: URLSearchParams): Filters {
   const sort = sp.get('sort');
   return {
+    collection: list(sp.get('collection')).pop() ?? null,
     stock: list(sp.get('stock')).filter((s) => s === 'in' || s === 'out'),
     tier: list(sp.get('tier')).filter((t) => ['1', '2', '3'].includes(t)),
     gender: list(sp.get('gender'))
@@ -42,6 +44,7 @@ export function readFilters(sp: URLSearchParams): Filters {
 
 export function writeFilters(f: Filters): URLSearchParams {
   const sp = new URLSearchParams();
+  if (f.collection) sp.set('collection', f.collection);
   if (f.stock.length) sp.set('stock', f.stock.join(','));
   if (f.tier.length) sp.set('tier', f.tier.join(','));
   if (f.gender.length) sp.set('gender', f.gender.join(','));

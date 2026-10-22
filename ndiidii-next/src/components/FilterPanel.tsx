@@ -122,18 +122,15 @@ export default function FilterPanel({
       </Section>
 
       <Section title="Collection">
-        <span className="check is-static">
-          <span className="check__box is-on" aria-hidden="true" />
-          <span className="check__label">All Scents</span>
-        </span>
-        {SHOP.collections
-          .filter((c) => !c.hidden)
-          .map((c) => (
-            <Link key={c.label} href={c.to} className="check">
-              <span className="check__box" aria-hidden="true" />
-              <span className="check__label">{c.label}</span>
-            </Link>
-          ))}
+        <Check checked={filters.collection === null} onChange={() => set({ collection: null })}>
+          All Scents
+        </Check>
+        <Check checked={filters.collection === 'perfumes'} onChange={() => set({ collection: filters.collection === 'perfumes' ? null : 'perfumes' })}>
+          Perfumes
+        </Check>
+        <Check checked={filters.collection === 'oils'} onChange={() => set({ collection: filters.collection === 'oils' ? null : 'oils' })}>
+          Perfume Oils
+        </Check>
       </Section>
 
       <Section title="Brand">
