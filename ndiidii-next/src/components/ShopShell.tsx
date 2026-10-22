@@ -148,7 +148,7 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
                 {oils.map((o) => (
                   <article key={o.id} className="scard">
                     <div className="scard__img">
-                      <ProductImage src={o.imageUrl} alt={o.name} placeholder="/images/placeholder-oils.png" />
+                      <ProductImage src={o.imageUrl} alt={o.name} />
                     </div>
                     <h3 className="scard__name">{o.name}</h3>
                     {o.brand && <p className="scard__brand serif">{o.brand}</p>}
