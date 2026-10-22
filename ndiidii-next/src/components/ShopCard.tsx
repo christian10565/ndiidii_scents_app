@@ -18,7 +18,13 @@ export default function ShopCard({ p }: { p: Perfume }) {
       )}
       <Link href={`/perfumes/${p.slug}`} className="scard__link">
         <div className="scard__img">
-          <ProductImage src={p.imageUrl} alt={p.name} />
+          {p.imageUrl ? (
+            <ProductImage src={p.imageUrl} alt={p.name} />
+          ) : (
+            <div className="pimg pimg--empty">
+              <img src="/images/placeholder-oils.png" alt={`${p.name} placeholder`} />
+            </div>
+          )}
         </div>
         <h3 className="scard__name">{p.name}</h3>
         {p.brand && <p className="scard__brand serif">{p.brand}</p>}
