@@ -52,7 +52,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
           possible — that&apos;s what keeps pricing simple and fair.
         </p>
         <p className="builder__oil-link">
-          Looking to build a set from our perfume oils instead? <Link href="/coming-soon" className="link-red">Try the Oil Builder</Link>
+          Looking to build a set from our perfume oils instead? <Link href="/collection-builder/oils" className="link-red">Try the Oil Builder</Link>
         </p>
       </header>
 

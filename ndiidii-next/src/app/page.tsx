@@ -17,9 +17,9 @@ export default function HomePage() {
       <NewInStore />
       <HowItWorks />
       <TierShowcase />
-      <GiftCardBanner />
+      {/* <GiftCardBanner />
       {FEATURES.subscription && <SubscriptionClub />}
-      <FeaturedCollections />
+      <FeaturedCollections /> */}
       <LogoCarousel />
     </>
   );

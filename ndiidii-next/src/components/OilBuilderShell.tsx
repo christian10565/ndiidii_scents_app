@@ -10,7 +10,7 @@ import { BagIcon, CheckIcon } from './Icons';
 import type { Oil } from '@/lib/catalog';
 
 export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
-  const { oils, addOilSetToCart, toggleOil, clearOil } = useCart();
+  const { addOilSetToCart, toggleOil, clearOil } = useCart();
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
   const router = useRouter();
@@ -94,7 +94,7 @@ export function OilBuilderShell({ oils: allOils }: { oils: Oil[] }) {
                     aria-pressed={sel}
                   >
                     <span className="bcard__img">
-                      {o.imageUrl ? <ProductImage src={o.imageUrl} alt={o.name} /> : <img src="/images/oil-placeholder.jpg" alt={`${o.name} placeholder`} />}
+                      <ProductImage src={o.imageUrl} alt={o.name} />
                       {sel && <span className="bcard__check" aria-hidden="true"><CheckIcon width={16} height={16} /></span>}
                     </span>
                     <span className="bcard__name">{o.name}</span>

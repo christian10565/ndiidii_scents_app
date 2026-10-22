@@ -71,6 +71,8 @@ export interface CartApi {
   clearOil: () => void;
   clearDraft: (tier: Tier) => void;
   draftCount: (tier: Tier) => number;
+  // The in-progress oil set length — drives the "how many oils" counter.
+  oilsSetCount: () => number;
   isFull: (tier: Tier) => boolean;
   addSetToCart: (tier: Tier, qty?: number) => void;
   addOilSetToCart: (qty?: number) => void;
@@ -217,6 +219,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearOil,
       clearDraft,
       draftCount,
+      // The in-progress oil set length — drives the "how many oils" counter.
+      oilsSetCount: () => state.oils.length,
       isFull: (t) => draftCount(t) === BOX_SIZE,
       addSetToCart,
       addOilSetToCart,

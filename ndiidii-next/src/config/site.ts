@@ -29,9 +29,8 @@ export const NAV = [
     to: '/shop',
     children: [
       { label: 'All Scents', to: '/shop' },
-      { label: 'Men', to: '/shop?gender=men' },
-      { label: 'Women', to: '/shop?gender=women' },
-      { label: 'Unisex', to: '/shop?gender=unisex' },
+      { label: 'Perfumes', to: '/shop?collection=perfumes' },
+      { label: 'Perfume Oils', to: '/shop?collection=oils' },
     ],
   },
   {

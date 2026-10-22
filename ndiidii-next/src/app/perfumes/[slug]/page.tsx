@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN } from '@/lib/store.config';
+import { BOX_SIZE, TIER_BOX_PRICE_NGN, TIER_LABELS } from '@/lib/store.config';
 import { getPerfume } from '@/lib/catalog';
+import PerfumeCartSet from '@/components/PerfumeCartSet';
 
 // This route reads `params` (and the sheet) on every request, so it can't be
 // statically prerendered — product slugs aren't known at build time. Render it
@@ -29,7 +30,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
   if (!p) notFound();
 
   const notes = [p.notes.top, p.notes.heart, p.notes.base].filter(Boolean);
-  const boxPrice = p.tier ? formatNaira(TIER_BOX_PRICE_NGN[p.tier]) : null;
+  const boxPrice = formatNaira(TIER_BOX_PRICE_NGN[p.tier!]);
 
   return (
     <div className="container pdp">
@@ -47,14 +48,13 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
           <h1 className="serif pdp__name">{p.name}</h1>
 
           <div className="pdp__meta">
-            {p.tier && <span className="scard__tier serif">Tier {p.tier}</span>}
+            {p.tier && <span className="scard__tier serif">{TIER_LABELS[p.tier!]}</span>}
             {p.gender && <span className="pdp__gender">{p.gender}</span>}
             <span className={`pdp__stock ${p.inStock ? 'in' : 'out'}`}>
               {p.inStock ? 'In stock' : 'Out of stock'}
             </span>
           </div>
 
-          {/* No price on a perfume: the price belongs to its tier (a box of 4). */}
           {boxPrice && (
             <p className="pdp__price serif">
               {boxPrice} <small>· box of {BOX_SIZE}</small>
@@ -87,6 +87,8 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
               )}
             </div>
           )}
+
+          <PerfumeCartSet slug={p.slug} tier={p.tier!} />
         </div>
       </div>
     </div>
