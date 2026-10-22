@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN, DISCOVERY_SET_PRICE_NGN, type Tier } from '@/lib/store.config';
+import { BOX_SIZE, TIER_BOX_PRICE_NGN, OIL_BOX_PRICE_NGN, DISCOVERY_SET_PRICE_NGN, type Tier } from '@/lib/store.config';
 
 /**
  * Cart + in-progress "sets" for the Collection Builder. No backend and no user
@@ -13,12 +13,15 @@ import { BOX_SIZE, TIER_BOX_PRICE_NGN, DISCOVERY_SET_PRICE_NGN, type Tier } from
  *            that tier's fixed box price, with a quantity.
  */
 
+export type BoxKind = 'perfume' | 'oil';
+
 export interface CartLine {
   id: string;
-  tier: Tier;
+  kind: BoxKind;
+  tier: Tier | null;
   items: string[]; // product slugs (length === BOX_SIZE)
   qty: number;
-  unitPrice: number; // TIER_BOX_PRICE_NGN[tier]
+  unitPrice: number; // TIER_BOX_PRICE_NGN[tier] for tier, OIL_BOX_PRICE_NGN for oil
 }
 
 /** A curated discovery set added to the cart (parallel to tier lines). */
@@ -33,11 +36,12 @@ export interface DiscoveryLine {
 
 interface CartState {
   drafts: Record<Tier, string[]>;
+  oils: string[];
   lines: CartLine[];
   discovery: DiscoveryLine[];
 }
 
-const EMPTY: CartState = { drafts: { 1: [], 2: [], 3: [] }, lines: [], discovery: [] };
+const EMPTY: CartState = { drafts: { 1: [], 2: [], 3: [] }, oils: [], lines: [], discovery: [] };
 const STORAGE_KEY = 'ndiidii-cart-v1';
 
 function load(): CartState {
@@ -48,6 +52,7 @@ function load(): CartState {
     const parsed = JSON.parse(raw);
     return {
       drafts: { 1: parsed.drafts?.[1] ?? [], 2: parsed.drafts?.[2] ?? [], 3: parsed.drafts?.[3] ?? [] },
+      oils: Array.isArray(parsed.oils) ? parsed.oils.slice(0, BOX_SIZE) : [],
       lines: Array.isArray(parsed.lines) ? parsed.lines : [],
       discovery: Array.isArray(parsed.discovery) ? parsed.discovery : [],
     };
@@ -56,15 +61,19 @@ function load(): CartState {
   }
 }
 
-interface CartApi {
+export interface CartApi {
   drafts: Record<Tier, string[]>;
+  oils: string[];
   lines: CartLine[];
   discovery: DiscoveryLine[];
   toggleDraft: (tier: Tier, slug: string) => void;
+  toggleOil: (slug: string) => void;
+  clearOil: () => void;
   clearDraft: (tier: Tier) => void;
   draftCount: (tier: Tier) => number;
   isFull: (tier: Tier) => boolean;
   addSetToCart: (tier: Tier, qty?: number) => void;
+  addOilSetToCart: (qty?: number) => void;
   removeLine: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   addDiscoverySet: (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty?: number) => void;
@@ -111,6 +120,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const toggleOil = useCallback((slug: string) => {
+    setState((s) => {
+      const cur = s.oils;
+      const next = cur.includes(slug) ? cur.filter((x) => x !== slug) : [...cur, slug];
+      return { ...s, oils: next };
+    });
+  }, []);
+
+  const clearOil = useCallback(() => {
+    setState((s) => ({ ...s, oils: [] }));
+  }, []);
+
   const clearDraft = useCallback((tier: Tier) => {
     setState((s) => ({ ...s, drafts: { ...s.drafts, [tier]: [] } }));
   }, []);
@@ -121,12 +142,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (items.length !== BOX_SIZE) return s; // only complete sets
       const line: CartLine = {
         id: `${tier}-${items.join('+')}-${Date.now()}`,
+        kind: 'perfume',
         tier,
         items: [...items],
         qty: Math.max(1, qty),
         unitPrice: TIER_BOX_PRICE_NGN[tier],
       };
       return { ...s, drafts: { ...s.drafts, [tier]: [] }, lines: [...s.lines, line] };
+    });
+  }, []);
+
+  const addOilSetToCart = useCallback((qty = 1) => {
+    setState((s) => {
+      const items = s.oils;
+      if (items.length !== BOX_SIZE) return s; // only complete sets
+      const line: CartLine = {
+        id: `oilset-${items.join('+')}-${Date.now()}`,
+        kind: 'oil',
+        tier: null,
+        items: [...items],
+        qty: Math.max(1, qty),
+        unitPrice: OIL_BOX_PRICE_NGN ?? 0,
+      };
+      return { ...s, oils: [], lines: [...s.lines, line] };
     });
   }, []);
 
@@ -164,26 +202,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Empty the whole cart (used after a successful payment).
   const clearCart = useCallback(() => {
-    setState({ drafts: { 1: [], 2: [], 3: [] }, lines: [], discovery: [] });
+    setState({ drafts: { 1: [], 2: [], 3: [] }, oils: [], lines: [], discovery: [] });
   }, []);
 
   const api = useMemo<CartApi>(() => {
     const draftCount = (t: Tier) => state.drafts[t].length;
     return {
       drafts: state.drafts,
+      oils: state.oils,
       lines: state.lines,
       discovery: state.discovery,
       toggleDraft,
+      toggleOil,
+      clearOil,
       clearDraft,
       draftCount,
       isFull: (t) => draftCount(t) === BOX_SIZE,
       addSetToCart,
+      addOilSetToCart,
       removeLine,
       setQty,
       addDiscoverySet,
       removeDiscovery,
       setDiscoveryQty,
       clearCart,
+
       // Computed straight from state: 0 on the server/first paint (state is EMPTY,
       // matching SSR), then updates once the hydrate effect reads localStorage.
       cartCount: state.lines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0),

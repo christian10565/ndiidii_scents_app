@@ -90,10 +90,14 @@ export default function CheckoutClient({
               const items = l.items
                 .map((s) => catalog.find((p) => p.slug === s))
                 .filter((p): p is { slug: string; name: string; imageUrl: string | null } => Boolean(p));
+              const isOil = l.kind === 'oil';
+              const tierLabel: string = isOil
+                ? 'Oil set'
+                : (l.tier !== null ? TIER_LABEL[l.tier] + ' Set' : 'Set');
               return (
               <article key={l.id} className="cline">
                 <div className="cline__info">
-                  <p className="cline__tier eyebrow">{TIER_LABEL[l.tier]} Set · {BOX_SIZE} decants</p>
+                  <p className="cline__tier eyebrow">{tierLabel} · {BOX_SIZE} decants</p>
                   <LineThumbs slugs={l.items} catalog={catalog} />
                   <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
                 </div>
@@ -103,8 +107,8 @@ export default function CheckoutClient({
                     <span>{l.qty}</span>
                     <button aria-label="Increase" onClick={() => setQty(l.id, l.qty + 1)}>+</button>
                   </div>
-                  <p className="cline__price serif">{formatNaira(l.qty * l.unitPrice)}</p>
-                  <p className="cline__unit">{formatNaira(l.unitPrice)} each</p>
+                  <p className="cline__price serif">{formatNaira(l.qty * (l.unitPrice ?? 0))}</p>
+                  <p className="cline__unit">{formatNaira(l.unitPrice ?? 0)} each</p>
                   <button className="cline__remove link-red" onClick={() => removeLine(l.id)}>Remove</button>
                 </div>
               </article>
