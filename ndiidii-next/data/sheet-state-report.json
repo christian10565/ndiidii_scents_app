@@ -1,0 +1,20 @@
+{
+  "googleSheet": {
+    "status": "READ OK"
+  },
+  "imageCoverage": {
+    "totalUsable": 1000,
+    "withImage": 1,
+    "withImagePct": 0
+  },
+  "needsUpload": {
+    "confidentMissingImage": 519,
+    "reviewMissingImage": 0,
+    "unmatchedMissingImage": 367
+  },
+  "cloudinary": {
+    "cloudinaryUrlsPopulated": 0,
+    "cloudinaryUrlsThatAreConfident": 0,
+    "sample": null
+  }
+}

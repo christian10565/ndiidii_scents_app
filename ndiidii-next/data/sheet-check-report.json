@@ -1,0 +1,29 @@
+{
+  "googleSheet": {
+    "sheetId": "1zksG3Z7UMGNt2FM--_bbMnDF34C4sSNf8TSf5cLNQKg",
+    "status": "READ OK (1099 rows, 1046 usable) via scripts/check-sheets.mts"
+  },
+  "imageColumn": {
+    "totalUsable": 1000,
+    "filled": 633,
+    "missing": 367
+  },
+  "matching": {
+    "matchMapFile": "data/match-map.json",
+    "confident": 519,
+    "review": 236,
+    "unmatched": 245
+  },
+  "cloudinary": {
+    "uploadMapFile": "data/upload-map.json",
+    "cloudinaryUrlsPopulated": 0,
+    "cloudinaryUrlsThatAreConfident": 0
+  },
+  "pipeline": {
+    "scripts": [
+      "scripts/write-images.mjs",
+      "scripts/upload-cloudinary.mjs"
+    ],
+    "writeImagesDryRun": "rows_to_update=0 | already_filled=633 | no_cloudinary=413"
+  }
+}
