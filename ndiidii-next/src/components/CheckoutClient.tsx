@@ -3,13 +3,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { BOX_SIZE, TIER_BOX_PRICE_NGN, VAT_RATE, NIGERIA_STATES, TIER_LABELS, type Tier } from '@/lib/store.config';
+import { BOX_SIZE, VAT_RATE, NIGERIA_STATES, TIER_LABELS, type Tier } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
 import ProductImage from '@/components/ProductImage';
 
 const TIER_LABEL: Record<Tier, string> = TIER_LABELS;
 
-/** Resolve product thumbnails by slug from a passed-in catalog snapshot. */
 function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: string; name: string; imageUrl: string | null }[] }) {
   const items = slugs.map((s) => catalog.find((p) => p.slug === s)).filter(Boolean) as typeof catalog;
   return (
@@ -30,7 +29,7 @@ export default function CheckoutClient({
   catalog: { slug: string; name: string; imageUrl: string | null }[];
   testMode?: boolean;
 }) {
-  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount, clearCart } = useCart();
+  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount, clearCart, canCheckout } = useCart();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [giftCode, setGiftCode] = useState('');
@@ -62,10 +61,10 @@ export default function CheckoutClient({
   const preVat = cartTotal + shipping;
   const vat = Math.round(preVat * VAT_RATE);
   const grandTotal = preVat + vat;
-  // Gift card deducts from the final total. Paystack charges only the remainder;
-  // if the card fully covers it, nothing is charged.
   const giftCredit = giftApplied ? Math.min(giftApplied.balance, grandTotal) : 0;
   const total = grandTotal - giftCredit;
+  const checkoutReady = canCheckout();
+  const incompleteCount = lines.filter((l) => l.items.length < BOX_SIZE).length;
 
   return (
     <div className="container checkout">
@@ -89,6 +88,11 @@ export default function CheckoutClient({
         <div className="checkout__layout">
           {/* Lines */}
           <section className="checkout__lines" aria-label="Your sets">
+            {incompleteCount > 0 && (
+              <p className="checkout__incomplete">
+                {incompleteCount} incomplete set{incompleteCount > 1 ? 's' : ''} — complete all sets to checkout.
+              </p>
+            )}
             {lines.map((l) => {
               const items = l.items
                 .map((s) => catalog.find((p) => p.slug === s))
@@ -97,24 +101,27 @@ export default function CheckoutClient({
               const tierLabel: string = isOil
                 ? 'Oil set'
                 : (l.tier !== null ? TIER_LABEL[l.tier] + ' Set' : 'Set');
+              const isIncomplete = l.items.length < BOX_SIZE;
               return (
-              <article key={l.id} className="cline">
-                <div className="cline__info">
-                  <p className="cline__tier eyebrow">{tierLabel} · {BOX_SIZE} decants</p>
-                  <LineThumbs slugs={l.items} catalog={catalog} />
-                  <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
-                </div>
-                <div className="cline__side">
-                  <div className="cline__qty">
-                    <button aria-label="Decrease" onClick={() => setQty(l.id, l.qty - 1)}>−</button>
-                    <span>{l.qty}</span>
-                    <button aria-label="Increase" onClick={() => setQty(l.id, l.qty + 1)}>+</button>
+                <article key={l.id} className={`cline ${isIncomplete ? 'cline--incomplete' : ''}`}>
+                  <div className="cline__info">
+                    <p className="cline__tier eyebrow">
+                      {tierLabel} · {l.items.length}/{BOX_SIZE} decants
+                    </p>
+                    <LineThumbs slugs={l.items} catalog={catalog} />
+                    <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
                   </div>
-                  <p className="cline__price serif">{formatNaira(l.qty * (l.unitPrice ?? 0))}</p>
-                  <p className="cline__unit">{formatNaira(l.unitPrice ?? 0)} each</p>
-                  <button className="cline__remove link-red" onClick={() => removeLine(l.id)}>Remove</button>
-                </div>
-              </article>
+                  <div className="cline__side">
+                    <div className="cline__qty">
+                      <button aria-label="Decrease" onClick={() => setQty(l.id, l.qty - 1)}>−</button>
+                      <span>{l.qty}</span>
+                      <button aria-label="Increase" onClick={() => setQty(l.id, l.qty + 1)}>+</button>
+                    </div>
+                    <p className="cline__price serif">{formatNaira(l.qty * (l.unitPrice ?? 0))}</p>
+                    <p className="cline__unit">{formatNaira(l.unitPrice ?? 0)} each</p>
+                    <button className="cline__remove link-red" onClick={() => removeLine(l.id)}>Remove</button>
+                  </div>
+                </article>
               );
             })}
             {discovery.map((d) => (
@@ -217,27 +224,27 @@ export default function CheckoutClient({
                 setPayError(null);
                 setPaying(true);
                 try {
+                  if (!checkoutReady) {
+                    throw new Error('Please complete all sets before checkout.');
+                  }
                   const items = [
-                    ...lines.map((l) => ({ name: `Tier ${l.tier} set`, qty: l.qty, price: l.unitPrice })),
+                    ...lines.map((l) => ({ name: l.kind === 'oil' ? 'Oil set' : `${l.tier ? TIER_LABEL[l.tier] + ' Set' : 'Set'}`, qty: l.qty, price: l.unitPrice })),
                     ...discovery.map((d) => ({ name: d.collection, qty: d.qty, price: d.unitPrice })),
                   ];
                   const delivery = {
                     name: form.name,
                     phone: form.phone,
+                    email: form.email,
                     address: form.address,
                     city: form.city,
                     state: form.state,
                     notes: form.notes,
                   };
-                  // Stash the full order summary so the callback can record it to
-                  // the Redis ledger once payment confirms.
                   sessionStorage.setItem(
                     'ndiidii-order-summary',
                     JSON.stringify({ email: form.email, items, delivery, total, grandTotal, giftCredit }),
                   );
 
-                  // Fully covered by the gift card → no Paystack. Redeem server-side
-                  // and finish. (The redeem endpoint deducts the exact credit.)
                   if (total <= 0 && giftApplied) {
                     const rres = await fetch('/api/giftcard/redeem', {
                       method: 'POST',
@@ -265,14 +272,12 @@ export default function CheckoutClient({
                   });
                   const json = await res.json();
                   if (!res.ok) throw new Error(json.error || 'Could not start payment');
-                  // Stash any gift-card portion to redeem after payment confirms.
                   if (giftApplied && giftCredit > 0) {
                     sessionStorage.setItem(
                       'ndiidii-giftcard-pending',
                       JSON.stringify({ redeem: true, code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
                     );
                   }
-                  // Redirect to Paystack's hosted checkout (or the mock page).
                   window.location.href = json.authorization_url;
                 } catch (err) {
                   setPayError(err instanceof Error ? err.message : 'Payment could not be started');
@@ -304,11 +309,14 @@ export default function CheckoutClient({
                   expiry, CVV <code>408</code>.
                 </p>
               )}
-              <button type="submit" className="btn btn--white cform__submit" disabled={paying}>
+              <button type="submit" className="btn btn--white cform__submit" disabled={paying || !checkoutReady}>
                 {paying
                   ? total > 0 ? 'Redirecting to payment…' : 'Completing…'
                   : total > 0 ? 'Pay now' : 'Complete Transaction'}
               </button>
+              {!checkoutReady && (
+                <p className="cform__note">Complete all sets before paying.</p>
+              )}
               <p className="cform__disclaimer">
                 {total > 0
                   ? "You'll be redirected to Paystack to pay securely by card, transfer, or USSD."

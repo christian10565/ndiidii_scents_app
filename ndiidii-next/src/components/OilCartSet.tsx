@@ -8,18 +8,21 @@ import { BagIcon } from './Icons';
 import { useState } from 'react';
 
 export default function OilCartSet({ slug, name, imageUrl }: { slug: string; name: string; imageUrl: string | null }) {
-  const { oils, toggleOil, clearOil, addOilSetToCart } = useCart();
+  const { linesFor, toggleLine, removeLine, setQty } = useCart();
   const [qtyStr, setQtyStr] = useState('1');
   const [added, setAdded] = useState(false);
 
-  const selectedCount = oils.length;
-  const setReady = selectedCount >= BOX_SIZE;
+  const oilLines = linesFor('oil');
+  const activeLine = oilLines.find((l) => l.items.length < BOX_SIZE) ?? oilLines[oilLines.length - 1] ?? null;
+  const activeLineId = activeLine?.id ?? `oil-${Date.now()}`;
+  const selected = activeLine?.items ?? [];
+  const full = selected.length === BOX_SIZE;
   const price = OIL_BOX_PRICE_NGN ?? 0;
-  const active = oils.includes(slug);
+  const active = selected.includes(slug);
 
   const handleAddSet = () => {
-    if (selectedCount < BOX_SIZE) return;
-    addOilSetToCart(Number(qtyStr) || 1);
+    if (selected.length < BOX_SIZE) return;
+    setQty(activeLineId, Number(qtyStr) || 1);
     setAdded(true);
   };
 
@@ -36,7 +39,7 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
         <button
           type="button"
           className="pdp__cart-panel-active-toggle"
-          onClick={() => toggleOil(slug)}
+          onClick={() => toggleLine('oil', null, slug)}
         >
           {active ? 'Remove' : 'Add to set'}
         </button>
@@ -44,12 +47,12 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
 
       <ul className="pdp__cart-panel-slots">
         {Array.from({ length: BOX_SIZE }, (_, i) => {
-          const slotSlug = oils[i];
+          const slotSlug = selected[i];
           const selectedProduct = slotSlug ? { slug: slotSlug, name } : null;
           return (
             <li
               key={i}
-              className={`pdp__cart-panel-slot ${selectedProduct ? 'is-filled' : 'is-empty'} ${i >= selectedCount ? 'is-locked' : ''}`}
+              className={`pdp__cart-panel-slot ${selectedProduct ? 'is-filled' : 'is-empty'} ${i >= selected.length ? 'is-locked' : ''}`}
             >
               <span className="pdp__cart-panel-slot-thumb">
                 {selectedProduct ? (
@@ -68,13 +71,13 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
 
       <div className="pdp__cart-panel-status">
         <span>
-          {setReady ? (
-            <>{selectedCount}/{BOX_SIZE} selected — ready to add</>
+          {full ? (
+            <>{selected.length}/{BOX_SIZE} selected — ready to add</>
           ) : (
-            <>Pick {BOX_SIZE - selectedCount} more</>
+            <>Pick {BOX_SIZE - selected.length} more</>
           )}
         </span>
-        <span>{formatNaira(selectedCount * price)}</span>
+        <span>{formatNaira(selected.length * price)}</span>
       </div>
 
       <div className="pdp__cart-panel-footer">
@@ -91,11 +94,11 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
         <button
           type="button"
           className="pdp__cart-panel-cta"
-          disabled={!setReady}
+          disabled={!full}
           onClick={handleAddSet}
         >
           <BagIcon width={16} height={16} />
-          {setReady ? 'Add Oil Set to Cart' : `${BOX_SIZE - selectedCount} more needed`}
+          {full ? 'Add Oil Set to Cart' : `${BOX_SIZE - selected.length} more needed`}
         </button>
         {added && (
           <button
@@ -108,14 +111,14 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
             Go to Checkout
           </button>
         )}
-        {selectedCount > 0 && !setReady && (
+        {selected.length > 0 && !full && (
           <p className="pdp__cart-panel-hint">Continue browsing to add more oils to this set.</p>
         )}
-        {selectedCount > 0 && (
+        {selected.length > 0 && (
           <button
             type="button"
             className="pdp__cart-panel-clear"
-            onClick={clearOil}
+            onClick={() => activeLineId && removeLine(activeLineId)}
           >
             Clear selection
           </button>

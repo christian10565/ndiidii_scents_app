@@ -17,22 +17,22 @@ export default function PerfumeCartSet({
   tier: Tier;
   perfumes: Perfume[];
 }) {
-  const { draftCount, toggleDraft, clearDraft, addSetToCart } = useCart();
+  const { linesFor, toggleLine, removeLine, setQty } = useCart();
   const [qtyStr, setQtyStr] = useState('1');
   const [added, setAdded] = useState(false);
 
-  const count = draftCount(tier);
-  const selected = useCart().drafts[tier];
-  const full = count === BOX_SIZE;
+  const tierLines = linesFor('perfume', tier);
+  const activeLine = tierLines.find((l) => l.items.length < BOX_SIZE) ?? tierLines[tierLines.length - 1] ?? null;
+  const activeLineId = activeLine?.id ?? `perfume-${tier}-${Date.now()}`;
+  const selected = activeLine?.items ?? [];
+  const full = selected.length === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[tier];
-
-  const bySlug = new Map(perfumes.map((p) => [p.slug, p]));
-  const activeProduct = bySlug.get(slug) ?? null;
-  const isActiveSelected = selected.includes(slug);
+  const activeProduct = perfumes.find((p) => p.slug === slug) ?? null;
+  const isSelected = selected.includes(slug);
 
   return (
     <div className="pdp__cart-panel">
-      <p className="pdp__cart-panel-title">{TIER_LABELS[tier]} Set</p>
+      <p className="pdp__cart-panel-title">{TIER_BOX_PRICE_NGN[tier] ? `${TIER_LABELS[tier]} Set` : 'Set'}</p>
       <p className="pdp__cart-panel-sub">Pick {BOX_SIZE} decants to add a set</p>
 
       <div className="pdp__cart-panel-active">
@@ -49,21 +49,21 @@ export default function PerfumeCartSet({
         <button
           type="button"
           className="pdp__cart-panel-active-toggle"
-          onClick={() => activeProduct && toggleDraft(tier, slug)}
+          onClick={() => activeProduct && toggleLine('perfume', tier, slug)}
           disabled={!activeProduct}
         >
-          {isActiveSelected ? 'Remove' : 'Add to set'}
+          {isSelected ? 'Remove' : 'Add to set'}
         </button>
       </div>
 
       <ul className="pdp__cart-panel-slots">
         {Array.from({ length: BOX_SIZE }, (_, i) => {
           const slotSlug = selected[i];
-          const product = slotSlug ? bySlug.get(slotSlug) ?? null : null;
+          const product = slotSlug ? perfumes.find((p) => p.slug === slotSlug) ?? null : null;
           return (
             <li
               key={i}
-              className={`pdp__cart-panel-slot ${product ? 'is-filled' : 'is-empty'} ${i >= count ? 'is-locked' : ''}`}
+              className={`pdp__cart-panel-slot ${product ? 'is-filled' : 'is-empty'} ${i >= selected.length ? 'is-locked' : ''}`}
             >
               <span className="pdp__cart-panel-slot-thumb">
                 {product ? (
@@ -83,9 +83,9 @@ export default function PerfumeCartSet({
       <div className="pdp__cart-panel-status">
         <span>
           {full ? (
-            <>{count}/{BOX_SIZE} selected — ready to add</>
+            <>{selected.length}/{BOX_SIZE} selected — ready to add</>
           ) : (
-            <>Pick {BOX_SIZE - count} more</>
+            <>Pick {BOX_SIZE - selected.length} more</>
           )}
         </span>
         <span>{formatNaira(price)}</span>
@@ -107,12 +107,12 @@ export default function PerfumeCartSet({
           className="pdp__cart-panel-cta"
           disabled={!full}
           onClick={() => {
-            addSetToCart(tier, Number(qtyStr) || 1);
+            setQty(activeLineId, Number(qtyStr) || 1);
             setAdded(true);
           }}
         >
           <BagIcon width={16} height={16} />
-          {full ? 'Add Set to Cart' : `${BOX_SIZE - count} more needed`}
+          {full ? 'Add Set to Cart' : `${BOX_SIZE - selected.length} more needed`}
         </button>
         {added && (
           <button
@@ -125,14 +125,14 @@ export default function PerfumeCartSet({
             Go to Checkout
           </button>
         )}
-        {count > 0 && !full && (
+        {selected.length > 0 && !full && (
           <p className="pdp__cart-panel-hint">Continue browsing to add more decants to this set.</p>
         )}
-        {count > 0 && (
+        {selected.length > 0 && (
           <button
             type="button"
             className="pdp__cart-panel-clear"
-            onClick={() => clearDraft(tier)}
+            onClick={() => activeLineId && removeLine(activeLineId)}
           >
             Clear selection
           </button>

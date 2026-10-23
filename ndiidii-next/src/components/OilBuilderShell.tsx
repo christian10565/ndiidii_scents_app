@@ -1,7 +1,7 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useCart } from '@/lib/cart';
 import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
@@ -10,30 +10,27 @@ import { BagIcon, CheckIcon } from './Icons';
 import type { Oil } from '@/lib/catalog';
 
 export function OilBuilderShell({ oils }: { oils: Oil[] }) {
-  const { addOilSetToCart, toggleOil, clearOil } = useCart();
+  const router = useRouter();
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
-  const router = useRouter();
+
+  const { lines, toggleLine, removeLine, setQty } = useCart();
+  const oilLines = useMemo(() => lines.filter((l) => l.kind === 'oil'), [lines]);
+  const activeLine = oilLines.find((l) => l.items.length < BOX_SIZE) ?? oilLines[oilLines.length - 1] ?? null;
+  const activeLineId = activeLine?.id ?? `oil-${Date.now()}`;
+  const selected = useMemo(() => activeLine?.items ?? [], [activeLine]);
+  const full = selected.length === BOX_SIZE;
+  const canPay = oilLines.every((l) => l.items.length === BOX_SIZE);
+  const price = OIL_BOX_PRICE_NGN ?? 0;
 
   const brands = ['Niche', 'Designer'];
   const filtered = activeBrand
     ? oils.filter((o) => (activeBrand === 'Niche' ? o.category === 'niche' : o.category === 'designer'))
     : oils;
 
-  const selectedCount = oils.length;
-  const setReady = selectedCount >= BOX_SIZE;
-  const price = OIL_BOX_PRICE_NGN ?? 0;
+  const isSelected = (slug: string): boolean => selected.includes(slug);
 
-  const isSelected = (slug: string): boolean => oils.some((o) => o.slug === slug);
-
-  const toggle = (o: Oil) => toggleOil(o.slug);
-  const clear = () => clearOil();
-
-  const handleAddSet = () => {
-    if (selectedCount < BOX_SIZE) return;
-    addOilSetToCart(1);
-    setJustAdded(true);
-  };
+  const toggle = (o: Oil) => toggleLine('oil', null, o.slug);
 
   return (
     <div className="container builder">
@@ -71,11 +68,9 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
         <div className="builder__grid-wrap">
           <div className="builder__gridhead">
             <h2 className="serif">{activeBrand ?? 'All'} oils — pick any {BOX_SIZE}</h2>
-            {selectedCount > 0 && (
-              <button className="builder__clear link-red" onClick={clear}>
-                Clear selection
-              </button>
-            )}
+            <button className="builder__clear link-red" onClick={() => activeLine && removeLine(activeLine.id)}>
+              Clear selection
+            </button>
           </div>
 
           {filtered.length === 0 ? (
@@ -84,7 +79,7 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
             <div className="builder__grid">
               {filtered.map((o) => {
                 const sel = isSelected(o.slug);
-                const disabled = selectedCount >= BOX_SIZE && !sel;
+                const disabled = selected.length >= BOX_SIZE && !sel;
                 return (
                   <button
                     key={o.id}
@@ -109,12 +104,12 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
         <aside className="yourset" aria-label="Your set">
           <div className="yourset__inner">
             <p className="yourset__title eyebrow">Your Oil Set</p>
-            <p className="yourset__tier">{selectedCount} of {BOX_SIZE} selected</p>
+            <p className="yourset__tier">{selected.length} of {BOX_SIZE} selected</p>
 
             <div className="yourset__slots">
               {Array.from({ length: BOX_SIZE }, (_, i) => {
-                const slug = oils[i]?.slug ?? '';
-                const prod = slug ? oils.find((o: Oil) => o.slug === slug) : null;
+                const slug = selected[i];
+                const prod = slug ? oils.find((oil) => oil.slug === slug) : null;
                 return (
                   <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
                     {prod ? (
@@ -123,6 +118,13 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
                           {prod.imageUrl ? <ProductImage src={prod.imageUrl} alt={prod.name} /> : <div className="slot__thumb--empty" />}
                         </span>
                         <span className="slot__name">{prod.name}</span>
+                        <button
+                          className="slot__remove"
+                          aria-label={`Remove ${prod.name}`}
+                          onClick={() => toggle(prod)}
+                        >
+                          ×
+                        </button>
                       </>
                     ) : (
                       <span className="slot__empty">Oil {i + 1}</span>
@@ -133,19 +135,28 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
             </div>
 
             <div className="yourset__total">
-              <span>Total ({selectedCount} oils)</span>
-              <strong className="serif">{formatNaira(selectedCount * price)}</strong>
+              <span>Total ({selected.length} oils)</span>
+              <strong className="serif">{formatNaira(selected.length * price)}</strong>
             </div>
+
+            <label className="yourset__qty">
+              <span>Quantity</span>
+              <input type="number" min={1} max={99} defaultValue={1} id="oil-builder-qty" />
+            </label>
 
             <button
               className="btn btn--white yourset__cta"
-              disabled={!setReady}
-              onClick={handleAddSet}
+              disabled={!full}
+              onClick={() => {
+                const qty = Number((document.getElementById('oil-builder-qty') as HTMLInputElement)?.value) || 1;
+                setQty(activeLineId, qty);
+                setJustAdded(true);
+              }}
             >
               <BagIcon width={16} height={16} />
-              {setReady ? 'Add Oil Set to Cart' : `Pick ${BOX_SIZE - selectedCount} More`}
+              {full ? 'Add Oil Set to Cart' : `Pick ${BOX_SIZE - selected.length} More`}
             </button>
-            {justAdded && (
+            {justAdded && canPay && (
               <button className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
                 Go to Checkout
               </button>

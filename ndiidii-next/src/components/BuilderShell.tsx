@@ -25,23 +25,25 @@ type ByTier = Record<string, Perfume[]>;
  */
 export function BuilderShell({ byTier }: { byTier: ByTier }) {
   const [activeTier, setActiveTier] = useState<Tier>(1);
-  const { drafts, toggleDraft, draftCount, clearDraft, isFull, addSetToCart } = useCart();
   const router = useRouter();
-  // True once a set has been added to the cart from this tier; gates Go to Checkout.
   const [justAdded, setJustAdded] = useState(false);
 
+  const { lines, toggleLine, removeLine, setQty } = useCart();
+  const tierLines = useMemo(() => lines.filter((l) => l.kind === 'perfume' && l.tier === activeTier), [lines, activeTier]);
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
-  const selected = drafts[activeTier];
-  const count = selected.length;
-  const full = isFull(activeTier);
+  const selected = useMemo(() => tierLines.flatMap((l) => l.items), [tierLines]);
+  const incomplete = tierLines.find((l) => l.items.length < BOX_SIZE);
+  const activeLineId = incomplete?.id ?? tierLines[tierLines.length - 1]?.id ?? null;
+  const full = (incomplete?.items.length ?? 0) === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[activeTier];
+  const canPay = lines.filter((l) => l.kind === 'perfume').every((l) => l.items.length === BOX_SIZE);
 
   const isSelected = (slug: string) => selected.includes(slug);
 
   return (
     <div className="container builder">
       <nav className="builder__crumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link> / <Link href="/shop">Collection Builder</Link> / <span>Perfume</span>
+        <Link href="/">Home</Link> / <Link href="/shop">Shop</Link> / <span>Perfume</span>
       </nav>
 
       <header className="builder__head">
@@ -59,7 +61,8 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
       {/* Tier selector */}
       <div className="builder__tiers" role="tablist" aria-label="Tier">
         {TIERS.map((t) => {
-          const c = draftCount(t.tier);
+          const c = lines.filter((l) => l.kind === 'perfume' && l.tier === t.tier).reduce((n, l) => n + l.items.length, 0);
+          const incompleteTier = lines.some((l) => l.kind === 'perfume' && l.tier === t.tier && l.items.length < BOX_SIZE);
           return (
             <button
               key={t.tier}
@@ -72,6 +75,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               <span className="tiercard__price serif">{formatNaira(TIER_BOX_PRICE_NGN[t.tier])}</span>
               <span className="tiercard__blurb">{t.blurb}</span>
               {c > 0 && <span className="tiercard__count">{c}/{BOX_SIZE}</span>}
+              {incompleteTier && <span className="tiercard__count">in progress</span>}
             </button>
           );
         })}
@@ -82,11 +86,9 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
         <div className="builder__grid-wrap">
           <div className="builder__gridhead">
             <h2 className="serif">{TIERS[activeTier - 1].label} — choose {BOX_SIZE}</h2>
-            {count > 0 && (
-              <button className="builder__clear link-red" onClick={() => clearDraft(activeTier)}>
-                Clear selection
-              </button>
-            )}
+            <button className="builder__clear link-red" onClick={() => activeLineId && removeLine(activeLineId)}>
+              Clear selection
+            </button>
           </div>
 
           {products.length === 0 ? (
@@ -95,12 +97,12 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
             <div className="builder__grid">
               {products.map((p) => {
                 const sel = isSelected(p.slug);
-                const disabled = !sel && full; // can't add a 5th
+                const disabled = !sel && full; // can't add a 5th to an incomplete line
                 return (
                   <button
                     key={p.id}
                     className={`bcard ${sel ? 'is-selected' : ''}`}
-                    onClick={() => !disabled && toggleDraft(activeTier, p.slug)}
+                    onClick={() => !disabled && toggleLine('perfume', activeTier, p.slug)}
                     disabled={disabled}
                     aria-pressed={sel}
                   >
@@ -126,13 +128,13 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
           <div className="yourset__inner">
             <p className="yourset__title eyebrow">Your Set</p>
             <p className="yourset__tier">
-              {TIERS[activeTier - 1].label} · <span>{count} of {BOX_SIZE} selected</span>
+              {TIERS[activeTier - 1].label} · <span>{selected.length} of {BOX_SIZE} selected</span>
             </p>
 
             <div className="yourset__slots">
               {Array.from({ length: BOX_SIZE }, (_, i) => {
                 const slug = selected[i];
-                const prod = slug ? products.find((p) => p.slug === slug) : null;
+                const prod = slug ? products.find((product) => product.slug === slug) : null;
                 return (
                   <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
                     {prod ? (
@@ -144,7 +146,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
                         <button
                           className="slot__remove"
                           aria-label={`Remove ${prod.name}`}
-                          onClick={() => toggleDraft(activeTier, prod.slug)}
+                          onClick={() => toggleLine('perfume', activeTier, prod.slug)}
                         >
                           ×
                         </button>
@@ -172,14 +174,14 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               disabled={!full}
               onClick={() => {
                 const qty = Number((document.getElementById('builder-qty') as HTMLInputElement)?.value) || 1;
-                addSetToCart(activeTier, qty);
+                setQty(activeLineId, qty);
                 setJustAdded(true);
               }}
             >
               <BagIcon width={16} height={16} />
-              {full ? 'Add Set to Cart' : `Pick ${BOX_SIZE - count} More`}
+              {full ? 'Add Set to Cart' : `Pick ${BOX_SIZE - selected.length} More`}
             </button>
-            {justAdded && (
+            {justAdded && canPay && (
               <button className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
                 Go to Checkout
               </button>
