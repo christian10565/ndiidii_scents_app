@@ -109,6 +109,20 @@ export async function redeemGiftCard(code: string, amountNaira: number, meta?: {
   return newBalance;
 }
 
+/** Redeem a gift card only if the order is later cancelled/refunded. */
+export async function refundGiftCard(code: string, amountNaira: number): Promise<number> {
+  const c = normalizeCode(code);
+  const bal = await kv<string | null>('GET', `gc:${c}:bal`);
+  if (bal === null) throw new Error('Gift card not found');
+  const newBalance = await kv<number>('INCRBY', `gc:${c}:bal`, amountNaira);
+  try {
+    await kv('LPUSH', `gc:${c}:log`, JSON.stringify({ amount: -amountNaira, at: new Date().toISOString(), orderRef: 'refund' }));
+  } catch {
+    /* audit log failure is non-fatal */
+  }
+  return newBalance;
+}
+
 /** Uppercase + strip non-alphanumerics; re-insert dashes as NDII-XXXX-XXXX. */
 export function normalizeCode(code: string): string {
   const cleaned = code.toUpperCase().replace(/[^A-Z0-9]/g, '');

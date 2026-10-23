@@ -18,8 +18,8 @@ export const TIER_BOX_PRICE_NGN: Record<Tier, number> = {
   3: 30000,
 };
 
-// Oil box pricing is still to be decided with the client.
-export const OIL_BOX_PRICE_NGN: number | null = null;
+// Oil box pricing.
+export const OIL_BOX_PRICE_NGN = 15000;
 
 // Price of one curated discovery set (4 x 10ml decants, Perfume Option 1 only).
 export const DISCOVERY_SET_PRICE_NGN = 40000;

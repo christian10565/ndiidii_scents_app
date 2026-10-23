@@ -14,9 +14,13 @@ function readCount(): number {
     const raw = window.localStorage.getItem('ndiidii-cart-v1');
     if (!raw) return 0;
     const c = JSON.parse(raw);
-    const lines = Array.isArray(c.lines) ? c.lines.reduce((n: number, l: any) => n + (l.qty || 0), 0) : 0;
-    const disc = Array.isArray(c.discovery) ? c.discovery.reduce((n: number, l: any) => n + (l.qty || 0), 0) : 0;
-    return lines + disc;
+    const lines = Array.isArray(c.lines) ? c.lines : [];
+    const discovery = Array.isArray(c.discovery) ? c.discovery : [];
+
+    const fullLines = lines.filter((l: any) => Array.isArray(l.items) && l.items.length === 4);
+    const lineQty = fullLines.reduce((n: number, l: any) => n + (Number(l.qty) || 0), 0);
+    const discQty = discovery.reduce((n: number, l: any) => n + (Number(l.qty) || 0), 0);
+    return lineQty + discQty;
   } catch {
     return 0;
   }

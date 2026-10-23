@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordOrder, isConfigured, type OrderRecord } from '@/lib/orders';
+import { verifyTransaction, isLive } from '@/lib/paystack';
+import { recordOrder, getOrder, isConfigured } from '@/lib/orders';
 
 /**
  * POST /api/orders/record
@@ -9,31 +10,61 @@ import { recordOrder, isConfigured, type OrderRecord } from '@/lib/orders';
  *
  * Body: an OrderRecord { ref, email, items, amountCharged, total, method, ... }
  */
+
 export async function POST(req: NextRequest) {
   if (!isConfigured()) {
-    // Ledger not configured — accept and no-op so the flow still completes.
     return NextResponse.json({ ok: true, recorded: false });
   }
-  let body: Partial<OrderRecord>;
+
+  let body: any;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
-  if (!body.ref || !body.email) {
+
+  const ref = typeof body.ref === 'string' ? body.ref.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  if (!ref || !email) {
     return NextResponse.json({ error: 'ref and email are required' }, { status: 400 });
   }
-  const order: OrderRecord = {
-    ref: body.ref,
+
+  // Idempotency: if we already recorded this ref, accept without re-recording.
+  const existing = await getOrder(ref);
+  if (existing) {
+    return NextResponse.json({ ok: true, recorded: false, duplicate: true });
+  }
+
+  // Server-side verification against Paystack for paid orders.
+  const method = body.method ?? 'paystack';
+  let amountCharged = Number(body.amountCharged) || 0;
+  if (method !== 'giftcard' && isLive()) {
+    try {
+      const verified = await verifyTransaction(ref);
+      if (verified.status !== 'success') {
+        return NextResponse.json({ error: `Payment not successful: ${verified.status}` }, { status: 400 });
+      }
+      amountCharged = verified.amountNaira;
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : 'Verification failed' },
+        { status: 502 },
+      );
+    }
+  }
+
+  const order = {
+    ref,
     at: new Date().toISOString(),
-    email: body.email,
+    email,
     items: Array.isArray(body.items) ? body.items : [],
     delivery: body.delivery,
-    amountCharged: Number(body.amountCharged) || 0,
+    amountCharged,
     giftCard: body.giftCard,
     total: Number(body.total) || 0,
-    method: body.method ?? 'paystack',
+    method,
   };
+
   await recordOrder(order);
   return NextResponse.json({ ok: true, recorded: true });
 }

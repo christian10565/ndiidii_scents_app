@@ -255,6 +255,10 @@ export default function CheckoutClient({
                       const rj = await rres.json();
                       throw new Error(rj.error || 'Could not redeem gift card');
                     }
+                    sessionStorage.setItem(
+                      'ndiidii-order-summary',
+                      JSON.stringify({ email: form.email, items, delivery, total, grandTotal, giftCredit }),
+                    );
                     clearCart();
                     window.location.href = '/checkout/callback?giftonly=1';
                     return;
@@ -273,9 +277,18 @@ export default function CheckoutClient({
                   const json = await res.json();
                   if (!res.ok) throw new Error(json.error || 'Could not start payment');
                   if (giftApplied && giftCredit > 0) {
+                    const pRes = await fetch('/api/giftcard/preauth-debit', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
+                    });
+                    const pJson = await pRes.json();
+                    if (!pRes.ok) {
+                      throw new Error(pJson.error || 'Could not apply gift card');
+                    }
                     sessionStorage.setItem(
                       'ndiidii-giftcard-pending',
-                      JSON.stringify({ redeem: true, code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
+                      JSON.stringify({ redeem: false, code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
                     );
                   }
                   window.location.href = json.authorization_url;

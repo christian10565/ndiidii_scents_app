@@ -166,13 +166,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addDiscoverySet = useCallback(
     (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty = 1) => {
-      setState((s) => ({
-        ...s,
-        discovery: [
-          ...s.discovery,
-          { ...line, id: `disc-${line.slug}-${Date.now()}`, qty: Math.max(1, qty), unitPrice: DISCOVERY_SET_PRICE_NGN },
-        ],
-      }));
+      setState((s) => {
+        const idx = s.discovery.findIndex((d) => d.slug === line.slug);
+        if (idx >= 0) {
+          const next = [...s.discovery];
+          next[idx] = { ...next[idx], qty: next[idx].qty + Math.max(1, qty) };
+          return { ...s, discovery: next };
+        }
+        return {
+          ...s,
+          discovery: [
+            ...s.discovery,
+            { ...line, id: `disc-${line.slug}-${Date.now()}`, qty: Math.max(1, qty), unitPrice: DISCOVERY_SET_PRICE_NGN },
+          ],
+        };
+      });
     },
     [],
   );
@@ -200,11 +208,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, [state.lines, state.discovery]);
 
-  const api = useMemo<CartApi>(() => {
-    const linesFor = (kind: BoxKind, tier?: Tier | null) =>
-      state.lines.filter((l) => l.kind === kind && (tier === undefined ? true : l.tier === tier));
+  const cartCount = useMemo(() => {
+    if (!canCheckout()) return 0;
     const fullLines = state.lines.filter((l) => l.items.length === BOX_SIZE);
-    return {
+    return (
+      fullLines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0)
+    );
+  }, [state.lines, state.discovery, canCheckout]);
+
+  const cartTotal = useMemo(() => {
+    const fullLines = state.lines.filter((l) => l.items.length === BOX_SIZE);
+    return (
+      fullLines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
+      state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0)
+    );
+  }, [state.lines, state.discovery]);
+
+  const linesFor = useCallback(
+    (kind: BoxKind, tier?: Tier | null) =>
+      state.lines.filter((l) => l.kind === kind && (tier === undefined ? true : l.tier === tier)),
+    [state.lines],
+  );
+
+  const api = useMemo<CartApi>(
+    () => ({
       lines: state.lines,
       discovery: state.discovery,
       toggleLine,
@@ -215,13 +242,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setDiscoveryQty,
       clearCart,
       canCheckout,
-      cartCount: fullLines.reduce((n, l) => n + l.qty, 0) + state.discovery.reduce((n, l) => n + l.qty, 0),
-      cartTotal:
-        fullLines.reduce((n, l) => n + l.qty * l.unitPrice, 0) +
-        state.discovery.reduce((n, l) => n + l.qty * l.unitPrice, 0),
+      cartCount,
+      cartTotal,
       linesFor,
-    };
-  }, [state, toggleLine, removeLine, setQty, addDiscoverySet, removeDiscovery, setDiscoveryQty, clearCart, canCheckout]);
+    }),
+    [
+      state.lines,
+      state.discovery,
+      toggleLine,
+      removeLine,
+      setQty,
+      addDiscoverySet,
+      removeDiscovery,
+      setDiscoveryQty,
+      clearCart,
+      canCheckout,
+      cartCount,
+      cartTotal,
+      linesFor,
+    ],
+  );
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>;
 }
