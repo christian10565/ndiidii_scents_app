@@ -4,6 +4,11 @@ One Next.js app. The Google Sheet **is** the catalog — no database, no separat
 API. The sheet is read server-side on each request, cached, and re-read the
 moment the client edits it.
 
+Cart state is line-based and lives in localStorage. Each set is a `line` with
+up to 4 product slugs. Partial sets are visible immediately; checkout is blocked
+until every line is complete. Discovery sets remain separate, complete-only
+entries. Legacy `drafts`/`oils` are migrated on load.
+
 The design is carried over unchanged from the old Vite + NestJS stack: the same
 CSS (`src/styles/`), the same components, the same copy (`src/config/site.ts`).
 

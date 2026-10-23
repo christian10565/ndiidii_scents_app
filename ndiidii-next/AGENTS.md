@@ -27,7 +27,10 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 
 ### Gotchas already solved (don't reintroduce)
 - **Cart clobbering**: persist effect must be guarded by a `hydrated` flag; otherwise the initial EMPTY state overwrites localStorage before hydration reads it (empties cart on every nav).
+- **Cart model**: line-based in `src/lib/cart.tsx`. `lines` holds perfume/oil sets by slug array, `discovery` holds curated sets. `toggleLine` adds/removes a slug from the first incomplete matching line or creates one. `canCheckout()` requires `items.length === BOX_SIZE` for every line.
 - **Cart badge stuck at 0**: context updates don't cross the header's `<Suspense>` boundary. `CartBadge` reads localStorage + listens for a `ndiidii-cart-change` event instead.
+- **Checkout gating**: `CheckoutClient` renders incomplete sets with `x/4` and disables payment until `canCheckout()` passes.
+- **Legacy migration**: `load()` reads old `drafts`/`oils` from localStorage and converts them into `lines` so existing carts still work.
 - **Controlled qty input**: store the raw string in state, parse to number only on use (avoids uncontrolled→controlled warning on empty input).
 - **Dynamic routes** reading the sheet use `export const instant = false` (can't prerender). Routes reading searchParams need a `<Suspense>` wrapper.
 - Build lint via standalone `tsc` is slow/noisy on Next's own .d.ts files — trust `next build`, not the standalone tsc.
