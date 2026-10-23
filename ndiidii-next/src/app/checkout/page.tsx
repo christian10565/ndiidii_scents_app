@@ -1,4 +1,4 @@
-import { getPerfumes } from '@/lib/catalog';
+import { getPerfumes, getOils } from '@/lib/catalog';
 import { Suspense } from 'react';
 import { connection } from 'next/server';
 import CheckoutClient from '@/components/CheckoutClient';
@@ -18,8 +18,11 @@ const isTestMode = (): boolean => {
 // mismatch #418) and streams the shell immediately.
 async function CheckoutBody() {
   await connection();
-  const perfumes = await getPerfumes();
-  const catalog = perfumes.map((p) => ({ slug: p.slug, name: p.name, imageUrl: p.imageUrl }));
+  const [perfumes, oils] = await Promise.all([getPerfumes(), getOils()]);
+  const catalog = [
+    ...perfumes.map((p) => ({ slug: p.slug, name: p.name, imageUrl: p.imageUrl })),
+    ...oils.map((o) => ({ slug: o.slug, name: o.name, imageUrl: o.imageUrl })),
+  ];
   return <CheckoutClient catalog={catalog} testMode={isTestMode()} />;
 }
 
