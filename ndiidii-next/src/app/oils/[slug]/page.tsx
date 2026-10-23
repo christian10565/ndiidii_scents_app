@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
-import { getOils } from '@/lib/catalog';
+import { getOils, getPerfume, type Oil, type Perfume } from '@/lib/catalog';
 import OilCartSet from '@/components/OilCartSet';
 
 // This route reads `params` (and the sheet) on every request, so it can't be
@@ -12,14 +12,24 @@ import OilCartSet from '@/components/OilCartSet';
 // at request time rather than streaming.
 export const instant = false;
 
+function isOilProduct(p: Oil | Perfume | null): p is Oil {
+  return p !== null && 'category' in p;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const oils = await getOils();
-  const p = oils.find((o) => o.slug === slug);
+  let p: Oil | Perfume | undefined = oils.find((o) => o.slug === slug) ?? undefined;
+  if (!p) {
+    const maybePerfume = await getPerfume(slug);
+    if (maybePerfume && maybePerfume.tier === null) {
+      p = maybePerfume;
+    }
+  }
   if (!p) return { title: 'Not found — Ndiidii Scents' };
   return {
     title: `${p.name} — Ndiidii Scents`,
-    description: p.category === 'niche'
+    description: isOilProduct(p) && p.category === 'niche'
       ? 'Niche oil decant — Middle Eastern perfume decant.'
       : 'Designer oil decant — Middle Eastern perfume decant.',
   };
@@ -28,7 +38,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function OilPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const oils = await getOils();
-  const p = oils.find((o) => o.slug === slug);
+  const foundOil = oils.find((o) => o.slug === slug) ?? null;
+  const maybePerfume = foundOil ? null : await getPerfume(slug);
+  const p: Oil | Perfume | null = foundOil ?? (maybePerfume && maybePerfume.tier === null ? maybePerfume : null);
   if (!p) notFound();
 
   const boxPrice = OIL_BOX_PRICE_NGN ?? null;
@@ -49,7 +61,9 @@ export default async function OilPage({ params }: { params: Promise<{ slug: stri
           <h1 className="serif pdp__name">{p.name}</h1>
 
           <div className="pdp__meta">
-            <span className="pdp__oil-category">{p.category === 'niche' ? 'Niche' : 'Designer'}</span>
+            {isOilProduct(p) && p.category ? (
+              <span className="pdp__oil-category">{p.category === 'niche' ? 'Niche' : 'Designer'}</span>
+            ) : null}
             <span className={`pdp__stock ${p.inStock ? 'in' : 'out'}`}>
               {p.inStock ? 'In stock' : 'Out of stock'}
             </span>
@@ -74,7 +88,7 @@ export default async function OilPage({ params }: { params: Promise<{ slug: stri
             {!Object.keys(p.extra).length && <p>No additional notes yet.</p>}
           </div>
 
-          <OilCartSet slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
+          <OilCartSet oils={oils} slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
         </div>
       </div>
     </div>

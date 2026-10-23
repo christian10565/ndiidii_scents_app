@@ -134,14 +134,16 @@ function mapOils(rows: Awaited<ReturnType<typeof readTab>>): Oil[] {
  */
 const readCatalog = cache(async (): Promise<Snapshot<Perfume>> => {
   try {
-    const [perfumeRows, oilRows] = await Promise.all([
-      readTab(PERFUME_TAB),
-      readTab(OIL_TAB),
-    ]);
+    let perfumeRows = await readTab(PERFUME_TAB);
+    let oilRows = await readTab(OIL_TAB);
+
+    const mappedPerfumes = mapPerfumes(perfumeRows);
+    const mappedOils = mapOils(oilRows);
+
     const snapshot: Snapshot<Perfume> = {
       savedAt: new Date().toISOString(),
-      perfumes: mapPerfumes(perfumeRows),
-      oils: mapOils(oilRows),
+      perfumes: mappedPerfumes,
+      oils: mappedOils,
     };
     await saveSnapshot(snapshot);
     return snapshot;
@@ -154,7 +156,6 @@ const readCatalog = cache(async (): Promise<Snapshot<Perfume>> => {
       );
       return cached;
     }
-    // No snapshot either — genuinely empty. Log so it's not silent.
     console.error(`[catalog] sheet read failed and no snapshot exists: ${(err as Error).message}`);
     return { savedAt: new Date().toISOString(), perfumes: [], oils: [] };
   }

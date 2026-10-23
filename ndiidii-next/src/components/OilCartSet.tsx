@@ -5,9 +5,10 @@ import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
 import ProductImage from './ProductImage';
 import { BagIcon } from './Icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { Oil } from '@/lib/catalog';
 
-export default function OilCartSet({ slug, name, imageUrl }: { slug: string; name: string; imageUrl: string | null }) {
+export default function OilCartSet({ oils, slug, name, imageUrl }: { oils: Oil[]; slug: string; name: string; imageUrl: string | null }) {
   const { linesFor, toggleLine, removeLine, setQty } = useCart();
   const [qtyStr, setQtyStr] = useState('1');
   const [added, setAdded] = useState(false);
@@ -19,6 +20,18 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
   const full = selected.length === BOX_SIZE;
   const price = OIL_BOX_PRICE_NGN ?? 0;
   const active = selected.includes(slug);
+
+  const oilBySlug = new Map(oils.map((o) => [o.slug, o]));
+  const activeProduct = oilBySlug.get(slug) ?? null;
+
+  useEffect(() => {
+    const missing = selected.filter((s) => !oilBySlug.has(s));
+    if (missing.length) {
+      console.warn('[OilCartSet] selected slugs missing from oils catalog:', missing);
+      console.warn('[OilCartSet] selected:', selected);
+      console.warn('[OilCartSet] available oil slugs:', oils.map((o) => o.slug));
+    }
+  }, [selected, oils, oilBySlug]);
 
   const handleAddSet = () => {
     if (selected.length < BOX_SIZE) return;
@@ -33,9 +46,9 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
 
       <div className="pdp__cart-panel-active">
         <span className="pdp__cart-panel-active-thumb">
-          {imageUrl ? <ProductImage src={imageUrl} alt={name} /> : <div className="slot__thumb--empty" />}
+          {activeProduct ? <ProductImage src={activeProduct.imageUrl} alt={activeProduct.name} /> : <div className="slot__thumb--empty" />}
         </span>
-        <span className="pdp__cart-panel-active-name">{name}</span>
+        <span className="pdp__cart-panel-active-name">{activeProduct?.name ?? name}</span>
         <button
           type="button"
           className="pdp__cart-panel-active-toggle"
@@ -48,7 +61,7 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
       <ul className="pdp__cart-panel-slots">
         {Array.from({ length: BOX_SIZE }, (_, i) => {
           const slotSlug = selected[i];
-          const selectedProduct = slotSlug ? { slug: slotSlug, name } : null;
+          const selectedProduct = slotSlug ? oilBySlug.get(slotSlug) ?? null : null;
           return (
             <li
               key={i}
@@ -56,7 +69,7 @@ export default function OilCartSet({ slug, name, imageUrl }: { slug: string; nam
             >
               <span className="pdp__cart-panel-slot-thumb">
                 {selectedProduct ? (
-                  <ProductImage src={imageUrl ?? ''} alt={selectedProduct.name} />
+                  <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} />
                 ) : (
                   <span className="pdp__cart-panel-slot-empty" aria-hidden="true">?</span>
                 )}

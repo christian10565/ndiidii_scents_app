@@ -68,7 +68,12 @@ Row 1 is headers. The **first column is a unique ID** (her sheets already have
 
 **Prices:** perfumes have no price. The price belongs to the tier
 (`src/lib/store.config.ts`), so a Price column in the sheet is ignored and never
-reaches the site. Oils currently have no box price set.
+reaches the site. Oils use `OIL_BOX_PRICE_NGN` in `src/lib/store.config.ts`.
+
+**Known issue:** `getOils()` can return perfume data instead of oil data. This
+appears to be a tab-mapping issue in `src/lib/catalog.ts`; it is flagged for
+debugging later. As a workaround, `/oils/[slug]` falls back to `getPerfume()`
+for slugs that exist in the perfume tab but not the oils tab.
 
 Any other column is kept and ignored, so she can add columns freely. If she names
 a column differently, add the name in `src/lib/mappers.ts` (`ALIASES`).

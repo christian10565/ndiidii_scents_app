@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { BOX_SIZE, TIER_BOX_PRICE_NGN, TIER_LABELS } from '@/lib/store.config';
-import { getPerfume } from '@/lib/catalog';
+import { getPerfume, getPerfumes } from '@/lib/catalog';
 import PerfumeCartSet from '@/components/PerfumeCartSet';
 
 // This route reads `params` (and the sheet) on every request, so it can't be
@@ -28,6 +28,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const p = await getPerfume(slug);
   if (!p) notFound();
+  const perfumes = await getPerfumes();
 
   const notes = [p.notes.top, p.notes.heart, p.notes.base].filter(Boolean);
   const boxPrice = formatNaira(TIER_BOX_PRICE_NGN[p.tier!]);
@@ -88,7 +89,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
             </div>
           )}
 
-          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={[p]} />
+          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={perfumes} />
         </div>
       </div>
     </div>
