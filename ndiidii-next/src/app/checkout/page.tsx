@@ -27,9 +27,5 @@ async function CheckoutBody() {
 }
 
 export default function CheckoutPage() {
-  return (
-    <Suspense fallback={<div className="container checkout" style={{ minHeight: '50vh' }} />}>
-      <CheckoutBody />
-    </Suspense>
-  );
+  return <CheckoutBody />;
 }
