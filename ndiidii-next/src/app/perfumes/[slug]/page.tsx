@@ -88,7 +88,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
             </div>
           )}
 
-          <PerfumeCartSet slug={p.slug} tier={p.tier!} />
+          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={[p]} />
         </div>
       </div>
     </div>

@@ -74,7 +74,7 @@ export default async function OilPage({ params }: { params: Promise<{ slug: stri
             {!Object.keys(p.extra).length && <p>No additional notes yet.</p>}
           </div>
 
-          <OilCartSet slug={p.slug} />
+          <OilCartSet slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
         </div>
       </div>
     </div>

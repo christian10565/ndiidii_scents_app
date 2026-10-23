@@ -33,15 +33,18 @@ export default function CheckoutClient({
   const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount, clearCart } = useCart();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
-  // Gift card applied at checkout (deducts from the total).
   const [giftCode, setGiftCode] = useState('');
   const [giftApplied, setGiftApplied] = useState<{ code: string; balance: number } | null>(null);
   const [giftChecking, setGiftChecking] = useState(false);
   const [giftError, setGiftError] = useState<string | null>(null);
-  // The cart is localStorage-backed; render an empty shell until it hydrates so
-  // server and client agree on first paint (no hydration mismatch).
   const [hydrated, setHydrated] = useState(false);
+  const [, setTick] = useState(0);
   useEffect(() => setHydrated(true), []);
+  useEffect(() => {
+    const handler = () => setTick((n) => n + 1);
+    window.addEventListener('ndiidii-cart-change', handler);
+    return () => window.removeEventListener('ndiidii-cart-change', handler);
+  }, []);
 
   const [form, setForm] = useState({
     name: '',
