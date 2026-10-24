@@ -15,11 +15,14 @@ CSS (`src/styles/`), the same components, the same copy (`src/config/site.ts`).
 ## What it does
 
 - Reads the **Perfumes** and **Perfume Oils** tabs of the sheet and serves them
-  as SSR pages (homepage, `/shop`, `/perfumes/:slug`).
+  as SSR pages (homepage, `/shop`, `/perfumes/:slug`, `/oils/:slug`).
 - Re-reads the sheet every 5 minutes, and within seconds of an edit (Apps Script
   ping → `/api/revalidate`).
 - Shop filtering/sorting lives in the URL; the full catalog is fetched once on
   the server and filtered in the browser, so filters are instant.
+- Product images are scraped from external fragrance retailers, matched to sheet
+  rows, uploaded to Cloudinary, and written back to the sheet’s Image column
+  automatically via `scripts/`.
 
 ## Run it
 
@@ -47,6 +50,19 @@ Without sheet credentials the pages still render — the catalog is just empty
 Paste `apps-script/sync-on-edit.gs` into the sheet (Extensions → Apps Script) and
 follow the comment at the top. It needs the site on a public URL, so do this once
 deployed. Until then the 5-minute revalidate covers it.
+
+## Image pipeline
+
+The repo includes a standalone image pipeline that keeps the sheet’s Image column
+filled without manual work:
+
+- `scripts/scrape-suppliers.mjs` — scrapes non-Shopify fragrance retailers
+- `scripts/scrape-suppliers-shopify.mjs` — fetches Shopify `products.json` feeds
+- `scripts/match.mjs` — normalizes titles and matches supplier images to sheet rows; outputs `data/match-map.json`
+- `scripts/upload-cloudinary.mjs` — uploads matched images to Cloudinary; outputs `data/upload-map.json`
+- `scripts/write-images.mjs` — writes Cloudinary URLs back to both **Perfumes** and **Perfume Oils** tabs
+
+Name normalization collapses variant tokens like `La Fede`, `Eau de Parfum`, `100ml`, brackets, and punctuation so near-identical titles resolve to confident matches.
 
 ## What the sheet needs
 
@@ -96,6 +112,8 @@ available.
 | Colours + fonts | `src/styles/tokens.css` |
 | Homepage / shop / PDP styles | `src/styles/home.css`, `shop.css`, `pdp.css` |
 | Components | `src/components/*` |
+| Image pipeline scripts | `scripts/*.mjs` |
+| Image pipeline data | `data/match-map.json`, `data/upload-map.json`, `data/supplier-scrape*.json` |
 
 ## Switching out-of-scope pieces off
 

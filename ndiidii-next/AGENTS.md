@@ -23,6 +23,7 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - Catalog: Google Sheet, read server-side via `src/lib/sheets.ts` (`readTab`). Column 0 = ID (exposed as `row.first`, NOT in `row.cells`).
 - The curated tab's real name is `" Curated Discovery Sets"` (LEADING space). `resolveTab()` fuzzy-matches tab names from sheet metadata — use it, don't hardcode.
 - Product images rehosted on Cloudinary (cloud name `deejgpias`). `ProductImage` renders a bottle placeholder for missing images.
+- Image pipeline writes to **both** `Perfumes` and `Perfume Oils` tabs via `scripts/write-images.mjs`.
 - No user accounts. Cart is localStorage-backed (`src/lib/cart.tsx`).
 - **Known catalog issue:** `getOils()` can return perfume data instead of oil data. `/oils/[slug]` currently falls back to `getPerfume()` for slugs that exist in the perfume tab but not the oils tab. This is a workaround; the root cause in `src/lib/catalog.ts` is flagged for debugging later.
 
