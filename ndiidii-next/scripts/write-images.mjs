@@ -24,49 +24,64 @@ const auth = new google.auth.JWT({
 const sheets = google.sheets({ version: 'v4', auth });
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const TAB = process.env.PERFUME_TAB ?? 'Perfumes';
+const OIL_TAB = process.env.OIL_TAB ?? 'Perfume Oils';
+const TABS = [TAB, OIL_TAB];
 
-// ---- read the sheet ----
-const res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: TAB });
-const rows = res.data.values ?? [];
-const headers = rows[0].map((h) => String(h ?? '').trim());
-const iName = headers.findIndex((h) => /name/i.test(h) && !/oil/i.test(h));
-const iBrand = headers.findIndex((h) => /brand/i.test(h));
-const iImage = headers.findIndex((h) => /image|photo|picture/i.test(h));
-if (iImage < 0) { console.error('No Image column found. Headers:', headers.join(' | ')); process.exit(1); }
-const colLetter = String.fromCharCode(65 + iImage);
-
-// ---- build the upload map ----
+// ---- build the upload map once ----
 const map = JSON.parse(await readFile('./data/upload-map.json', 'utf8'));
-// Key by brand+name (same as matcher) → cloudinaryUrl
 const byKey = new Map();
 for (const m of map) {
   if (m.cloudinaryUrl) byKey.set(`${(m.sheetBrand || '').toLowerCase()}||${m.sheetName.toLowerCase()}`, m.cloudinaryUrl);
 }
 
-// ---- match sheet rows to URLs ----
-const updates = []; // { range, values: [[url]] }
-let matched = 0, alreadyFilled = 0, noUrl = 0;
-for (let r = 1; r < rows.length; r++) {
-  const name = String(rows[r][iName] ?? '').trim();
-  if (!name) continue;
-  const brand = String(rows[r][iBrand] ?? '').trim();
-  const existing = String(rows[r][iImage] ?? '').trim();
-  if (existing) { alreadyFilled++; continue; }
-  const url = byKey.get(`${brand.toLowerCase()}||${name.toLowerCase()}`);
-  if (!url) { noUrl++; continue; }
-  // r is 0-indexed in the array; sheet row is r+1 (header offset)
-  updates.push({ range: `${TAB}!${colLetter}${r + 1}`, url });
-  matched++;
+// ---- process each tab ----
+let totalMatched = 0, totalAlreadyFilled = 0, totalNoUrl = 0;
+const allUpdates = [];
+
+for (const tab of TABS) {
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: tab });
+  const rows = res.data.values ?? [];
+  const headers = rows[0].map((h) => String(h ?? '').trim());
+  const iName = headers.findIndex((h) => /name/i.test(h));
+  const iBrand = headers.findIndex((h) => /brand/i.test(h));
+  const iImage = headers.findIndex((h) => /image|photo|picture/i.test(h));
+  if (iImage < 0) {
+    console.error(`No Image column found in ${tab}. Headers: ${headers.join(' | ')}`);
+    continue;
+  }
+  const colLetter = String.fromCharCode(65 + iImage);
+
+  let matched = 0, alreadyFilled = 0, noUrl = 0;
+  for (let r = 1; r < rows.length; r++) {
+    const name = String(rows[r][iName] ?? '').trim();
+    if (!name) continue;
+    const brand = String(rows[r][iBrand] ?? '').trim();
+    const existing = String(rows[r][iImage] ?? '').trim();
+    if (existing) { alreadyFilled++; continue; }
+    const url = byKey.get(`${brand.toLowerCase()}||${name.toLowerCase()}`);
+    if (!url) { noUrl++; continue; }
+    allUpdates.push({ range: `${tab}!${colLetter}${r + 1}`, url });
+    matched++;
+  }
+
+  console.log(`\n[${tab}]`);
+  console.log(`  Image column: ${colLetter} (index ${iImage})`);
+  console.log(`  rows to update: ${matched}`);
+  console.log(`  already had an image: ${alreadyFilled}`);
+  console.log(`  no cloudinary url (unmatched): ${noUrl}`);
+  totalMatched += matched;
+  totalAlreadyFilled += alreadyFilled;
+  totalNoUrl += noUrl;
 }
 
-console.log(`Image column: ${colLetter} (index ${iImage})`);
-console.log(`rows to update: ${matched}`);
-console.log(`already had an image: ${alreadyFilled}`);
-console.log(`no cloudinary url (unmatched): ${noUrl}`);
+console.log(`\nTOTAL across both tabs:`);
+console.log(`  rows to update: ${totalMatched}`);
+console.log(`  already had an image: ${totalAlreadyFilled}`);
+console.log(`  no cloudinary url (unmatched): ${totalNoUrl}`);
 console.log(APPLY ? '\n-- APPLYING --' : '\n-- DRY RUN (pass --apply to write) --');
 if (!APPLY) {
   console.log('sample of what would be written:');
-  updates.slice(0, 5).forEach((u) => console.log(`  ${u.range}  →  ${u.url}`));
+  allUpdates.slice(0, 5).forEach((u) => console.log(`  ${u.range}  →  ${u.url}`));
   process.exit(0);
 }
 
@@ -75,8 +90,8 @@ if (!APPLY) {
 // this scale, but we group into a single batchUpdate call with many ranges.
 const CHUNK = 200;
 let written = 0;
-for (let i = 0; i < updates.length; i += CHUNK) {
-  const batch = updates.slice(i, i + CHUNK);
+for (let i = 0; i < allUpdates.length; i += CHUNK) {
+  const batch = allUpdates.slice(i, i + CHUNK);
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
     requestBody: {
@@ -85,6 +100,6 @@ for (let i = 0; i < updates.length; i += CHUNK) {
     },
   });
   written += batch.length;
-  console.log(`  wrote ${written}/${updates.length}`);
+  console.log(`  wrote ${written}/${allUpdates.length}`);
 }
 console.log(`\ndone: ${written} image URLs written to the sheet.`);

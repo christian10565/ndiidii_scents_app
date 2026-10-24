@@ -1,0 +1,21 @@
+{
+  "snapshot": {
+    "savedAt": "2026-10-23T23:07:32.514Z",
+    "perfumes": 1046,
+    "oils": 368,
+    "perfumeNullImg": 413,
+    "oilNullImg": 339
+  },
+  "liveSheet": {
+    "mappedPerfumes": 1046,
+    "mappedOils": 368,
+    "perfumeNullImg": 413,
+    "oilNullImg": 339,
+    "oilCategoryNiches": 309,
+    "oilCategoryDesigners": 59,
+    "oilCategoryNull": 0,
+    "oilWithPerfumeTier": 368
+  },
+  "perfumeCountMatch": true,
+  "oilCountMatch": true
+}

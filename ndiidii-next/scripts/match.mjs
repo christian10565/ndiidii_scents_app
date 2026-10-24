@@ -7,6 +7,7 @@
 //
 //   node scripts/match.mjs
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { config } from 'dotenv';
@@ -38,6 +39,39 @@ for (const f of sourceFiles) {
   console.log(`loaded ${raw.length} from ${f}`);
 }
 
+// ---- optional supplier scrape supplement ----
+const scrapePath = join(dataDir, 'supplier-scrape.json');
+if (existsSync(scrapePath)) {
+  const scrape = JSON.parse(await readFile(scrapePath, 'utf8'));
+  const sources = scrape.sources || {};
+  let added = 0;
+  for (const [key, items] of Object.entries(sources)) {
+    if (!Array.isArray(items)) continue;
+    for (const p of items) {
+      if (!p.imageUrl) continue;
+      pool.push({ vendor: p.vendor || key, title: p.title || '', imageUrl: p.imageUrl, source: p.source || key });
+      added++;
+    }
+  }
+  console.log(`loaded ${added} entries from supplier-scrape.json`);
+}
+
+const scrapeShopifyPath = join(dataDir, 'supplier-scrape-shopify.json');
+if (existsSync(scrapeShopifyPath)) {
+  const scrape = JSON.parse(await readFile(scrapeShopifyPath, 'utf8'));
+  const sources = scrape.sources || {};
+  let added = 0;
+  for (const [key, items] of Object.entries(sources)) {
+    if (!Array.isArray(items)) continue;
+    for (const p of items) {
+      if (!p.imageUrl) continue;
+      pool.push({ vendor: p.vendor || key, title: p.title || '', imageUrl: p.imageUrl, source: p.source || key });
+      added++;
+    }
+  }
+  console.log(`loaded ${added} entries from supplier-scrape-shopify.json`);
+}
+
 // Index by brand → list of {nameKey, entry}. Brand-scoped so we never cross houses.
 const byBrand = new Map();
 for (const p of pool) {
@@ -57,19 +91,26 @@ const auth = new google.auth.JWT({
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
 const sheets = google.sheets({ version: 'v4', auth });
-const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range: 'Perfumes' });
-const rows = res.data.values ?? [];
-const headers = rows[0].map((h) => String(h ?? '').trim());
-const iName = headers.findIndex((h) => /name/i.test(h) && !/oil/i.test(h));
-const iBrand = headers.findIndex((h) => /brand/i.test(h));
 
-const sheetRows = [];
-for (const r of rows.slice(1)) {
-  const name = String(r[iName] ?? '').trim();
-  if (!name) continue;
-  sheetRows.push({ name, brand: String(r[iBrand] ?? '').trim() });
+async function loadTab(range, nameCol, brandCol) {
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range });
+  const rows = res.data.values ?? [];
+  const headers = rows[0].map((h) => String(h ?? '').trim());
+  const iName = headers.findIndex((h) => /name/i.test(h));
+  const iBrand = headers.findIndex((h) => /brand/i.test(h));
+  const out = [];
+  for (const r of rows.slice(1)) {
+    const name = String(r[iName] ?? '').trim();
+    if (!name) continue;
+    out.push({ name, brand: String(r[iBrand] ?? '').trim(), tab: range });
+  }
+  return out;
 }
-console.log(`Sheet rows: ${sheetRows.length}`);
+
+const perfumes = await loadTab('Perfumes', 'Perfume Name', 'Brand');
+const oils = await loadTab('Perfume oils', 'Perfume Oil Name', 'Brand ');
+const sheetRows = [...perfumes, ...oils];
+console.log(`Sheet rows: ${sheetRows.length} (${perfumes.length} perfumes + ${oils.length} oils)`);
 
 // ---- match ----
 function bestMatch(name, brand) {

@@ -49,21 +49,36 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
   }, [drawerOpen]);
 
   // ---- Filter the catalog (client-side, instant) ----
+  const catalog = useMemo(() => {
+    if (filters.collection === 'oils') return oils.map((o) => ({ ...o, __kind: 'oil' as const }));
+    if (filters.collection === 'perfumes') return initial.map((p) => ({ ...p, __kind: 'perfume' as const }));
+    return [...initial.map((p) => ({ ...p, __kind: 'perfume' as const })), ...oils.map((o) => ({ ...o, __kind: 'oil' as const }))];
+  }, [initial, oils, filters.collection]);
+
   const filtered = useMemo(() => {
-    let out = initial;
-    if (filters.collection === 'perfumes') out = out.filter((p) => p.tier !== null);
-    if (filters.collection === 'oils') out = out.filter((p) => p.tier === null);
+    let out = catalog;
     if (filters.gender.length) out = out.filter((p) => p.gender && filters.gender.includes(p.gender));
-    if (filters.tier.length) out = out.filter((p) => p.tier && filters.tier.includes(String(p.tier)));
+    if (filters.tier.length) out = out.filter((p) => 'tier' in p && p.tier && filters.tier.includes(String(p.tier)));
     if (filters.brand.length) out = out.filter((p) => p.brand && filters.brand.some((b) => b.toLowerCase() === p.brand!.toLowerCase()));
     if (filters.stock.length === 1) out = out.filter((p) => p.inStock === (filters.stock[0] === 'in'));
     if (filters.sort === 'newest') out = [...out].reverse();
     else if (filters.sort === 'name') out = [...out].sort((a, b) => a.name.localeCompare(b.name));
     return out;
-  }, [initial, filters]);
+  }, [catalog, filters]);
 
-  const total = filtered.length;
-  const shown = filtered.slice(0, visible);
+  const total = useMemo(() => {
+    if (filters.collection === 'oils') return oils.length;
+    const perfumeTotal = filters.collection === 'perfumes'
+      ? initial.filter((p) => p.tier !== null).length
+      : initial.length;
+    if (filters.collection === 'perfumes') return perfumeTotal;
+    return perfumeTotal + oils.length;
+  }, [initial, oils, filters.collection]);
+
+  const shown = useMemo(() => {
+    if (filters.collection === 'oils') return oils.slice(0, visible);
+    return filtered.slice(0, visible);
+  }, [filtered, oils, filters.collection, visible]);
   const hasMore = shown.length < total;
 
   const loadMore = () => setVisible((v) => v + SHOP.pageSize);
@@ -110,7 +125,15 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
                   <FilterIcon width={18} height={18} />
                   Filter{activeCount > 0 && <span className="shop__filter-count">{activeCount}</span>}
                 </button>
-                <h2 className="serif">All Products</h2>
+                <h2 className="serif">
+                  {filters.collection === 'oils'
+                    ? 'Perfume Oils'
+                    : filters.collection === 'perfumes'
+                      ? 'Perfumes'
+                      : filters.brand.length === 1
+                        ? filters.brand[0]
+                        : 'All Products'}
+                </h2>
                 <p className="shop__count" aria-live="polite">
                   {total} {total === 1 ? 'Product' : 'Products'}
                 </p>
@@ -142,21 +165,6 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
                 <ShopCard key={p.id} p={p} />
               ))}
             </div>
-
-            {filters.collection === 'oils' && (
-              <div className="shop__grid" style={{ marginTop: 'var(--space-4)' }}>
-                {oils.map((o) => (
-                  <article key={o.id} className="scard">
-                    <div className="scard__img">
-                      <ProductImage src={o.imageUrl} alt={o.name} />
-                    </div>
-                    <h3 className="scard__name">{o.name}</h3>
-                    {o.brand && <p className="scard__brand serif">{o.brand}</p>}
-                    <p className="scard__status">{o.inStock ? 'In stock' : 'Out of stock'}</p>
-                  </article>
-                ))}
-              </div>
-            )}
 
             {total > 0 && (
               <div className="shop__more">

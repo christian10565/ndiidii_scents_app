@@ -22,6 +22,7 @@ const NOISE = new Set([
   'gift', 'set', 'collection', 'giftset',
   'mini', 'pcs', 'pc', 'ml', 'oz', 'limited', 'edition',
   'perfume', 'perfumes', 'fragrance', 'scent',
+  'spray', 'by', 'fede', 'revival', 'intense', 'noir', 'rouge', 'exclusif',
   // NOTE: do NOT strip 'deodorant', 'sample', 'air freshener', 'body spray',
   // 'oil', etc. — those are DIFFERENT products; stripping them caused the
   // matcher to pick a deodorant/sample for a full-bottle perfume. They must
@@ -48,15 +49,24 @@ export function normaliseName(name) {
   return kept.join(' ') || words.join(' ');
 }
 
-/** Drop a trailing brand token (vendors append their own name to titles). */
+/** Drop a trailing or leading brand token (vendors append/prepend their own name to titles). */
 export function dropTrailingBrand(nameKey, brandKey) {
   if (!brandKey) return nameKey;
   const brandWords = brandKey.split(' ').filter(Boolean);
   const words = nameKey.split(' ').filter(Boolean);
-  for (let n = Math.min(brandWords.length, words.length); n > 0; n--) {
+  const maxN = Math.min(brandWords.length, words.length);
+
+  // Trailing first: "... Lattafa"
+  for (let n = maxN; n > 0; n--) {
     const tail = words.slice(words.length - n).join(' ');
     const head = brandWords.slice(0, n).join(' ');
     if (tail === head) return words.slice(0, words.length - n).join(' ') || nameKey;
+  }
+  // Leading: "Rayhaan Tiger..."
+  for (let n = maxN; n > 0; n--) {
+    const head = words.slice(0, n).join(' ');
+    const brandHead = brandWords.slice(0, n).join(' ');
+    if (head === brandHead) return words.slice(n).join(' ') || nameKey;
   }
   return nameKey;
 }

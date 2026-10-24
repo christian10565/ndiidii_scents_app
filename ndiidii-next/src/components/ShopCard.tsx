@@ -2,21 +2,17 @@ import Link from 'next/link';
 import { FEATURES } from '@/config/site';
 import { HeartIcon } from './Icons';
 import ProductImage from './ProductImage';
-import type { Perfume } from '@/lib/catalog';
+import type { Perfume, Oil } from '@/lib/catalog';
 
-/**
- * A shop card for a single product. Oil products (tier === null) route to
- * /oils/[slug] while perfumes route to /perfumes/[slug].
- */
-export default function ShopCard({ p }: { p: Perfume }) {
+type Product = Perfume | Oil;
+
+export default function ShopCard({ p }: { p: Product }) {
   const soldOut = !p.inStock;
-  // No price on a perfume: the price belongs to its tier (shown in the Tier
-  // filter and on the tier badge's box).
-  const slugRoute = p.tier === null ? `/oils/${p.slug}` : `/perfumes/${p.slug}`;
+  const slugRoute = 'category' in p ? `/oils/${p.slug}` : `/perfumes/${p.slug}`;
 
   return (
     <article className={`scard ${soldOut ? 'is-sold-out' : ''}`}>
-      {p.tier && <span className="scard__tier serif">Tier {p.tier}</span>}
+      {'tier' in p && p.tier ? <span className="scard__tier serif">Tier {p.tier}</span> : null}
       {FEATURES.wishlist && (
         <button className="scard__heart" aria-label={`Add ${p.name} to wishlist`}>
           <HeartIcon width={22} height={22} />
