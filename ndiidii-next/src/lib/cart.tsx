@@ -90,6 +90,7 @@ export interface CartApi {
   lines: CartLine[];
   discovery: DiscoveryLine[];
   toggleLine: (kind: BoxKind, tier: Tier | null, slug: string) => void;
+  addLine: (kind: BoxKind, tier: Tier | null, items: string[], qty?: number) => void;
   removeLine: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   addDiscoverySet: (line: Omit<DiscoveryLine, 'id' | 'qty' | 'unitPrice'>, qty?: number) => void;
@@ -171,6 +172,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, lines: s.lines.filter((l) => l.id !== id) }));
   }, []);
 
+  /**
+   * Append a complete set. The builders keep their in-progress picks in local
+   * state and only call this once a set is full, so a half-built set never
+   * becomes a cart line that other screens have to reason about.
+   */
+  const addLine = useCallback((kind: BoxKind, tier: Tier | null, items: string[], qty = 1) => {
+    if (items.length === 0) return;
+    setState((s) => {
+      const unitPrice =
+        kind === 'oil'
+          ? OIL_BOX_PRICE_NGN ?? 0
+          : tier !== null
+            ? TIER_BOX_PRICE_NGN[tier]
+            : 0;
+      const line: CartLine = {
+        id: `${kind}-${tier ?? 'oil'}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        kind,
+        tier,
+        items: [...items],
+        qty: Math.max(1, Math.min(99, qty)),
+        unitPrice,
+      };
+      return { ...s, lines: [...s.lines, line] };
+    });
+  }, []);
+
   const setQty = useCallback((id: string, qty: number) => {
     setState((s) => ({
       ...s,
@@ -249,6 +276,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       lines: state.lines,
       discovery: state.discovery,
       toggleLine,
+      addLine,
       removeLine,
       setQty,
       addDiscoverySet,
@@ -264,6 +292,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       state.lines,
       state.discovery,
       toggleLine,
+      addLine,
       removeLine,
       setQty,
       addDiscoverySet,

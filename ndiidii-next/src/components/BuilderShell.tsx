@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
@@ -17,40 +17,82 @@ const TIERS: { tier: Tier; label: string; blurb: string }[] = [
 ];
 
 type ByTier = Record<string, Perfume[]>;
+type Drafts = Record<Tier, string[]>;
+
+const EMPTY_DRAFTS: Drafts = { 1: [], 2: [], 3: [] };
 
 /**
  * The Collection Builder. Pick a tier, click products to fill BOX_SIZE (4)
  * slots in that tier, then add the set to the cart at that tier's fixed price.
  * All three tiers can be worked on concurrently.
+ *
+ * In-progress picks live in local state (`drafts`), not in the cart. They used
+ * to be written into cart lines as you clicked, and the "current set" was
+ * inferred as "the first line with fewer than four items". That inference moves
+ * the moment a set fills up: clicks start landing in a different line, previously
+ * picked cards lose their tick, and the counter appears to bounce between two
+ * sets at 3/4. A local draft has one unambiguous owner per tier, and only a
+ * complete set is ever added to the cart.
  */
 export function BuilderShell({ byTier }: { byTier: ByTier }) {
   const [activeTier, setActiveTier] = useState<Tier>(1);
   const router = useRouter();
   const [justAdded, setJustAdded] = useState(false);
 
-  const { lines, toggleLine, removeLine, setQty } = useCart();
-  const tierLines = useMemo(() => lines.filter((l) => l.kind === 'perfume' && l.tier === activeTier), [lines, activeTier]);
+  const { lines, addLine, removeLine } = useCart();
+  const [drafts, setDrafts] = useState<Drafts>(EMPTY_DRAFTS);
+
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
-
-  /**
-   * The set currently being built. A tier is edited one set at a time: the
-   * incomplete line if there is one, otherwise the last one. Selection used to
-   * be flattened across every line in the tier, so a 5th pick (which the cart
-   * puts in a new line) made "selected" 5, produced "Pick -1 More", and left the
-   * extra item with no slot to render into.
-   */
-  const workingLine = useMemo(() => {
-    const incompleteLine = tierLines.find((l) => l.items.length < BOX_SIZE);
-    return incompleteLine ?? tierLines[tierLines.length - 1] ?? null;
-  }, [tierLines]);
-
-  const selected = workingLine?.items ?? [];
-  const activeLineId = workingLine?.id ?? null;
+  const selected = drafts[activeTier];
   const full = selected.length === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[activeTier];
   const canPay = lines.filter((l) => l.kind === 'perfume').every((l) => l.items.length === BOX_SIZE);
 
+  /**
+   * Recover carts written by the previous builder, which left half-built sets as
+   * cart lines (sometimes several per tier). Fold the first one per tier into the
+   * draft and drop the rest, so a stale cart can't block checkout or confuse the
+   * grid on first load.
+   */
+  const migrated = useRef(false);
+  useEffect(() => {
+    // Wait for the cart to hydrate: on first render `lines` is still empty, so
+    // running now would find no partials and wrongly mark the migration done.
+    if (migrated.current || lines.length === 0) return;
+
+    const partials = lines.filter((l) => l.kind === 'perfume' && l.items.length < BOX_SIZE);
+    migrated.current = true;
+    if (partials.length === 0) return;
+
+    const adopted: Drafts = { 1: [], 2: [], 3: [] };
+    for (const line of partials) {
+      const tier = line.tier as Tier | null;
+      if (!tier || !(tier in adopted)) continue;
+      if (adopted[tier].length > 0) continue; // first partial per tier wins
+      // Only adopt slugs the grid can actually render, otherwise the counter and
+      // the empty slots disagree (a removed or renamed product leaves a ghost).
+      const available = new Set((byTier[String(tier)] ?? []).map((p) => p.slug));
+      adopted[tier] = [...new Set(line.items)].filter((slug) => available.has(slug)).slice(0, BOX_SIZE);
+    }
+    setDrafts((d) => ({ ...d, ...adopted }));
+    partials.forEach((line) => removeLine(line.id));
+  }, [lines, removeLine, byTier]);
+
+  const togglePick = (slug: string) => {
+    setJustAdded(false);
+    setDrafts((d) => {
+      const cur = d[activeTier];
+      if (cur.includes(slug)) return { ...d, [activeTier]: cur.filter((s) => s !== slug) };
+      if (cur.length >= BOX_SIZE) return d; // full: no fifth pick
+      return { ...d, [activeTier]: [...cur, slug] };
+    });
+  };
+
   const isSelected = (slug: string) => selected.includes(slug);
+
+  /** Complete sets already in the cart for a tier. */
+  const setsInCart = (tier: Tier) =>
+    lines.filter((l) => l.kind === 'perfume' && l.tier === tier && l.items.length === BOX_SIZE).length;
 
   return (
     <div className="container builder">
@@ -73,10 +115,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
       {/* Tier selector */}
       <div className="builder__tiers" role="tablist" aria-label="Tier">
         {TIERS.map((t) => {
-          const tLines = lines.filter((l) => l.kind === 'perfume' && l.tier === t.tier);
-          const tWorking = tLines.find((l) => l.items.length < BOX_SIZE) ?? tLines[tLines.length - 1];
-          const c = tWorking?.items.length ?? 0;
-          const incompleteTier = tLines.some((l) => l.items.length < BOX_SIZE);
+          const inCart = setsInCart(t.tier);
           return (
             <button
               key={t.tier}
@@ -88,8 +127,8 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               <span className="tiercard__label eyebrow">{t.label}</span>
               <span className="tiercard__price serif">{formatNaira(TIER_BOX_PRICE_NGN[t.tier])}</span>
               <span className="tiercard__blurb">{t.blurb}</span>
-              {c > 0 && <span className="tiercard__count">{c}/{BOX_SIZE}</span>}
-              {incompleteTier && <span className="tiercard__count">in progress</span>}
+              {drafts[t.tier].length > 0 && <span className="tiercard__count">{drafts[t.tier].length}/{BOX_SIZE}</span>}
+              {inCart > 0 && <span className="tiercard__count">{inCart} in cart</span>}
             </button>
           );
         })}
@@ -100,7 +139,11 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
         <div className="builder__grid-wrap">
           <div className="builder__gridhead">
             <h2 className="serif">{TIERS[activeTier - 1].label} — choose {BOX_SIZE}</h2>
-            <button className="builder__clear link-red" onClick={() => activeLineId && removeLine(activeLineId)}>
+            <button
+              className="builder__clear link-red"
+              onClick={() => { setDrafts((d) => ({ ...d, [activeTier]: [] })); setJustAdded(false); }}
+              disabled={selected.length === 0}
+            >
               Clear selection
             </button>
           </div>
@@ -111,20 +154,12 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
             <div className="builder__grid">
               {products.map((p) => {
                 const sel = isSelected(p.slug);
-                // A full set blocks further picks until it has been added to the
-                // cart — that is the only point where starting a second set in
-                // the same tier makes sense. Without this the fifth click quietly
-                // opened a second line and the counter went negative.
-                const disabled = !sel && full && !justAdded;
+                const disabled = !sel && full; // a full set takes no fifth pick
                 return (
                   <button
                     key={p.id}
                     className={`bcard ${sel ? 'is-selected' : ''}`}
-                    onClick={() => {
-                      if (disabled) return;
-                      if (!sel && full) setJustAdded(false); // this pick opens the next set
-                      toggleLine('perfume', activeTier, p.slug);
-                    }}
+                    onClick={() => !disabled && togglePick(p.slug)}
                     disabled={disabled}
                     aria-pressed={sel}
                   >
@@ -168,7 +203,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
                         <button
                           className="slot__remove"
                           aria-label={`Remove ${prod.name}`}
-                          onClick={() => toggleLine('perfume', activeTier, prod.slug)}
+                          onClick={() => togglePick(prod.slug)}
                         >
                           ×
                         </button>
@@ -196,7 +231,8 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               disabled={!full}
               onClick={() => {
                 const qty = Number((document.getElementById('builder-qty') as HTMLInputElement)?.value) || 1;
-                setQty(activeLineId, qty);
+                addLine('perfume', activeTier, selected, qty);
+                setDrafts((d) => ({ ...d, [activeTier]: [] }));
                 setJustAdded(true);
               }}
             >
