@@ -169,3 +169,10 @@
   .dslots { grid-template-columns: 1fr; }
   .dset-detail__title { font-size: 34px; }
 }
+
+/* Pager for the Discovery Sets landing (the sheet holds ~250 sets, so the
+   listing is paged 24 at a time rather than rendering every card). */
+.discovery__pager { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin: 40px 0 8px; padding-top: 24px; border-top: 1px solid var(--line, rgba(0,0,0,0.12)); }
+.discovery__pager-count { font-size: 13px; color: var(--muted, #7a736a); }
+.discovery__pager-links { display: flex; align-items: center; gap: 14px; }
+.discovery__pager-page { font-size: 13px; color: var(--muted, #7a736a); white-space: nowrap; }

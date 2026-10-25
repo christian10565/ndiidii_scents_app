@@ -2,11 +2,28 @@ import Link from 'next/link';
 import { FEATURES } from '@/config/site';
 import { HeartIcon } from './Icons';
 import ProductImage from './ProductImage';
-import type { Perfume, Oil } from '@/lib/catalog';
+import type { OilCategory } from '@/lib/mappers';
 
-type Product = Perfume | Oil;
+/**
+ * The fields a card actually renders. Structural on purpose: the shop grid
+ * passes lean card projections (lib/shopCards.ts) while /search and the
+ * builders still pass full Perfume/Oil objects — both satisfy this.
+ *
+ * `tier` is present only on perfumes, `category` only on oils, so the existing
+ * `'category' in p` / `'tier' in p` narrowing keeps working.
+ */
+export interface CardProduct {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string | null;
+  imageUrl: string | null;
+  inStock: boolean;
+  tier?: 1 | 2 | 3 | null;
+  category?: OilCategory | null;
+}
 
-export default function ShopCard({ p }: { p: Product }) {
+export default function ShopCard({ p }: { p: CardProduct }) {
   const soldOut = !p.inStock;
   const slugRoute = 'category' in p ? `/oils/${p.slug}` : `/perfumes/${p.slug}`;
 

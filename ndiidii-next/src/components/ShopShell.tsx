@@ -13,15 +13,16 @@ import {
   writeFilters,
   type Filters,
 } from '@/lib/shopQuery';
-import { hasAnyNote, noteIndex } from '@/lib/notes';
-import type { Perfume, Oil } from '@/lib/catalog';
+import { hasAnyKey, noteIndexFromKeys } from '@/lib/notes';
+import type { PerfumeCard, OilCard } from '@/lib/shopCards';
 
 /**
  * The shop shell. Filtering/sorting/pagination happen over the full catalog,
- * which the server already handed us as `initial` (SSR — SEO-friendly).
+ * which the server already handed us as `perfumes`/`oils` — but as LEAN card
+ * projections (lib/shopCards.ts), not the full `Perfume`/`Oil` objects.
  * Filters live in the URL and re-filter client-side; no per-change network call.
  */
-export default function ShopShell({ initial, oils, brands }: { initial: Perfume[]; oils: Oil[]; brands: import('@/lib/catalog').BrandCount[] }) {
+export default function ShopShell({ perfumes, oils, brands }: { perfumes: PerfumeCard[]; oils: OilCard[]; brands: import('@/lib/catalog').BrandCount[] }) {
   const sp = useSearchParams();
   const router = useRouter();
 
@@ -52,16 +53,16 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
   // ---- Filter the catalog (client-side, instant) ----
   const catalog = useMemo(() => {
     if (filters.collection === 'oils') return oils.map((o) => ({ ...o, __kind: 'oil' as const }));
-    if (filters.collection === 'perfumes') return initial.map((p) => ({ ...p, __kind: 'perfume' as const }));
-    return [...initial.map((p) => ({ ...p, __kind: 'perfume' as const })), ...oils.map((o) => ({ ...o, __kind: 'oil' as const }))];
-  }, [initial, oils, filters.collection]);
+    if (filters.collection === 'perfumes') return perfumes.map((p) => ({ ...p, __kind: 'perfume' as const }));
+    return [...perfumes.map((p) => ({ ...p, __kind: 'perfume' as const })), ...oils.map((o) => ({ ...o, __kind: 'oil' as const }))];
+  }, [perfumes, oils, filters.collection]);
 
   const filtered = useMemo(() => {
     let out = catalog;
     if (filters.gender.length) out = out.filter((p) => p.gender && filters.gender.includes(p.gender));
     if (filters.tier.length) out = out.filter((p) => 'tier' in p && p.tier && filters.tier.includes(String(p.tier)));
     if (filters.brand.length) out = out.filter((p) => p.brand && filters.brand.some((b) => b.toLowerCase() === p.brand!.toLowerCase()));
-    if (filters.notes.length) out = out.filter((p) => ('notes' in p ? hasAnyNote(p, filters.notes) : false));
+    if (filters.notes.length) out = out.filter((p) => ('noteKeys' in p ? hasAnyKey(p.noteKeys, filters.notes) : false));
     if (filters.stock.length === 1) out = out.filter((p) => p.inStock === (filters.stock[0] === 'in'));
     if (filters.sort === 'newest') out = [...out].reverse();
     else if (filters.sort === 'name') out = [...out].sort((a, b) => a.name.localeCompare(b.name));
@@ -79,7 +80,8 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
   const loadMore = () => setVisible((v) => v + SHOP.pageSize);
 
   // Every distinct note in the catalogue, alphabetical, for the Notes section.
-  const allNotes = useMemo(() => noteIndex(initial), [initial]);
+  // Built from the precomputed canonical keys — no sheet prose to re-parse.
+  const allNotes = useMemo(() => noteIndexFromKeys(perfumes.map((p) => p.noteKeys)), [perfumes]);
 
   return (
     <>

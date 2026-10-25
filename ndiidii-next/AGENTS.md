@@ -80,3 +80,40 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - Design must match the mockups in `docs/` (Discovery Sets, Gift Cards). Reuse existing CSS vocab (oxblood accents, serif headings, black panels).
 - Client prefers minimal, non-overengineered solutions.
 
+
+### Performance: page weight (Oct 2026 — done, and what is still deferred)
+The catalog is `use cache`d with a 5-min window + `/api/revalidate`, so server
+time was never the problem. The problem was how much of the catalog crossed into
+the client. The sheet holds ~1,046 perfumes + 368 oils, ~764 bytes each.
+
+Fixed:
+- **Homepage** — `TierShowcase` handed the client the *whole* in-stock catalog and
+  let `TierShowcaseTabs` `.slice(0,4)`. Now sliced server-side. `/` 694KB → 60KB.
+- **Shop** — full `Perfume`/`Oil` objects went to `ShopShell`. Now projected via
+  `src/lib/shopCards.ts` (`toPerfumeCard`/`toOilCard`): id, slug, name, brand,
+  gender, imageUrl, inStock, tier|category, and `noteKeys`. `/shop` 950KB → 500KB.
+- **Note filtering** — was re-parsing ~1,400 rows of note prose in the browser
+  (`perfumeNotes` → `hasAnyNote` → `noteIndex`). Canonical note names are now
+  computed once server-side into `noteKeys`; the client uses `hasAnyKey` /
+  `noteIndexFromKeys`. Same chips, same filter results.
+- **Discovery Sets** — the sheet has **253** complete sets; the listing rendered
+  every one (719KB + 790 images). Now paged 24 at a time via `?page=` inside a
+  Suspense boundary (static shell + request-time list). 719KB → 145KB.
+- `ShopCard` takes a structural `CardProduct`, so /search and the builders can
+  still pass full `Perfume`/`Oil` objects.
+
+Still deferred (do these next time):
+1. **PDPs are dynamic.** `perfumes/[slug]`, `oils/[slug]`, `discovery-sets/[slug]`
+   and `/checkout` set `instant = false`, so every product click is a cold SSR
+   round-trip with nothing prefetched. Fix: `generateStaticParams` off the cached
+   catalog + `revalidate`, drop `instant = false`, move dynamic bits behind
+   Suspense.
+2. **Product images.** `cloudinaryThumb` asks for `w_900&h_900` for grid cards.
+   Measured on one asset: raw 110KB → w900 53KB → w400 17KB. No `srcset`, no
+   width/height (CLS). Add a `sizes`-aware srcset and `fetchPriority="high"` on
+   the first row.
+3. **CSS is one global bundle.** All 11 stylesheets are imported in the root
+   layout — 63KB on every route, including PDP/shop which need a fraction of it.
+4. **The real ceiling:** the shop ships all 1,414 rows and filters in the browser.
+   Fine at this size; the durable fix is server-side filtering + pagination
+   (searchParams), which also removes the 500KB payload entirely.

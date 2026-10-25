@@ -65,10 +65,16 @@ export function canonicalNote(fragment: string): string | null {
   return null;
 }
 
-/** Canonical notes for one product (top → heart → base, deduped). */
-export function perfumeNotes(p: Perfume): string[] {
+export interface NoteParts {
+  top: string | null;
+  heart: string | null;
+  base: string | null;
+}
+
+/** Canonical notes for a set of raw note parts (top → heart → base, deduped). */
+export function notesFromParts(parts: NoteParts): string[] {
   const seen = new Set<string>();
-  for (const raw of [p.notes?.top, p.notes?.heart, p.notes?.base]) {
+  for (const raw of [parts.top, parts.heart, parts.base]) {
     for (const fragment of splitNotes(raw)) {
       const canon = canonicalNote(fragment);
       if (canon) seen.add(canon);
@@ -77,11 +83,37 @@ export function perfumeNotes(p: Perfume): string[] {
   return [...seen];
 }
 
+/** Canonical notes for one product (top → heart → base, deduped). */
+export function perfumeNotes(p: Perfume): string[] {
+  return notesFromParts(p.notes);
+}
+
 /** True when the product carries at least one of the selected notes. */
 export function hasAnyNote(p: Perfume, wanted: string[]): boolean {
+  return hasAnyKey(perfumeNotes(p), wanted);
+}
+
+/**
+ * True when a PRECOMPUTED note-key list carries at least one of the selected
+ * notes. The shop grid ships `noteKeys` (see lib/shopCards.ts) instead of the
+ * raw note prose, so filtering never re-parses sheet text in the browser.
+ */
+export function hasAnyKey(keys: string[], wanted: string[]): boolean {
   if (wanted.length === 0) return true;
-  const own = new Set(perfumeNotes(p).map((n) => n.toLowerCase()));
+  const own = new Set(keys.map((n) => n.toLowerCase()));
   return wanted.some((w) => own.has(w.toLowerCase()));
+}
+
+/** Notes present in at least `minProducts` of the given key lists, alphabetical. */
+export function noteIndexFromKeys(keyLists: string[][], minProducts = 2): string[] {
+  const counts = new Map<string, number>();
+  for (const keys of keyLists) {
+    for (const note of keys) counts.set(note, (counts.get(note) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .filter(([, count]) => count >= minProducts)
+    .map(([note]) => note)
+    .sort((a, b) => a.localeCompare(b));
 }
 
 /**
