@@ -134,7 +134,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               <span className="tiercard__price serif">{formatNaira(TIER_BOX_PRICE_NGN[t.tier])}</span>
               <span className="tiercard__blurb">{t.blurb}</span>
               {drafts[t.tier].length > 0 && <span className="tiercard__count">{drafts[t.tier].length}/{BOX_SIZE}</span>}
-              {inCart > 0 && <span className="tiercard__count">{inCart} in cart</span>}
+              {inCart > 0 && <span className="tiercard__count">{inCart} {inCart === 1 ? 'set' : 'sets'} in cart</span>}
             </button>
           );
         })}

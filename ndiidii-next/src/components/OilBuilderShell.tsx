@@ -107,7 +107,9 @@ export function OilBuilderShell({ oils }: { oils: Oil[] }) {
             {t.value === category && draft.length > 0 && (
               <span className="tiercard__count">{draft.length}/{BOX_SIZE}</span>
             )}
-            {t.value === 'all' && setsInCart > 0 && <span className="tiercard__count">{setsInCart} in cart</span>}
+            {t.value === 'all' && setsInCart > 0 && (
+              <span className="tiercard__count">{setsInCart} {setsInCart === 1 ? 'set' : 'sets'} in cart</span>
+            )}
           </button>
         ))}
       </div>
