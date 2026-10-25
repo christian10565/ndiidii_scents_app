@@ -134,6 +134,22 @@
   padding-bottom: 10px;
 }
 
+/* Notes run in two columns so the section stays scannable; "All Notes" sits above the grid. */
+.fnotes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+}
+.fnotes .check {
+  padding: 6px 0;
+  font-size: 13.5px;
+}
+@media (max-width: 640px) {
+  .fnotes {
+    column-gap: 10px;
+  }
+}
+
 .check {
   display: flex;
   align-items: center;

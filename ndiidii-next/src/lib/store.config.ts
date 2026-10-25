@@ -14,7 +14,7 @@ export const TIER_LABELS: Record<Tier, string> = { 1: 'Tier One', 2: 'Tier Two',
 // Price of one full box of 4 perfumes, in naira.
 export const TIER_BOX_PRICE_NGN: Record<Tier, number> = {
   1: 50000,
-  2: 50000,
+  2: 40000,
   3: 30000,
 };
 

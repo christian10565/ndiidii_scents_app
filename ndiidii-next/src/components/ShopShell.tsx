@@ -13,6 +13,7 @@ import {
   writeFilters,
   type Filters,
 } from '@/lib/shopQuery';
+import { hasAnyNote, noteIndex } from '@/lib/notes';
 import type { Perfume, Oil } from '@/lib/catalog';
 
 /**
@@ -60,28 +61,25 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
     if (filters.gender.length) out = out.filter((p) => p.gender && filters.gender.includes(p.gender));
     if (filters.tier.length) out = out.filter((p) => 'tier' in p && p.tier && filters.tier.includes(String(p.tier)));
     if (filters.brand.length) out = out.filter((p) => p.brand && filters.brand.some((b) => b.toLowerCase() === p.brand!.toLowerCase()));
+    if (filters.notes.length) out = out.filter((p) => ('notes' in p ? hasAnyNote(p, filters.notes) : false));
     if (filters.stock.length === 1) out = out.filter((p) => p.inStock === (filters.stock[0] === 'in'));
     if (filters.sort === 'newest') out = [...out].reverse();
     else if (filters.sort === 'name') out = [...out].sort((a, b) => a.name.localeCompare(b.name));
     return out;
   }, [catalog, filters]);
 
-  const total = useMemo(() => {
-    if (filters.collection === 'oils') return oils.length;
-    const perfumeTotal = filters.collection === 'perfumes'
-      ? initial.filter((p) => p.tier !== null).length
-      : initial.length;
-    if (filters.collection === 'perfumes') return perfumeTotal;
-    return perfumeTotal + oils.length;
-  }, [initial, oils, filters.collection]);
+  // The heading count must describe what the filters actually produced — it used
+  // to be computed from the unfiltered catalog, so tier/gender/brand changes left
+  // it stuck at the full total.
+  const total = filtered.length;
 
-  const shown = useMemo(() => {
-    if (filters.collection === 'oils') return oils.slice(0, visible);
-    return filtered.slice(0, visible);
-  }, [filtered, oils, filters.collection, visible]);
+  const shown = useMemo(() => filtered.slice(0, visible), [filtered, visible]);
   const hasMore = shown.length < total;
 
   const loadMore = () => setVisible((v) => v + SHOP.pageSize);
+
+  // Every distinct note in the catalogue, alphabetical, for the Notes section.
+  const allNotes = useMemo(() => noteIndex(initial), [initial]);
 
   return (
     <>
@@ -104,6 +102,7 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
               onChange={setFilters}
               activeCount={activeCount}
               brands={brands}
+              notes={allNotes}
               onClose={() => {
                 setPanelOpen(false);
                 setDrawerOpen(false);
@@ -154,7 +153,7 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
                 <div className="empty">
                   <p>{activeCount > 0 ? 'No scents match these filters.' : 'New scents are on the way.'}</p>
                   {activeCount > 0 && (
-                    <button className="btn btn--ghost-dark" onClick={() => setFilters({ ...filters, stock: [], tier: [], gender: [], brand: [], collection: null })}>
+                    <button className="btn btn--ghost-dark" onClick={() => setFilters({ ...filters, stock: [], tier: [], gender: [], notes: [], brand: [], collection: null })}>
                       Clear all filters
                     </button>
                   )}
@@ -162,7 +161,7 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
               )}
 
               {shown.map((p) => (
-                <ShopCard key={p.id} p={p} />
+                <ShopCard key={`${'category' in p ? 'oil' : 'perfume'}-${p.id}`} p={p} />
               ))}
             </div>
 

@@ -562,11 +562,13 @@
   margin-top: 14px;
   font-size: 10.5px;
   color: var(--slate);
+  text-align: center;
 }
 .tier-card__name {
   margin-top: 4px;
   font-size: 17px;
   line-height: 1.25;
+  text-align: center;
 }
 .tier-card__price {
   margin-top: 6px;

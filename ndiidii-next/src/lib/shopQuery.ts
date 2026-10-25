@@ -13,6 +13,7 @@ export interface Filters {
   stock: string[]; // 'in' | 'out'
   tier: string[]; // '1' | '2' | '3'
   gender: string[]; // 'men' | 'women' | 'unisex'
+  notes: string[];
   brand: string[];
   sort: SortValue;
 }
@@ -26,7 +27,7 @@ export const SORTS = [
 const list = (v: string | null): string[] =>
   (v ? v.split(',') : []).map((s) => s.trim()).filter(Boolean);
 
-export const EMPTY_FILTERS: Filters = { collection: null, stock: [], tier: [], gender: [], brand: [], sort: 'featured' };
+export const EMPTY_FILTERS: Filters = { collection: null, stock: [], tier: [], gender: [], notes: [], brand: [], sort: 'featured' };
 
 export function readFilters(sp: URLSearchParams): Filters {
   const sort = sp.get('sort');
@@ -37,6 +38,7 @@ export function readFilters(sp: URLSearchParams): Filters {
     gender: list(sp.get('gender'))
       .map((g) => g.toLowerCase())
       .filter((g) => ['men', 'women', 'unisex'].includes(g)),
+    notes: list(sp.get('notes')),
     brand: list(sp.get('brand')),
     sort: SORTS.some((s) => s.value === sort) ? (sort as SortValue) : 'featured',
   };
@@ -48,13 +50,14 @@ export function writeFilters(f: Filters): URLSearchParams {
   if (f.stock.length) sp.set('stock', f.stock.join(','));
   if (f.tier.length) sp.set('tier', f.tier.join(','));
   if (f.gender.length) sp.set('gender', f.gender.join(','));
+  if (f.notes.length) sp.set('notes', f.notes.join(','));
   if (f.brand.length) sp.set('brand', f.brand.join(','));
   if (f.sort !== 'featured') sp.set('sort', f.sort);
   return sp;
 }
 
 export const countActive = (f: Filters): number =>
-  f.stock.length + f.tier.length + f.gender.length + f.brand.length;
+  f.stock.length + f.tier.length + f.gender.length + f.notes.length + f.brand.length;
 
 /** Add the value if absent, remove it if present (case-insensitive). */
 export const toggle = (arr: string[], value: string): string[] => {

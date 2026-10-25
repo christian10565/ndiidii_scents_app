@@ -53,12 +53,14 @@ export default function FilterPanel({
   activeCount,
   onClose,
   brands,
+  notes,
 }: {
   filters: Filters;
   onChange: (next: Filters) => void;
   activeCount: number;
   onClose: () => void;
   brands: BrandCount[];
+  notes: string[];
 }) {
   const price = (t: string) => formatNaira(TIER_BOX_PRICE_NGN[Number(t) as 1 | 2 | 3]);
 
@@ -83,7 +85,7 @@ export default function FilterPanel({
         <button
           className="fpanel__clear"
           disabled={activeCount === 0}
-          onClick={() => set({ stock: [], tier: [], gender: [], brand: [] })}
+          onClick={() => set({ stock: [], tier: [], gender: [], notes: [], brand: [] })}
         >
           Clear all <CloseIcon width={14} height={14} />
         </button>
@@ -131,6 +133,23 @@ export default function FilterPanel({
         <Check checked={filters.collection === 'oils'} onChange={() => set({ collection: filters.collection === 'oils' ? null : 'oils' })}>
           Perfume Oils
         </Check>
+      </Section>
+
+      <Section title="Notes">
+        <Check checked={filters.notes.length === 0} onChange={() => set({ notes: [] })}>
+          All Notes
+        </Check>
+        <div className="fnotes">
+          {notes.map((n) => (
+            <Check
+              key={n}
+              checked={filters.notes.some((x) => x.toLowerCase() === n.toLowerCase())}
+              onChange={() => set({ notes: toggle(filters.notes, n) })}
+            >
+              {n}
+            </Check>
+          ))}
+        </div>
       </Section>
 
       <Section title="Brand">

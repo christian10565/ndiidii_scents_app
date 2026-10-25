@@ -60,8 +60,8 @@ export function TierShowcaseTabs({ byTier }: { byTier: Record<string, Perfume[]>
                   )}
                   <ProductImage src={p.imageUrl} alt={p.name} />
                 </div>
-                <p className="tier-card__family">{p.scentProfile || p.brand}</p>
                 <h3 className="serif tier-card__name">{p.name}</h3>
+                <p className="tier-card__family">{p.brand}</p>
               </Link>
             </article>
           ))}
