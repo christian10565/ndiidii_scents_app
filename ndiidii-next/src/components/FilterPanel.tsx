@@ -43,6 +43,9 @@ const GENDERS = [
   { value: 'unisex', label: 'Unisex' },
 ];
 
+/** How many notes show before "Show more". */
+const NOTES_PREVIEW = 12;
+
 /**
  * `filters` is the object from lib/shopQuery.ts; `onChange(nextFilters)` writes it back to the URL.
  * Tier prices come from store.config so they are only ever changed in one place.
@@ -65,6 +68,17 @@ export default function FilterPanel({
   const price = (t: string) => formatNaira(TIER_BOX_PRICE_NGN[Number(t) as 1 | 2 | 3]);
 
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
+
+  // Notes are a long list, so only a preview shows until expanded. Selected notes
+  // are always kept visible, otherwise a checked note could be hidden behind
+  // "Show more" and look like it had been dropped.
+  const [notesExpanded, setNotesExpanded] = useState(false);
+  const selectedNotes = notes.filter((n) => filters.notes.some((x) => x.toLowerCase() === n.toLowerCase()));
+  const previewNotes = [...new Set([...notes.slice(0, NOTES_PREVIEW), ...selectedNotes])].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const shownNotes = notesExpanded ? notes : previewNotes;
+  const hiddenNoteCount = notes.length - previewNotes.length;
 
   // Brands that have perfumes, most stocked first. Selected brands are pinned so they never disappear.
   const all = brands.filter((b) => b.perfumes > 0).sort((a, b) => b.perfumes - a.perfumes);
@@ -140,7 +154,7 @@ export default function FilterPanel({
           All Notes
         </Check>
         <div className="fnotes">
-          {notes.map((n) => (
+          {shownNotes.map((n) => (
             <Check
               key={n}
               checked={filters.notes.some((x) => x.toLowerCase() === n.toLowerCase())}
@@ -150,6 +164,20 @@ export default function FilterPanel({
             </Check>
           ))}
         </div>
+        {notes.length > NOTES_PREVIEW && (
+          <button className="fnotes__toggle" onClick={() => setNotesExpanded((o) => !o)} aria-expanded={notesExpanded}>
+            {notesExpanded ? (
+              <>
+                Show less <ArrowRight width={13} height={13} style={{ transform: 'rotate(180deg)' }} />
+              </>
+            ) : (
+              <>
+                Show more <span className="fnotes__count">({hiddenNoteCount})</span>
+                <ArrowRight width={13} height={13} style={{ transform: 'rotate(90deg)' }} />
+              </>
+            )}
+          </button>
+        )}
       </Section>
 
       <Section title="Brand">

@@ -150,6 +150,31 @@
   }
 }
 
+/* The drawer backdrop is mobile-only. It sits inside the .shop__layout grid, so
+   without an explicit display:none it becomes a grid cell on desktop and shoves
+   .shop__main into a second row — the panel reopens but the products vanish. */
+.shop__backdrop {
+  display: none;
+}
+
+.fnotes__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--oxblood);
+}
+.fnotes__toggle:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.fnotes__count {
+  color: #8a8a8a;
+  font-weight: 400;
+}
+
 .check {
   display: flex;
   align-items: center;
@@ -479,6 +504,7 @@
     min-height: 100%;
   }
   .shop__backdrop {
+    display: block;
     position: fixed;
     inset: 0;
     z-index: 70;

@@ -117,8 +117,12 @@ export default function ShopShell({ initial, oils, brands }: { initial: Perfume[
                 <button
                   className="shop__filter-btn"
                   onClick={() => {
+                    // Below 960px the panel is a drawer and needs the backdrop +
+                    // scroll lock. On desktop it is an inline column: setting
+                    // drawerOpen there only locked page scroll for no reason.
+                    const isDrawer = window.matchMedia('(max-width: 960px)').matches;
                     setPanelOpen(true);
-                    setDrawerOpen(true);
+                    setDrawerOpen(isDrawer);
                   }}
                 >
                   <FilterIcon width={18} height={18} />
