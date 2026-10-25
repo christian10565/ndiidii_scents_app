@@ -31,10 +31,22 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
   const { lines, toggleLine, removeLine, setQty } = useCart();
   const tierLines = useMemo(() => lines.filter((l) => l.kind === 'perfume' && l.tier === activeTier), [lines, activeTier]);
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
-  const selected = useMemo(() => tierLines.flatMap((l) => l.items), [tierLines]);
-  const incomplete = tierLines.find((l) => l.items.length < BOX_SIZE);
-  const activeLineId = incomplete?.id ?? tierLines[tierLines.length - 1]?.id ?? null;
-  const full = (incomplete?.items.length ?? 0) === BOX_SIZE;
+
+  /**
+   * The set currently being built. A tier is edited one set at a time: the
+   * incomplete line if there is one, otherwise the last one. Selection used to
+   * be flattened across every line in the tier, so a 5th pick (which the cart
+   * puts in a new line) made "selected" 5, produced "Pick -1 More", and left the
+   * extra item with no slot to render into.
+   */
+  const workingLine = useMemo(() => {
+    const incompleteLine = tierLines.find((l) => l.items.length < BOX_SIZE);
+    return incompleteLine ?? tierLines[tierLines.length - 1] ?? null;
+  }, [tierLines]);
+
+  const selected = workingLine?.items ?? [];
+  const activeLineId = workingLine?.id ?? null;
+  const full = selected.length === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[activeTier];
   const canPay = lines.filter((l) => l.kind === 'perfume').every((l) => l.items.length === BOX_SIZE);
 
@@ -61,8 +73,10 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
       {/* Tier selector */}
       <div className="builder__tiers" role="tablist" aria-label="Tier">
         {TIERS.map((t) => {
-          const c = lines.filter((l) => l.kind === 'perfume' && l.tier === t.tier).reduce((n, l) => n + l.items.length, 0);
-          const incompleteTier = lines.some((l) => l.kind === 'perfume' && l.tier === t.tier && l.items.length < BOX_SIZE);
+          const tLines = lines.filter((l) => l.kind === 'perfume' && l.tier === t.tier);
+          const tWorking = tLines.find((l) => l.items.length < BOX_SIZE) ?? tLines[tLines.length - 1];
+          const c = tWorking?.items.length ?? 0;
+          const incompleteTier = tLines.some((l) => l.items.length < BOX_SIZE);
           return (
             <button
               key={t.tier}
@@ -97,12 +111,20 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
             <div className="builder__grid">
               {products.map((p) => {
                 const sel = isSelected(p.slug);
-                const disabled = !sel && full; // can't add a 5th to an incomplete line
+                // A full set blocks further picks until it has been added to the
+                // cart — that is the only point where starting a second set in
+                // the same tier makes sense. Without this the fifth click quietly
+                // opened a second line and the counter went negative.
+                const disabled = !sel && full && !justAdded;
                 return (
                   <button
                     key={p.id}
                     className={`bcard ${sel ? 'is-selected' : ''}`}
-                    onClick={() => !disabled && toggleLine('perfume', activeTier, p.slug)}
+                    onClick={() => {
+                      if (disabled) return;
+                      if (!sel && full) setJustAdded(false); // this pick opens the next set
+                      toggleLine('perfume', activeTier, p.slug);
+                    }}
                     disabled={disabled}
                     aria-pressed={sel}
                   >
@@ -179,7 +201,7 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
               }}
             >
               <BagIcon width={16} height={16} />
-              {full ? 'Add Set to Cart' : `Pick ${BOX_SIZE - selected.length} More`}
+              {full ? 'Add Set to Cart' : `Pick ${Math.max(0, BOX_SIZE - selected.length)} More`}
             </button>
             {justAdded && canPay && (
               <button className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>

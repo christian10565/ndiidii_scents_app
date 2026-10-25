@@ -125,10 +125,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const toggleLine = useCallback((kind: BoxKind, tier: Tier | null, slug: string) => {
     setState((s) => {
+      // Remove from whichever line already holds it. This must scan every line,
+      // not just the incomplete ones: a slug sitting in a *full* set would
+      // otherwise be treated as "not selected" and re-added, so deselecting a
+      // finished set's item silently built a new set instead of removing it.
+      const owner = s.lines.find(
+        (l) => l.kind === kind && l.tier === tier && l.items.includes(slug),
+      );
+      if (owner) {
+        return {
+          ...s,
+          lines: s.lines.map((l) =>
+            l.id === owner.id ? { ...l, items: l.items.filter((x) => x !== slug) } : l,
+          ),
+        };
+      }
+
       const candidates = s.lines.filter(
         (l) => l.kind === kind && l.tier === tier && l.items.length < BOX_SIZE,
       );
-      let line = candidates[0];
+      const line = candidates[0];
       if (!line) {
         const unitPrice =
           kind === 'oil'
@@ -146,10 +162,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
         return { ...s, lines: [...s.lines, newLine] };
       }
-      const has = line.items.includes(slug);
-      const nextItems = has ? line.items.filter((x) => x !== slug) : [...line.items, slug];
-      const updated = { ...line, items: nextItems };
-      return { ...s, lines: s.lines.map((l) => (l.id === line!.id ? updated : l)) };
+      const updated = { ...line, items: [...line.items, slug] };
+      return { ...s, lines: s.lines.map((l) => (l.id === line.id ? updated : l)) };
     });
   }, []);
 
