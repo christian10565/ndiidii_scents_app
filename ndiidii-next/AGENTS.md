@@ -17,6 +17,8 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - MSYS curl reports `size 0` on gzipped responses — pass `--compressed`.
 - Next dev refuses a 2nd server if one runs on :3000 — check first.
 - Backgrounded `next start` from a shell often dies when the parent shell exits; prefer the already-running dev server on :3001/:3000 for live checks, or Playwright against it.
+- **A `next start` you "killed" may still be running.** Killing the background shell does not kill the Node child tree on Windows, and the survivor keeps `.next` locked, so the next `rm -rf .next` fails with `Directory not empty` and the rebuild silently does nothing. Find it with `MSYS_NO_PATHCONV=1 wmic process where "name='node.exe'" get processid,commandline | grep -i "next start"`, then `MSYS_NO_PATHCONV=1 taskkill /F /T /PID <pid>`.
+- `rm -rf .next` also wipes a running `next dev`'s cache (and can take the dev server down). Check for `next dev` before clearing it.
 - `.env` holds secrets (gitignored). Never commit it. `.env.example` documents vars.
 
 ### Data
@@ -81,6 +83,23 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - Client prefers minimal, non-overengineered solutions.
 
 
+### Catalog snapshot (Redis) — where the fallback actually lives
+- `src/lib/snapshot.ts` dual-writes every successful sheet read: Upstash Redis key
+  `catalog:snapshot` when `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set, plus
+  `data/catalog-snapshot.json` locally. **On Vercel the local write silently fails
+  (read-only FS), so Redis is the real store there.**
+- Read order: in-process `memoryCache` → Redis → local file. Redis/disk failures
+  are swallowed on purpose — a snapshot write must never break a page.
+- Verified live (Oct 2026): `PING` → PONG, `catalog:snapshot` ≈ 858KB,
+  `DBSIZE` = 16 keys. Same instance holds gift-card balances + the order ledger.
+- **Size watch:** 838KB raw → 144KB gzipped (17%). Upstash REST has a 1MB default
+  request cap and a failed `SET` is silent, so gzip+base64 before `SET` (gunzip on
+  read, fall back to the plain key) when the catalog outgrows it.
+- Unverified: whether the **Vercel project** carries those two env vars. They're in
+  the local `.env` (which is what wrote the key above). No `.vercel` dir and no
+  `vercel` CLI on this machine — check the dashboard before trusting the fallback
+  in prod.
+
 ### Performance: page weight (Oct 2026 — done, and what is still deferred)
 The catalog is `use cache`d with a 5-min window + `/api/revalidate`, so server
 time was never the problem. The problem was how much of the catalog crossed into
@@ -101,14 +120,27 @@ Fixed:
   Suspense boundary (static shell + request-time list). 719KB → 145KB.
 - `ShopCard` takes a structural `CardProduct`, so /search and the builders can
   still pass full `Perfume`/`Oil` objects.
+- **PDPs are now STATIC.** `perfumes/[slug]`, `oils/[slug]` and
+  `discovery-sets/[slug]` export `generateStaticParams()` off the cached catalog
+  and no longer set `instant = false`. 1,681 pages prerendered; TTFB 5–10ms;
+  links prefetch. `dynamicParams` stays default (true) so sheet rows added after a
+  build still render on demand.
+  - `getPerfume(slug)` now derives from `getPerfumes()` instead of calling
+    `readCatalog()`. With one cold `use cache` entry per slug, the old shape did
+    ~1,046 sheet reads + ~1,046 × 858KB Redis/disk snapshot writes **per build**
+    (12+ min of prerendering, before the fix).
+  - Prerendered client components must not read `Date.now()` — Next 16 refuses it
+    at build ("encountered the unstable value"). `PerfumeCartSet`/`OilCartSet`
+    fallback line ids are now stable strings; `Date.now()` there was also a
+    hydration mismatch waiting to happen.
+  - Cart panels get `ProductRef[]` (slug/name/imageUrl) filtered to the **same
+    tier** — the panel only renders `linesFor('perfume', tier)` and builder lines
+    are single-tier. Whole catalog = 205KB per page; same-tier = ~95KB avg.
+  - Build cost: ~15–20 min, ~140MB of HTML (482MB with `.rsc`). Don't be
+    surprised; don't "fix" it by dropping generateStaticParams.
 
 Still deferred (do these next time):
-1. **PDPs are dynamic.** `perfumes/[slug]`, `oils/[slug]`, `discovery-sets/[slug]`
-   and `/checkout` set `instant = false`, so every product click is a cold SSR
-   round-trip with nothing prefetched. Fix: `generateStaticParams` off the cached
-   catalog + `revalidate`, drop `instant = false`, move dynamic bits behind
-   Suspense.
-2. **Product images.** `cloudinaryThumb` asks for `w_900&h_900` for grid cards.
+1. **Product images.** `cloudinaryThumb` asks for `w_900&h_900` for grid cards.
    Measured on one asset: raw 110KB → w900 53KB → w400 17KB. No `srcset`, no
    width/height (CLS). Add a `sizes`-aware srcset and `fetchPriority="high"` on
    the first row.
@@ -117,3 +149,8 @@ Still deferred (do these next time):
 4. **The real ceiling:** the shop ships all 1,414 rows and filters in the browser.
    Fine at this size; the durable fix is server-side filtering + pagination
    (searchParams), which also removes the 500KB payload entirely.
+5. **PDP payload follow-up:** the ~95KB is still mostly `ProductRef` data. Storing
+   name+image on the cart line at add-time (instead of resolving slugs against a
+   shipped list) would take each product page to ~40KB.
+6. `/checkout` still sets `instant = false`. It is client-cart driven, so it could
+   be static too — never got round to it.

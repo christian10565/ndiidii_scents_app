@@ -46,6 +46,22 @@ export interface OilCard {
 
 export type ShopItem = PerfumeCard | OilCard;
 
+/**
+ * The only product fields the PDP cart panels resolve (name + image by slug,
+ * plus the 4 slots of the current set). A PDP is prerendered once per product,
+ * so passing the full catalogue here would bake ~800KB into every one of the
+ * ~1,400 product pages.
+ */
+export interface ProductRef {
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+}
+
+export function toProductRef(p: { slug: string; name: string; imageUrl: string | null }): ProductRef {
+  return { slug: p.slug, name: p.name, imageUrl: p.imageUrl };
+}
+
 export function toPerfumeCard(p: Perfume): PerfumeCard {
   return {
     id: p.id,

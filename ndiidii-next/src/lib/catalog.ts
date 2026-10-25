@@ -181,8 +181,13 @@ export async function getPerfume(slug: string): Promise<Perfume | null> {
   'use cache';
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
-  const snap = await readCatalog();
-  return snap.perfumes.find((p: Perfume) => p.slug === slug) ?? null;
+  // Derived from getPerfumes() — ONE cached catalog read — rather than from
+  // readCatalog(). Prerendering ~1,050 product pages calls this once per slug,
+  // and every cold cache entry used to re-read BOTH sheet tabs and rewrite the
+  // 858KB snapshot to Redis and disk: ~1,046 sheet reads and ~900MB of Redis
+  // writes per build, which is what made static generation take 12+ minutes.
+  const perfumes = await getPerfumes();
+  return perfumes.find((p: Perfume) => p.slug === slug) ?? null;
 }
 
 export interface BrandCount {

@@ -5,12 +5,22 @@ import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { BOX_SIZE, TIER_BOX_PRICE_NGN, TIER_LABELS } from '@/lib/store.config';
 import { getPerfume, getPerfumes } from '@/lib/catalog';
+import { toProductRef } from '@/lib/shopCards';
 import PerfumeCartSet from '@/components/PerfumeCartSet';
 
-// This route reads `params` (and the sheet) on every request, so it can't be
-// statically prerendered — product slugs aren't known at build time. Render it
-// at request time rather than streaming.
-export const instant = false;
+/**
+ * Statically generated: every perfume slug known to the catalogue at build time
+ * is prerendered, so a product click is a prefetch hit instead of a server round
+ * trip. `generateMetadata` and the page both read the cached catalogue, and the
+ * 5-minute `cacheLife` on `getPerfume`/`getPerfumes` revalidates the pages.
+ *
+ * Slugs added to the sheet after the build still work: `dynamicParams` defaults
+ * to true, so an unknown slug renders on demand and then joins the cache.
+ */
+export async function generateStaticParams() {
+  const perfumes = await getPerfumes();
+  return perfumes.map((p) => ({ slug: p.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -28,7 +38,12 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const p = await getPerfume(slug);
   if (!p) notFound();
-  const perfumes = await getPerfumes();
+  // Only the products that can appear in THIS page's cart panel: the panel shows
+  // `linesFor('perfume', tier)`, and every line the builder writes is
+  // single-tier, so same-tier refs are the complete set. Shipping all 1,046 put
+  // ~205KB into each of the 1,046 prerendered product pages (~800MB of build
+  // output); same-tier refs cut that roughly 3x.
+  const tierRefs = (await getPerfumes()).filter((x) => x.tier === p.tier).map(toProductRef);
 
   const notes = [p.notes.top, p.notes.heart, p.notes.base].filter(Boolean);
   const boxPrice = formatNaira(TIER_BOX_PRICE_NGN[p.tier!]);
@@ -89,7 +104,7 @@ export default async function PerfumePage({ params }: { params: Promise<{ slug: 
             </div>
           )}
 
-          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={perfumes} />
+          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={tierRefs} />
         </div>
       </div>
     </div>

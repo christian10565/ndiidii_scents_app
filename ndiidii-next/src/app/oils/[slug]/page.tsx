@@ -5,12 +5,18 @@ import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
 import { getOils, getPerfume, type Oil, type Perfume } from '@/lib/catalog';
+import { toProductRef } from '@/lib/shopCards';
 import OilCartSet from '@/components/OilCartSet';
 
-// This route reads `params` (and the sheet) on every request, so it can't be
-// statically prerendered — product slugs aren't known at build time. Render it
-// at request time rather than streaming.
-export const instant = false;
+/**
+ * Statically generated from the oils tab. Slugs that only exist in the perfumes
+ * tab (see the `getOils()` known issue) are not in this list and render on
+ * demand via the `getPerfume` fallback — `dynamicParams` defaults to true.
+ */
+export async function generateStaticParams() {
+  const oils = await getOils();
+  return oils.map((o) => ({ slug: o.slug }));
+}
 
 function isOilProduct(p: Oil | Perfume | null): p is Oil {
   return p !== null && 'category' in p;
@@ -38,6 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function OilPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const oils = await getOils();
+  const oilRefs = oils.map(toProductRef);
   const foundOil = oils.find((o) => o.slug === slug) ?? null;
   const maybePerfume = foundOil ? null : await getPerfume(slug);
   const p: Oil | Perfume | null = foundOil ?? (maybePerfume && maybePerfume.tier === null ? maybePerfume : null);
@@ -88,7 +95,7 @@ export default async function OilPage({ params }: { params: Promise<{ slug: stri
             {!Object.keys(p.extra).length && <p>No additional notes yet.</p>}
           </div>
 
-          <OilCartSet oils={oils} slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
+          <OilCartSet oils={oilRefs} slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
         </div>
       </div>
     </div>

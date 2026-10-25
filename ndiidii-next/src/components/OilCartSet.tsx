@@ -6,16 +6,20 @@ import { formatNaira } from '@/lib/format';
 import ProductImage from './ProductImage';
 import { BagIcon } from './Icons';
 import { useState, useEffect } from 'react';
-import type { Oil } from '@/lib/catalog';
+import type { ProductRef } from '@/lib/shopCards';
 
-export default function OilCartSet({ oils, slug, name, imageUrl }: { oils: Oil[]; slug: string; name: string; imageUrl: string | null }) {
+export default function OilCartSet({ oils, slug, name, imageUrl }: { oils: ProductRef[]; slug: string; name: string; imageUrl: string | null }) {
   const { linesFor, toggleLine, removeLine, setQty } = useCart();
   const [qtyStr, setQtyStr] = useState('1');
   const [added, setAdded] = useState(false);
 
   const oilLines = linesFor('oil');
   const activeLine = oilLines.find((l) => l.items.length < BOX_SIZE) ?? oilLines[oilLines.length - 1] ?? null;
-  const activeLineId = activeLine?.id ?? `oil-${Date.now()}`;
+  // Stable fallback id: this component is prerendered once per product, so a
+  // `Date.now()` fallback is a prerender-time value (Next rejects it) and a
+  // hydration mismatch. It is only ever used when no line exists, where the
+  // qty/remove handlers are unreachable anyway.
+  const activeLineId = activeLine?.id ?? `oil-new`;
   const selected = activeLine?.items ?? [];
   const full = selected.length === BOX_SIZE;
   const price = OIL_BOX_PRICE_NGN ?? 0;

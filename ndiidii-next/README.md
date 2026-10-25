@@ -134,6 +134,27 @@ The products count in the heading is `filtered.length`, i.e. what the filters
 actually produced. It is **not** the catalogue size; computing it from the
 catalogue made the number ignore every filter except Collection.
 
+### What the shop ships to the browser
+
+Client-side filtering only pays off if the payload stays small. The catalogue is
+1,046 perfumes + 368 oils and a full `Perfume` is ~764 bytes, so handing those
+objects to `ShopShell` put ~950KB of JSON into `/shop`'s HTML **and** into every
+prefetch of that route.
+
+So the server projects every row through `src/lib/shopCards.ts` first
+(`toPerfumeCard` / `toOilCard`): id, slug, name, brand, gender, imageUrl,
+inStock, `tier` (perfumes) or `category` (oils), plus `noteKeys`. Descriptions,
+`extra` sheet prose, `inspiredBy`, `season` and the raw note strings never reach
+the client. Current weight: ~500KB, down from 950KB.
+
+Two rules that keep it that way:
+
+- **Never pass a full `Perfume`/`Oil` array to a client component** unless that
+  component genuinely renders those fields. `/search`, the builders and the PDPs
+  still pass full objects — they need them — but the grid does not.
+- **`ShopCard` takes the structural `CardProduct` type**, not `Perfume | Oil`, so
+  lean cards and full objects can both be passed to it.
+
 ### Notes filter
 
 The sheet stores notes as prose (`"Rich Agarwood (Oud), Sandalwood, and Herbal
@@ -143,6 +164,117 @@ canonical ingredient name from its own `CANONICAL` list and drops anything that
 doesn't map, leaving ~105 usable chips. Adding a note to that list adds it to the
 filter. The panel shows 12 at a time with Show more / Show less, and always keeps
 selected notes visible.
+
+The mapping runs **once per product on the server** (`notesFromParts`), and the
+result ships as `noteKeys`. The client filters with `hasAnyKey` and builds the
+chip list with `noteIndexFromKeys` — it never re-parses sheet prose. Filter
+results are unchanged; only the work moved.
+
+## Page weight
+
+The sheet is the source of truth and the catalogue is large, so the recurring
+risk is shipping the whole thing where only a slice is needed. Measured HTML per
+route (after minification, before gzip):
+
+| Route | HTML | Why |
+| --- | --- | --- |
+| `/` | ~60KB | Tier tabs get 4 products per tier, sliced server-side |
+| `/shop` | ~500KB | All 1,414 rows as lean cards — the cost of client-side filtering |
+| `/discovery-sets` | ~145KB | 24 sets per page (**253** complete sets exist) |
+| `/brands` | ~43KB | ~380 brand counts |
+| `/perfumes/[slug]` | ~95KB (38–119KB) | Static: 1,046 pages prerendered at build |
+| `/oils/[slug]` | ~90KB | Static: 368 pages prerendered at build |
+| `/discovery-sets/[slug]` | ~30KB | Static: 253 pages prerendered at build |
+
+Regressions to watch for, all of which have happened:
+
+- **Slicing on the client.** `TierShowcase` used to pass the entire in-stock
+  catalogue to `TierShowcaseTabs`, which then did `.slice(0, 4)`. That was 640KB
+  of the homepage's 694KB. Slice on the server, pass the slice.
+- **`/discovery-sets` rendering every set.** 253 sets × 4 images = 719KB and 790
+  images in one document. It is paged 24 at a time via `?page=` instead, read
+  inside a Suspense boundary so the page's static shell survives while the list
+  renders per request.
+- **Shipping fields nobody renders.** See *What the shop ships to the browser*.
+- **Shipping the whole catalogue to a prerendered page.** The PDP cart panel needs
+  name + image per *tier*, not the entire catalogue — see *Product pages*.
+
+Next 16 prefetches links on hover, so an oversized route is not just a slow first
+load — it is a slow *navigation*, because the payload starts downloading the
+moment the cursor touches a link.
+
+### Product pages (PDPs) are prerendered
+
+`/perfumes/[slug]`, `/oils/[slug]` and `/discovery-sets/[slug]` export
+`generateStaticParams()` built from the cached catalogue, so every slug known at
+build time is prerendered and served straight from the CDN — TTFB measured at
+**5–10ms**, and the client router can prefetch a product link before the click.
+`dynamicParams` is left at its default (`true`), so a slug added to the sheet
+after the build still works: it renders on request and joins the cache. The
+5-minute `cacheLife` on the catalogue revalidates these pages.
+
+Three things this arrangement depends on:
+
+- **`getPerfume(slug)` derives from `getPerfumes()`.** It used to call
+  `readCatalog()` directly, which was harmless when pages rendered on demand but
+  fatal for a build: one cold cache entry per slug, each re-reading both sheet
+  tabs and rewriting the 858KB snapshot to Redis and disk (~1,046 sheet reads and
+  ~900MB of Redis writes per build, 12+ minutes of prerendering).
+- **No `Date.now()` (or other unstable values) in a prerendered client
+  component.** `PerfumeCartSet`/`OilCartSet` used `Date.now()` in a fallback line
+  id; Next 16 rejects it at prerender and it would have hydrated mismatched
+  anyway. The fallback id is now stable (`perfume-${tier}-new`, `oil-new`).
+- **The cart panel gets same-tier refs only** (`ProductRef` — slug, name,
+  imageUrl). The panel renders `linesFor('perfume', tier)`, and builder lines are
+  single-tier, so same-tier refs are the complete set for that page. Passing the
+  whole catalogue put 205KB into each of 1,046 pages; same-tier refs average 95KB.
+
+Build cost, for expectations: ~1,681 prerendered pages, ~140MB of HTML (482MB
+with the `.rsc` payloads), 15–20 minutes on this machine.
+
+### Still deferred
+
+1. **Image `srcset`** — cards request `w_900&h_900` from Cloudinary for a ~300px
+   box. Measured on one asset: 110KB raw → 53KB at w900 → 17KB at w400. No
+   `width`/`height` either, so the grid shifts as images land.
+2. **CSS split** — all 11 stylesheets are imported in the root layout, so every
+   route pays 63KB including `home.css`, `builder.css` and `checkout.css`.
+3. **Server-side shop filtering** — `/shop` ships all 1,414 rows and filters in
+   the browser. Fine at this size; the durable fix is filtering and paginating
+   from `searchParams` the way `/discovery-sets` does, which drops the payload to
+   ~30KB regardless of catalogue size.
+4. **PDP payload follow-up** — the 95KB is still mostly `ProductRef` data. Storing
+   name + image on the cart line when a set is added (instead of resolving slugs
+   against a shipped list) would drop each product page to roughly 40KB.
+
+## Catalog snapshot (Redis / Vercel KV)
+
+The site never has a database — the Google Sheet is the truth. But a sheet read
+can fail (revoked service account, Google outage, network), and an empty
+catalogue would take the storefront down. So every successful read is persisted
+as the **last good snapshot** and served instead when the live read throws: the
+site goes slightly stale rather than blank.
+
+- Storage: `data/catalog-snapshot.json` locally, and Upstash Redis
+  (`catalog:snapshot`) whenever `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set.
+  On Vercel the filesystem is read-only, so Redis is the real store there.
+- Read order: in-process cache → Redis → local file.
+- `saveSnapshot` sets the in-process cache first, then writes Redis, then the
+  file; Redis and disk failures are both swallowed, because a page must never
+  break over a cache write.
+- Same Upstash instance holds gift-card balances and the order ledger (16 keys
+  currently), so it is load-bearing — see `src/lib/giftcard.ts`, `src/lib/orders.ts`.
+
+**Size watch:** the snapshot is ~838KB raw and **144KB gzipped (17%)**. Upstash
+REST requests have a 1MB default cap, and a failed `SET` is silent, so past a
+certain catalogue size the snapshot would quietly stop being saved. Gzip +
+base64 before `SET` (and `gunzip` on read, falling back to the uncompressed value)
+is the fix when that day comes.
+
+**Vercel check:** the snapshot only reaches Redis in production if the Vercel
+project carries `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Both are in the local
+`.env`; confirm them with `vercel env ls` before assuming the fallback works
+there.
 
 ## Collection builder
 
@@ -209,8 +341,11 @@ available.
 | Sheet reader (server-only) | `src/lib/sheets.ts` |
 | Row → product mapping | `src/lib/mappers.ts` |
 | Catalog read helpers (cached) | `src/lib/catalog.ts` |
+| Lean shop-card projection (what ships to the grid) | `src/lib/shopCards.ts` |
+| Last-good snapshot (local file + Upstash Redis) | `src/lib/snapshot.ts` |
+| Discovery Sets listing (paged) | `src/app/discovery-sets/page.tsx` |
 | Shop filter shape (URL ↔ object) | `src/lib/shopQuery.ts` |
-| Note normalisation + filter index | `src/lib/notes.ts` |
+| Note normalisation + note keys | `src/lib/notes.ts` |
 | Shop shell / filter panel | `src/components/ShopShell.tsx`, `src/components/FilterPanel.tsx` |
 | Perfume + oil builders | `src/components/BuilderShell.tsx`, `src/components/OilBuilderShell.tsx` |
 | Colours + fonts | `src/styles/tokens.css` |
