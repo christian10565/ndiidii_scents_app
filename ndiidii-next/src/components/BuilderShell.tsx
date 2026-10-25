@@ -55,6 +55,12 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
    * grid on first load.
    */
   const migrated = useRef(false);
+  // Kept in a ref so the effect's dep array keeps a constant size across renders.
+  // Adding byTier to the deps directly made React throw "the final argument
+  // passed to useEffect changed size between renders" on hot reload.
+  const byTierRef = useRef(byTier);
+  byTierRef.current = byTier;
+
   useEffect(() => {
     // Wait for the cart to hydrate: on first render `lines` is still empty, so
     // running now would find no partials and wrongly mark the migration done.
@@ -71,12 +77,12 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
       if (adopted[tier].length > 0) continue; // first partial per tier wins
       // Only adopt slugs the grid can actually render, otherwise the counter and
       // the empty slots disagree (a removed or renamed product leaves a ghost).
-      const available = new Set((byTier[String(tier)] ?? []).map((p) => p.slug));
+      const available = new Set((byTierRef.current[String(tier)] ?? []).map((p) => p.slug));
       adopted[tier] = [...new Set(line.items)].filter((slug) => available.has(slug)).slice(0, BOX_SIZE);
     }
     setDrafts((d) => ({ ...d, ...adopted }));
     partials.forEach((line) => removeLine(line.id));
-  }, [lines, removeLine, byTier]);
+  }, [lines, removeLine]);
 
   const togglePick = (slug: string) => {
     setJustAdded(false);
