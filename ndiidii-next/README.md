@@ -4,10 +4,11 @@ One Next.js app. The Google Sheet **is** the catalog — no database, no separat
 API. The sheet is read server-side on each request, cached, and re-read the
 moment the client edits it.
 
-Cart state is line-based and lives in localStorage. Each set is a `line` with
-up to 4 product slugs. Partial sets are visible immediately; checkout is blocked
-until every line is complete. Discovery sets remain separate, complete-only
-entries. Legacy `drafts`/`oils` are migrated on load.
+Cart state is line-based and lives in localStorage. A `line` is one set: exactly
+`BOX_SIZE` (4) product slugs. The builders keep in-progress picks in local state
+and only push a line to the cart once the set is complete, so a half-built set
+never exists in the cart and can't block checkout. Discovery sets remain separate,
+complete-only entries. Legacy `drafts`/`oils` are migrated on load.
 
 The design is carried over unchanged from the old Vite + NestJS stack: the same
 CSS (`src/styles/`), the same components, the same copy (`src/config/site.ts`).
@@ -120,6 +121,49 @@ Editorial rules used for these fills — keep them if you add more:
 `data/FILL-GUIDE.md` is the hand-off version of this workflow (schema + commands),
 written so research can be sourced elsewhere and pasted back as a batch file.
 
+## Shop filters
+
+All filter state lives in the URL (`?tier=2&gender=women&notes=Vanilla`), so any
+filtered view can be linked or refreshed. `src/lib/shopQuery.ts` owns the shape;
+`ShopShell` filters the server-delivered catalogue client-side for instant
+response. Adding a filter means touching four places: `Filters`, `readFilters`,
+`writeFilters`, `countActive` — plus the filter itself in `ShopShell` and a
+`Section` in `FilterPanel`.
+
+The products count in the heading is `filtered.length`, i.e. what the filters
+actually produced. It is **not** the catalogue size; computing it from the
+catalogue made the number ignore every filter except Collection.
+
+### Notes filter
+
+The sheet stores notes as prose (`"Rich Agarwood (Oud), Sandalwood, and Herbal
+Notes."`), and splitting that naively gives ~2,000 distinct fragments, 1,300 of
+them one-offs like `moked agarwood`. `src/lib/notes.ts` maps each fragment onto a
+canonical ingredient name from its own `CANONICAL` list and drops anything that
+doesn't map, leaving ~105 usable chips. Adding a note to that list adds it to the
+filter. The panel shows 12 at a time with Show more / Show less, and always keeps
+selected notes visible.
+
+## Collection builder
+
+`/collection-builder` (perfumes, picked per tier) and `/collection-builder/oils`
+(any four oils, `All / Niche / Designer` tabs) share one model:
+
+- Picks are held in local state, one draft per tier (perfumes) or one draft total
+  (oils). A draft holds at most `BOX_SIZE`; a fifth pick is refused, not silently
+  routed elsewhere.
+- `Add Set to Cart` calls `addLine()` with the complete set and clears the draft.
+  Nothing partial is ever written to the cart.
+- Leaving the page loses the draft. That is deliberate — the alternative (writing
+  drafts into cart lines) is what made the builder oscillate: with "current set"
+  inferred as *the first line with fewer than four items*, that target moves the
+  moment a set fills, so clicks land in a different set than the one on screen.
+- On load, any stale partial `perfume`/`oil` lines from the old builder are folded
+  into the draft (first per tier, only slugs still in the catalogue) and deleted,
+  so an old cart can't open with phantom slots or block checkout.
+- Set price comes from `TIER_BOX_PRICE_NGN` / `OIL_BOX_PRICE_NGN` — per **set**,
+  matching what the cart charges.
+
 ## What the sheet needs
 
 Row 1 is headers. The **first column is a unique ID** (her sheets already have
@@ -165,6 +209,10 @@ available.
 | Sheet reader (server-only) | `src/lib/sheets.ts` |
 | Row → product mapping | `src/lib/mappers.ts` |
 | Catalog read helpers (cached) | `src/lib/catalog.ts` |
+| Shop filter shape (URL ↔ object) | `src/lib/shopQuery.ts` |
+| Note normalisation + filter index | `src/lib/notes.ts` |
+| Shop shell / filter panel | `src/components/ShopShell.tsx`, `src/components/FilterPanel.tsx` |
+| Perfume + oil builders | `src/components/BuilderShell.tsx`, `src/components/OilBuilderShell.tsx` |
 | Colours + fonts | `src/styles/tokens.css` |
 | Homepage / shop / PDP styles | `src/styles/home.css`, `shop.css`, `pdp.css` |
 | Components | `src/components/*` |
