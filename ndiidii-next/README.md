@@ -64,6 +64,62 @@ filled without manual work:
 
 Name normalization collapses variant tokens like `La Fede`, `Eau de Parfum`, `100ml`, brackets, and punctuation so near-identical titles resolve to confident matches.
 
+## Catalog enrichment (metadata backfill)
+
+The sheet’s descriptive columns (`inspired by`, note pyramid, `season`, `occasion`,
+`gender`, `scent profile`) go stale faster than images do. The tooling below fills
+them without touching price or image columns.
+
+```bash
+node scripts/list-perfume-gaps.mjs        # who is missing what → data/perfume-gaps.json
+node scripts/derive-scent-profiles.mjs     # derives scent profile from each row's own notes
+node scripts/write-perfume-batch.mjs data/batch_N.json   # idempotent writer
+```
+
+- `scripts/list-perfume-gaps.mjs` — reads the live tab and writes `data/perfume-gaps.json`
+  (`{row, brand, name, missing[], gapCount}`), sorted by row.
+- `scripts/derive-scent-profiles.mjs` — for rows whose **only** gap is `scent profile`,
+  derives the family from the notes already in the sheet (position-weighted: top ×1,
+  heart ×2, base ×2), collapsed to a conventional two-family label (`Amber Woody`,
+  `Fruity Gourmand`, `Woody Oud`). No external lookup, no invention — it only reads
+  colours the sheet already contains. `--dry` previews without writing.
+- `scripts/write-perfume-batch.mjs <file>` — matches rows by `(brand, name)`, writes
+  **only** currently-blank cells, and reports every write. Safe to re-run.
+
+Batch file shape (one object per product; empty strings are skipped):
+
+```json
+[{
+  "brand": "Swiss Arabian",
+  "name": "Shaghaf Oud Tonka",
+  "inspired_by": "BDK Parfums Velvet Tonka",
+  "top_notes": "Almond",
+  "heart_notes": "Cinnamon, Tunisian Orange Blossom, Turkish Rose",
+  "base_notes": "Tonka Bean, Vanilla, Amberwood",
+  "season": "Autumn and Winter",
+  "occasion": "Evening wear, date nights, cool weather",
+  "gender": "Unisex",
+  "scent_profile": "Amber Gourmand",
+  "confidence": "high",
+  "sources": ["https://…"],
+  "flags": ""
+}]
+```
+
+Editorial rules used for these fills — keep them if you add more:
+
+- `season` is written with commas and `and` (`Spring and Summer`, `Autumn and Winter`).
+- When sources disagree, take the value the **majority** of independent sources support
+  and note the split in `flags`. If no majority exists, leave the field blank.
+- Never invent notes. Blank is the correct answer when nothing reliable was found.
+- Record `confidence` (`high` / `medium` / `low`) and `sources` on every row for audit.
+- `inspired by` is only filled when a source explicitly says clone / dupe / inspired-by.
+  Many catalogue houses (Swiss Arabian, Sapil, Hekayat Attar, Gulf Orchid, Zimaya) sell
+  original compositions — those stay blank on purpose.
+
+`data/FILL-GUIDE.md` is the hand-off version of this workflow (schema + commands),
+written so research can be sourced elsewhere and pasted back as a batch file.
+
 ## What the sheet needs
 
 Row 1 is headers. The **first column is a unique ID** (her sheets already have
@@ -114,6 +170,8 @@ available.
 | Components | `src/components/*` |
 | Image pipeline scripts | `scripts/*.mjs` |
 | Image pipeline data | `data/match-map.json`, `data/upload-map.json`, `data/supplier-scrape*.json` |
+| Enrichment scripts | `scripts/list-perfume-gaps.mjs`, `scripts/derive-scent-profiles.mjs`, `scripts/write-perfume-batch.mjs` |
+| Enrichment data | `data/perfume-gaps.json`, `data/batch_*.json`, `data/FILL-GUIDE.md` |
 
 ## Switching out-of-scope pieces off
 

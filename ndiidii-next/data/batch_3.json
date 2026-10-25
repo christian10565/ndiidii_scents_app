@@ -1,0 +1,128 @@
+[
+  {
+    "brand": "Gulf Orchid",
+    "name": "Sweet Heaven Ice",
+    "inspired_by": "",
+    "top_notes": "Cognac, Cinnamon, Plum",
+    "heart_notes": "Cashmere Wood, Iris Wood, Myrrh",
+    "base_notes": "Tonka Bean, Vanilla, Sandalwood, Caramel",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, date nights, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Amber Woody Spicy",
+    "confidence": "high",
+    "sources": [
+      "https://shop-gulforchid.com/products/sweet_heaven_ice",
+      "https://www.fragrantica.com/"
+    ],
+    "flags": "Fragrantica tags this flanker 'for men'; Gulf Orchid markets the line unisex. Gender set Unisex."
+  },
+  {
+    "brand": "Hamidi",
+    "name": "Maison Luxe Exotic Amber",
+    "inspired_by": "",
+    "top_notes": "Cinnamon, Bergamot, Pineapple",
+    "heart_notes": "Golden Amber, Tonka Bean, Vanilla",
+    "base_notes": "Musk, Sandalwood, Praline",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Amber Spicy",
+    "confidence": "medium",
+    "sources": [
+      "https://kiisasperfumes.com/products/hamidi-maison-luxe-exotic-amber-parfum-110ml",
+      "https://www.hamidi.us/",
+      "https://hamidi.ae/"
+    ],
+    "flags": "Retailer listings vary on heart/base (some add almond/oak). Used the most-cited pyramid."
+  },
+  {
+    "brand": "Maison Alhambra",
+    "name": "Exclusif Saffron",
+    "inspired_by": "",
+    "top_notes": "Saffron, Black Currant, Tonka Bean",
+    "heart_notes": "Rose, Iris",
+    "base_notes": "Leather, Guaiac Wood, Vanilla",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Amber Spicy",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Maison-Alhambra/Exclusif-Saffron-77376.html",
+      "https://theislamshop.com/"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Le Gazelle",
+    "name": "Kaira Rose Gold",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Tangerine, Orange Blossom",
+    "heart_notes": "Turkish Rose, Jasmine, Violet",
+    "base_notes": "Vanilla, Sandalwood",
+    "season": "Spring and Summer",
+    "occasion": "Date nights, daytime elegance, special occasions",
+    "gender": "Women",
+    "scent_profile": "Floral Woody",
+    "confidence": "low",
+    "sources": [
+      "https://marahfashion.com/"
+    ],
+    "flags": "Two conflicting pyramids found; used the more-cited listing. Verify against bottle if it matters."
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Wolf",
+    "inspired_by": "Azzaro The Most Wanted",
+    "top_notes": "Cardamom",
+    "heart_notes": "Toffee",
+    "base_notes": "Amberwood",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, date nights, cool weather",
+    "gender": "Men",
+    "scent_profile": "Amber Gourmand",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Rayhaan/Wolf-130000.html",
+      "https://www.jomashop.com/"
+    ],
+    "flags": "Reviewers consistently describe it as an Azzaro The Most Wanted inspiration."
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Torquin Giza",
+    "inspired_by": "",
+    "top_notes": "Spices, Cacao",
+    "heart_notes": "Bitter Almond, Coumarin",
+    "base_notes": "Tonka Bean, Vanilla",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, date nights, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Amber Gourmand",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Rayhaan/Tonquin-Giza-122844.html",
+      "https://247fragrancestore.ng/"
+    ],
+    "flags": "Sheet spelling is 'Torquin'; the correct product name is 'Tonquin Giza'."
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Nocturno Elixir",
+    "inspired_by": "",
+    "top_notes": "Lemon, Bergamot, Mint, Artemisia",
+    "heart_notes": "Lavender, Geranium, Pineapple",
+    "base_notes": "Sandalwood, Leather, Labdanum, Ambery Woods",
+    "season": "All Seasons",
+    "occasion": "Office, daily wear, evening outings",
+    "gender": "Men",
+    "scent_profile": "Woody Aromatic",
+    "confidence": "high",
+    "sources": [
+      "https://fragrances.com.ng/new-arrivals/rayhaan-nocturno-elixir",
+      "https://dubaifragranceshop.com/"
+    ],
+    "flags": ""
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "brand": "Fragrance World",
+    "name": "Elysia Elegance",
+    "inspired_by": "Kayali Fleur Majesty Rose Royale",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "high",
+    "sources": ["https://www.instagram.com/"],
+    "flags": ""
+  },
+  {
+    "brand": "MPF",
+    "name": "Rhapsody",
+    "inspired_by": "Paco Rabanne Olympea",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "medium",
+    "sources": ["https://www.instagram.com/orientalpetals/"],
+    "flags": "Reviewer calls it a clone of Olympea."
+  },
+  {
+    "brand": "Fragrance World",
+    "name": "SOULMATE INTENSE",
+    "inspired_by": "Burberry My Burberry",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "high",
+    "sources": ["https://www.youtube.com/@BettyMaryah"],
+    "flags": ""
+  },
+  {
+    "brand": "MPF",
+    "name": "Ideal Intense",
+    "inspired_by": "Lancôme Idôle",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "medium",
+    "sources": ["https://www.fragrantica.com/perfume/MPF/Ideal-Intense-128954.html"],
+    "flags": "Fragrantica reviewers describe it as an Idôle dupe."
+  },
+  {
+    "brand": "MPF",
+    "name": "Wild Deep",
+    "inspired_by": "Dior Sauvage",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "high",
+    "sources": ["https://la-barfumerie.com/"],
+    "flags": ""
+  },
+  {
+    "brand": "MPF",
+    "name": "Spirit",
+    "inspired_by": "Paco Rabanne Phantom",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "high",
+    "sources": ["https://www.patchworkoftips.com/myperfumes-spirit-review/"],
+    "flags": ""
+  },
+  {
+    "brand": "La Fede",
+    "name": "SYMBOL OF LOVE",
+    "inspired_by": "Dolce & Gabbana Devotion",
+    "top_notes": "", "heart_notes": "", "base_notes": "",
+    "season": "", "occasion": "", "gender": "", "scent_profile": "",
+    "confidence": "low",
+    "sources": ["https://www.youtube.com/@SiminShaikh"],
+    "flags": "Sources describe it as blending D&G Devotion and Lolita Lempicka Lolita Land; primary reference recorded."
+  }
+]

@@ -27,6 +27,23 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - No user accounts. Cart is localStorage-backed (`src/lib/cart.tsx`).
 - **Known catalog issue:** `getOils()` can return perfume data instead of oil data. `/oils/[slug]` currently falls back to `getPerfume()` for slugs that exist in the perfume tab but not the oils tab. This is a workaround; the root cause in `src/lib/catalog.ts` is flagged for debugging later.
 
+### Catalog metadata enrichment
+- `scripts/list-perfume-gaps.mjs` → `data/perfume-gaps.json`: every row missing ≥1 of the 8 descriptive fields, with row numbers.
+- `scripts/derive-scent-profiles.mjs`: fills `scent profile` **only** for rows whose sole gap is that field, derived from the sheet's own note pyramid (top ×1, heart ×2, base ×2, collapsed to a 2-family label). `--dry` to preview. This is the cheapest win — run it before any web research.
+- `scripts/write-perfume-batch.mjs data/batch_N.json`: idempotent writer. Matches on `(brand, name)`, fills blanks only, never overwrites.
+- **Duplicate rows exist.** The same `(brand, name)` can appear twice (e.g. `French Avenue | Amber Empire` at rows 814 and 936). The writer must fill *every* match — an earlier version keyed a Map by name and silently only updated the last one. Keep the array-of-matches behaviour.
+- Column writes use `'Tab'!E123`-style ranges; per-cell `batchUpdate` is reliable, whole-row writes are not.
+- Batch JSON carries `confidence` + `sources` + `flags` per row for audit; empty strings are skipped.
+
+### Researching the metadata (what actually works)
+- `web_search` / `web_extract` are Nous-managed and **fail without portal credits**. Do not assume they work.
+- Browser automation (`browser_exec`) needs a one-time Chrome approval at `chrome://inspect/#remote-debugging` → "Allow remote debugging for this browser instance". Chrome Remote Desktop is a *different* page and does not count.
+- `curl` to Google/DuckDuckGo/fragrance retailers returns JS challenges or Vercel security checkpoints. Don't bother.
+- Google search via the browser works but **rate-limits fast** ("unusual traffic"). Space calls ~3.5s, batch ~8–12 queries, and fall back to `https://duckduckgo.com/?q=…&ia=web` when blocked.
+- Don't call `wait_for_load()` after a Google query — its AI panel keeps `readyState` incomplete and the call times out. Use `goto_url()` + `sleep(3.5)` + `js('document.body.innerText')`.
+- **Highest-yield sources for `inspired by`:** `pickmyclone.com/blog/<brand>-complete-guide` (one page maps an entire house), plus `sniffalike.com`, `thescentatlas.com`, `scentverdict.com`. Parse by document position (original heading → next clone entry), not by zip-ing two arrays — houses with two clones of one original desync index pairing.
+- Note pyramids: Fragrantica, brand site, and `fragrances.com.ng` agree often enough to resolve by majority.
+
 ### Gotchas already solved (don't reintroduce)
 - **Cart clobbering**: persist effect must be guarded by a `hydrated` flag; otherwise the initial EMPTY state overwrites localStorage before hydration reads it (empties cart on every nav).
 - **Cart model**: line-based in `src/lib/cart.tsx`. `lines` holds perfume/oil sets by slug array, `discovery` holds curated sets. `toggleLine` adds/removes a slug from the first incomplete matching line or creates one. `canCheckout()` requires `items.length === BOX_SIZE` for every line.

@@ -1,0 +1,59 @@
+[
+  {
+    "brand": "MPF",
+    "name": "Titanium",
+    "inspired_by": "",
+    "top_notes": "Petitgrain, Lavender, Rosemary, Neroli",
+    "heart_notes": "Clary Sage, Geranium, Galbanum, Jasmine",
+    "base_notes": "",
+    "season": "",
+    "occasion": "Daily wear, evening occasions",
+    "gender": "Unisex",
+    "scent_profile": "Aromatic Green",
+    "confidence": "medium",
+    "sources": [
+      "https://www.fragrantica.com/perfume/MPF/Titanium-128959.html",
+      "https://www.chaosfragrances.com/products/mpf-titanium",
+      "https://eaglewholesale.com/product/detail/mpf-titanium-100ml"
+    ],
+    "flags": "Base notes not confirmed in retrieved sources; leave blank."
+  },
+  {
+    "brand": "Lattafa",
+    "name": "Awaan gold",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Orange",
+    "heart_notes": "Orange Blossom, Jasmine",
+    "base_notes": "Musk, Sandalwood, Patchouli",
+    "season": "Spring and Summer",
+    "occasion": "Daily wear, special occasions",
+    "gender": "Unisex",
+    "scent_profile": "Aromatic Fruity",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Awaan-84307.html",
+      "https://editorspick.com/products/lattafa-awaan-gold-unisex-edp-spray",
+      "https://www.ebay.com/itm/267689098097"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Lattafa Pride",
+    "name": "Riders kids Perfume",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Galbanum, Lemon",
+    "heart_notes": "Orange Flower",
+    "base_notes": "Musk",
+    "season": "",
+    "occasion": "Everyday adventures, casual wear",
+    "gender": "Unisex",
+    "scent_profile": "",
+    "confidence": "medium",
+    "sources": [
+      "https://www.lattafa-usa.com/products/riders",
+      "https://www.amazon.com/Lattafa-Pride-Riders-Parfum-Spray/dp/B0DJDX5NPQ",
+      "https://lattafapakistan.com/products/spray-riders-for-kids-75ml-perfume"
+    ],
+    "flags": "Season and scent profile not confirmed; fresh citrus accord inferred."
+  }
+]
