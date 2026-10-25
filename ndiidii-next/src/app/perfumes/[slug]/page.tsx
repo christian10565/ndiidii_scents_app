@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
@@ -34,7 +35,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function PerfumePage({ params }: { params: Promise<{ slug: string }> }) {
+/**
+ * `params` is URL data. Next 16 raises "instant-shell-url-data" when it is read
+ * outside a Suspense boundary, because the shell then cannot render until the URL
+ * is known. So the boundary renders the PDP frame immediately and the body fills
+ * in when the slug resolves — the route is still statically generated per slug
+ * (see generateStaticParams), this only keeps the shell instant.
+ */
+export default function PerfumePage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={<PdpShell />}>
+      <PerfumeBody params={params} />
+    </Suspense>
+  );
+}
+
+function PdpShell() {
+  return <div className="container pdp" style={{ minHeight: '70vh' }} />;
+}
+
+async function PerfumeBody({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const p = await getPerfume(slug);
   if (!p) notFound();

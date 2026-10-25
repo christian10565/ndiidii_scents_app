@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
@@ -41,7 +42,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function OilPage({ params }: { params: Promise<{ slug: string }> }) {
+/** `params` is URL data — read it inside a boundary so the shell stays instant. */
+export default function OilPage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={<PdpShell />}>
+      <OilBody params={params} />
+    </Suspense>
+  );
+}
+
+function PdpShell() {
+  return <div className="container pdp" style={{ minHeight: '70vh' }} />;
+}
+
+async function OilBody({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const oils = await getOils();
   const oilRefs = oils.map(toProductRef);

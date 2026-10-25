@@ -215,6 +215,14 @@ after the build still works: it renders on request and joins the cache. The
 
 Three things this arrangement depends on:
 
+- **`params` is read inside a `<Suspense>` boundary.** The page component itself
+  renders synchronously and hands the `params` promise to an async child
+  (`PerfumeBody`, `OilBody`, `DiscoverySetBody`). Reading `await params` at the top
+  of the page raises Next 16's `instant-shell-url-data` error in dev — it means the
+  shell can't paint until the URL is known. The boundary keeps the shell instant
+  without giving up `generateStaticParams`, and `fallback` is a full-height
+  placeholder so there is no layout jump. Same pattern as `/search`.
+
 - **`getPerfume(slug)` derives from `getPerfumes()`.** It used to call
   `readCatalog()` directly, which was harmless when pages rendered on demand but
   fatal for a build: one cold cache entry per slug, each re-reading both sheet

@@ -20,6 +20,7 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - **A `next start` you "killed" may still be running.** Killing the background shell does not kill the Node child tree on Windows, and the survivor keeps `.next` locked, so the next `rm -rf .next` fails with `Directory not empty` and the rebuild silently does nothing. Find it with `MSYS_NO_PATHCONV=1 wmic process where "name='node.exe'" get processid,commandline | grep -i "next start"`, then `MSYS_NO_PATHCONV=1 taskkill /F /T /PID <pid>`.
 - `rm -rf .next` also wipes a running `next dev`'s cache (and can take the dev server down). Check for `next dev` before clearing it.
 - `.env` holds secrets (gitignored). Never commit it. `.env.example` documents vars.
+- **`NEXT_DIST_DIR=.next-verify npx next build`** builds into a separate dist dir, so you can verify a production build (and `next start` it on another port) while the user's `next dev` keeps running untouched. Defaults to `.next` when unset.
 
 ### Data
 - Catalog: Google Sheet, read server-side via `src/lib/sheets.ts` (`readTab`). Column 0 = ID (exposed as `row.first`, NOT in `row.cells`).
@@ -79,6 +80,7 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 
 ### Conventions
 - Keep commit messages SHORT (user asks every time). **Ask before every `git push`** — never push autonomously.
+- **Ask before committing to `main` or merging `dev`→`main`.** Work lands on `dev`; the user tests first, then says merge. (Learned the hard way — merged a 1,681-page prerender change straight to `main` without asking.)
 - Design must match the mockups in `docs/` (Discovery Sets, Gift Cards). Reuse existing CSS vocab (oxblood accents, serif headings, black panels).
 - Client prefers minimal, non-overengineered solutions.
 
@@ -133,6 +135,12 @@ Fixed:
     at build ("encountered the unstable value"). `PerfumeCartSet`/`OilCartSet`
     fallback line ids are now stable strings; `Date.now()` there was also a
     hydration mismatch waiting to happen.
+  - `params` must be awaited INSIDE a `<Suspense>` boundary. The page renders
+    synchronously and passes the `params` promise to an async child; reading
+    `await params` in the page itself trips Next 16's `instant-shell-url-data`
+    error in dev ("shell can't paint until the URL is known"). Fix is the
+    boundary, NOT `instant = false` — that would throw away the static pages.
+    Longest-running example: `src/app/perfumes/[slug]/page.tsx`.
   - Cart panels get `ProductRef[]` (slug/name/imageUrl) filtered to the **same
     tier** — the panel only renders `linesFor('perfume', tier)` and builder lines
     are single-tier. Whole catalog = 205KB per page; same-tier = ~95KB avg.
