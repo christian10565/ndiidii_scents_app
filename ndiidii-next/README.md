@@ -255,6 +255,22 @@ with the `.rsc` payloads), 15–20 minutes on this machine.
    name + image on the cart line when a set is added (instead of resolving slugs
    against a shipped list) would drop each product page to roughly 40KB.
 
+## Routing and 404s
+
+There is **no catch-all route**. `src/app/not-found.tsx` is the global 404 and it
+returns a real 404 status.
+
+An earlier `src/app/[...catchAll]/page.tsx` answered every unmatched path with a
+200 "Coming soon" page. That looked harmless and wasn't: `BRAND_LOGOS` in
+`src/config/site.ts` points at ten `/brands/<brand>.png` files that have never
+existed in `public/`, so each homepage visit requested 20 paths (the marquee
+renders the list twice) that each *rendered a whole page* instead of failing. The
+carousel's `onError` fallback means the marquee shows brand names in text today —
+if the PNGs get supplied, drop them into `public/brands/` and nothing else changes.
+
+A 200 for a URL that doesn't exist is also a soft 404 for crawlers. If a
+placeholder page is ever wanted again, add it as a real route, not a catch-all.
+
 ## Catalog snapshot (Redis / Vercel KV)
 
 The site never has a database — the Google Sheet is the truth. But a sheet read

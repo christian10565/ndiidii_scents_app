@@ -85,6 +85,12 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - Client prefers minimal, non-overengineered solutions.
 
 
+### Routing / 404s
+- **No catch-all route.** `src/app/not-found.tsx` is the global 404 and returns a real 404.
+- The old `[...catchAll]/page.tsx` 200'd every unmatched path with "Coming soon", so missing assets rendered a full page instead of 404ing — the ten `/brands/*.png` in `BRAND_LOGOS` don't exist in `public/`, so that was 20 wasted page renders per homepage visit. `LogoCarousel` falls back to text names via `onError`, which is what the marquee shows today.
+- Don't reintroduce a catch-all for placeholder pages; a 200 on a dead URL is a soft 404.
+- **Deleting or renaming a route file breaks the next `next build`** ("Cannot find module '../../src/app/[...x]/page.js'" from `.next/types/validator.ts`) because the dev server's generated route types are stale and `tsconfig` includes `.next/types`. Fix: `rm -rf .next/types`, hit the dev server once so it regenerates, rebuild.
+
 ### Catalog snapshot (Redis) — where the fallback actually lives
 - `src/lib/snapshot.ts` dual-writes every successful sheet read: Upstash Redis key
   `catalog:snapshot` when `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set, plus
