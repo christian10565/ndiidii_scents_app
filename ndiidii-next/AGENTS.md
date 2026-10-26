@@ -152,6 +152,11 @@ Fixed:
     are single-tier. Whole catalog = 205KB per page; same-tier = ~95KB avg.
   - Build cost: ~15–20 min, ~140MB of HTML (482MB with `.rsc`). Don't be
     surprised; don't "fix" it by dropping generateStaticParams.
+  - **Sheet changes:** edits revalidate (≤5 min, or instantly via the Apps Script
+    ping to `/api/revalidate` — verified HIT→MISS). New products render on demand
+    (`dynamicParams: true`) but stay non-static and unprefetchable until a
+    redeploy; deleted ones 404 on revalidation. A Vercel Deploy Hook on a daily
+    cron would promote new products automatically — **deferred, not built.**
 
 Still deferred (do these next time):
 1. **Product images.** `cloudinaryThumb` asks for `w_900&h_900` for grid cards.

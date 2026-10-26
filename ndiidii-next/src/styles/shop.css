@@ -225,6 +225,14 @@
 .check.is-static:hover .check__label {
   text-decoration: none;
 }
+/* Unit note next to a tier price ("box of 4") — the price is per box, not per decant. */
+.fsec__unit {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--slate);
+  white-space: nowrap;
+}
 .fpanel__all-brands {
   display: inline-flex;
   align-items: center;
@@ -395,25 +403,36 @@
   width: auto;
   max-width: 60%;
 }
-.scard__name {
+/* Brand sits ABOVE the name (markup order in ShopCard): small, quiet, tracked
+   out — the house is context, the scent name is the thing being browsed. */
+.scard__brand {
   margin-top: 22px;
-  font-size: 15.5px;
-  font-weight: 400;
-  color: #6b6b6b;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slate);
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+.scard__name {
+  margin-top: 22px; /* no brand line above → keep the gap after the image */
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
   /* TEMP: opaque backdrop so the text stays readable if the image above is
      bleeding/overlapping. Remove once the image framing is sorted. */
   background: #fff;
   position: relative;
   z-index: 1;
 }
-.scard__brand {
-  margin-top: 4px;
-  font-size: 24px;
-  line-height: 1.2;
-  font-weight: 700;
-  background: #fff;
-  position: relative;
-  z-index: 1;
+.scard__brand + .scard__name {
+  margin-top: 6px; /* brand present → name hugs it */
 }
 .scard__price {
   margin-top: 8px;
@@ -431,7 +450,8 @@
 .scard.is-sold-out .scard__img {
   opacity: 0.45;
 }
-.scard__link:hover .scard__name {
+/* Hover cue: the name is already ink, so the brand line darkens instead. */
+.scard__link:hover .scard__brand {
   color: var(--ink);
 }
 
@@ -461,7 +481,8 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .scard__brand {
-    font-size: 21px;
+    font-size: 11px;
+    margin-top: 16px;
   }
   .scard__img {
     height: 230px;
@@ -537,11 +558,15 @@
     height: 170px;
   }
   .scard__name {
-    margin-top: 14px;
-    font-size: 13px;
+    margin-top: 16px;
+    font-size: 17px;
   }
   .scard__brand {
-    font-size: 18px;
+    font-size: 10px;
+    margin-top: 16px;
+  }
+  .scard__brand + .scard__name {
+    margin-top: 5px;
   }
   .scard__price {
     font-size: 15px;

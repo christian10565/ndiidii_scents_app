@@ -39,8 +39,10 @@ export default function ShopCard({ p }: { p: CardProduct }) {
         <div className="scard__img">
           <ProductImage src={p.imageUrl} alt={p.name} />
         </div>
+        {/* Brand above, name below: the house is the quieter line, the scent is
+            the thing being browsed. The <h3> stays on the name for semantics. */}
+        {p.brand && <p className="scard__brand">{p.brand}</p>}
         <h3 className="scard__name">{p.name}</h3>
-        {p.brand && <p className="scard__brand serif">{p.brand}</p>}
         {soldOut && <p className="scard__status">Out of stock</p>}
       </Link>
     </article>

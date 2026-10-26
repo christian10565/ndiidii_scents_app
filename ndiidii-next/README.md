@@ -240,6 +240,28 @@ Three things this arrangement depends on:
 Build cost, for expectations: ~1,681 prerendered pages, ~140MB of HTML (482MB
 with the `.rsc` payloads), 15–20 minutes on this machine.
 
+### When does a sheet change appear?
+
+| Change | What happens | Delay |
+| --- | --- | --- |
+| Edit an existing product (notes, image, stock, name, tier) | Page HTML is prerendered, then regenerated on revalidation | ≤5 min automatically (`cacheLife` 300s), or immediately via the Apps Script ping to `/api/revalidate` — verified: header goes `x-nextjs-cache: HIT` → `MISS` after the ping |
+| Add a new product | Not in `generateStaticParams`, so it renders on demand (`dynamicParams` is true) | Works immediately, but no prefetch until the next deploy, and `fallbackRevalidate: false` means it keeps rendering per request instead of becoming a static file |
+| Delete or rename a product | Page re-renders, `getPerfume` returns null, `notFound()` | 404s within ≤5 min / on the ping — no zombie pages |
+| Make the whole catalogue static again | Requires a deploy | 15–20 min build |
+
+So edits look after themselves; **new products work but stay non-static until a
+redeploy.** Two things to know: the Apps Script trigger (`apps-script/sync-on-edit.gs`)
+is a manual one-time setup in her sheet — the committed file still has placeholder
+`API_URL`/`SYNC_SECRET`, so if it was never installed, edits fall back to the
+5-minute window. And new products becoming static needs a build, which grows with
+the catalogue (~3,000 products ≈ 30–40 min).
+
+**Deferred (not built, on purpose):** a Vercel Deploy Hook on a daily cron would
+rebuild unattended so new products get promoted to static pages without a manual
+deploy. No code change needed — a curl in any scheduler, or a Vercel cron. Worth
+doing when the catalogue is being added to regularly; skipped for now because the
+on-demand fallback already works.
+
 ### Still deferred
 
 1. **Image `srcset`** — cards request `w_900&h_900` from Cloudinary for a ~300px
