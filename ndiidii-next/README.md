@@ -375,7 +375,7 @@ available.
 | Colours + fonts | `src/styles/tokens.css` |
 | Homepage / shop / PDP styles | `src/styles/home.css`, `shop.css`, `pdp.css` |
 | Components | `src/components/*` |
-| Image pipeline scripts | `scripts/*.mjs` |
+| Image pipeline scripts | `scripts/*.mjs` — see `scripts/README.md` for the index |
 | Image pipeline data | `data/match-map.json`, `data/upload-map.json`, `data/supplier-scrape*.json` |
 | Enrichment scripts | `scripts/list-perfume-gaps.mjs`, `scripts/derive-scent-profiles.mjs`, `scripts/write-perfume-batch.mjs` |
 | Enrichment data | `data/perfume-gaps.json`, `data/batch_*.json`, `data/FILL-GUIDE.md` |
