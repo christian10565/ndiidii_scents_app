@@ -102,8 +102,17 @@ export default function CheckoutClient({
                 ? 'Oil set'
                 : (l.tier !== null ? TIER_LABEL[l.tier] + ' Set' : 'Set');
               const isIncomplete = l.items.length < BOX_SIZE;
+              // One colour per product kind, echoing the homepage's black/oxblood
+              // vocabulary: Tier 1 black, Tier 2 white, Tier 3 warm stone, oils red.
+              const variant = isOil
+                ? 'cline--red'
+                : l.tier === 1
+                  ? 'cline--black'
+                  : l.tier === 3
+                    ? 'cline--stone'
+                    : 'cline--white';
               return (
-                <article key={l.id} className={`cline ${isIncomplete ? 'cline--incomplete' : ''}`}>
+                <article key={l.id} className={`cline ${variant} ${isIncomplete ? 'cline--incomplete' : ''}`}>
                   <div className="cline__info">
                     <p className="cline__tier eyebrow">
                       {tierLabel} · {l.items.length}/{BOX_SIZE} decants
