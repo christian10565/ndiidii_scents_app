@@ -105,19 +105,14 @@ export function OilBuilderShell({
   const activeFormatLabel = OIL_FORMATS.find((f) => f.value === format)?.label ?? format;
 
   return (
-    <div className="container oilbuilder">
-      <nav className="builder__crumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link> / <Link href="/collection-builder">Collection Builder</Link> /{' '}
-        <span>Perfume Oils</span>
-      </nav>
-
-      {/* ---- hero (mockup banner: bottles right, blurred neutral left) ---- */}
+    <>
+      {/* ---- hero: full-bleed banner (bottles right, blurred neutral left) ---- */}
       <header
         className="ob-hero"
         style={{ backgroundImage: "url('/images/oil-builder-hero.png')" }}
       >
         <div className="ob-hero__shade" />
-        <div className="ob-hero__inner">
+        <div className="container ob-hero__inner">
           <h1 className="serif ob-hero__title">Build Your Collection</h1>
           <p className="ob-hero__sub">
             Either let us surprise you, or choose every oil yourself from our Designer and Niche
@@ -126,9 +121,15 @@ export function OilBuilderShell({
         </div>
       </header>
 
-      <p className="ob-intro">
-        Each set contains 4 perfume oils. Choose your bottle size and fragrance collection below.
-      </p>
+      <div className="container oilbuilder">
+        <nav className="builder__crumbs" aria-label="Breadcrumb">
+          <Link href="/">Home</Link> / <Link href="/collection-builder">Collection Builder</Link> /{' '}
+          <span>Perfume Oils</span>
+        </nav>
+
+        <p className="ob-intro">
+          Each set contains 4 perfume oils. Choose your bottle size and fragrance collection below.
+        </p>
 
       {/* ---- retail size ---- */}
       <section className="ob-card" aria-labelledby="ob-size">
@@ -308,6 +309,7 @@ export function OilBuilderShell({
           )}
         </div>
       </aside>
-    </div>
+      </div>
+    </>
   );
 }

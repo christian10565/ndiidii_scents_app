@@ -253,12 +253,10 @@
   padding: 28px 24px 90px;
 }
 
-/* ---- hero (mockup banner: bottles right, blurred neutral left) ---- */
+/* ---- hero (mockup banner: bottles right, blurred neutral left) — full-bleed ---- */
 .ob-hero {
   position: relative;
-  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 20px;
   background-size: cover;
   background-position: center;
   color: #fff;
@@ -269,7 +267,7 @@
   inset: 0;
   background: linear-gradient(90deg, rgba(26, 20, 14, 0.78) 0%, rgba(26, 20, 14, 0.42) 45%, rgba(26, 20, 14, 0.05) 100%);
 }
-.ob-hero__inner { position: relative; padding: 64px 40px; }
+.ob-hero__inner { position: relative; padding-block: 72px; }
 .ob-hero__title { font-size: 44px; line-height: 1.08; margin: 0 0 14px; max-width: 15ch; }
 .ob-hero__sub { font-size: 15px; line-height: 1.6; color: #f3efe9; margin: 0; max-width: 440px; }
 
