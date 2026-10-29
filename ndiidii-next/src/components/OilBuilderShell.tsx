@@ -162,8 +162,12 @@ export function OilBuilderShell({
 
   return (
     <>
-      {/* ---- hero: full-bleed dark banner ---- */}
-      <header className="ob-hero">
+      {/* ---- hero: full-bleed photo banner (bottles right, dark left) ---- */}
+      <header
+        className="ob-hero"
+        style={{ backgroundImage: "url('/images/oil-builder-hero.png')" }}
+      >
+        <div className="ob-hero__shade" />
         <div className="container ob-hero__inner">
           <h1 className="serif ob-hero__title">Build Your Collection</h1>
           <p className="ob-hero__sub">
