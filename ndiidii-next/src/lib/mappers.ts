@@ -23,6 +23,9 @@ const ALIASES = {
   season: ['season', 'seasons'],
   stock: ['stock', 'quantity', 'qty', 'inventory', 'available', 'unitsavailable'],
   image: ['image', 'imageurl', 'photo', 'picture', 'imagelink'],
+  // Full-bottle price. The decant price is NOT in the sheet — it is flat per
+  // tier (TIER_BOX_PRICE_NGN). Values arrive formatted ("45,000.00").
+  price: ['price', 'bottleprice', 'fullbottleprice', 'retailprice'],
 } as const;
 
 type Field = keyof typeof ALIASES;
@@ -92,6 +95,15 @@ export const parseStock = (v: string | null): number | null => {
   return Number.isFinite(n) ? Math.max(0, n) : null;
 };
 
+/** "45,000.00" / "₦45,000" / "45000" -> 45000. Blank or non-numeric -> null. */
+export const parsePrice = (v: string | null): number | null => {
+  if (v == null) return null;
+  const cleaned = v.replace(/[^0-9.]/g, '');
+  if (!cleaned) return null;
+  const n = Math.round(parseFloat(cleaned));
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
 interface MappedBase {
   sheetId: string;
   slugBase: string;
@@ -102,6 +114,8 @@ interface MappedBase {
   imageUrl: string | null;
   /** null = the sheet has no stock value for this row */
   sheetStock: number | null;
+  /** Full-bottle price from the sheet. null = not priced (can't be sold). */
+  retailPrice: number | null;
   extra: Record<string, string>;
 }
 
@@ -134,6 +148,7 @@ const mapBase = (row: SheetRow, index: number): MappedBase | null => {
     gender: parseGender(pick(row, 'gender')),
     imageUrl: pick(row, 'image'),
     sheetStock: parseStock(pick(row, 'stock')),
+    retailPrice: parsePrice(pick(row, 'price')),
     extra: extras(row),
   };
 };

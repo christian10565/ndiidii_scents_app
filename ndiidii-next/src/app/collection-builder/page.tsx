@@ -9,20 +9,41 @@ import { BuilderShell } from '@/components/BuilderShell';
 //
 // Catalog is cached server-side (see lib/catalog.ts); the builder filters it
 // per tier on the client for instant tier switching.
-async function BuilderBody() {
+//
+// A perfume PDP hands off as /collection-builder?add=<slug>&tier=<n>. The params
+// are read here and passed down, and the shell is keyed on them so a second
+// handoff remounts with the new pick instead of keeping a stale draft.
+async function BuilderBody({
+  searchParams,
+}: {
+  searchParams: Promise<{ add?: string; tier?: string }>;
+}) {
   await connection();
-  const perfumes = await getPerfumes();
+  const [perfumes, sp] = await Promise.all([getPerfumes(), searchParams]);
   const byTier: Record<string, typeof perfumes> = { '1': [], '2': [], '3': [] };
   for (const p of perfumes) {
     if (p.tier && byTier[String(p.tier)] && p.inStock) byTier[String(p.tier)].push(p);
   }
-  return <BuilderShell byTier={byTier as never} />;
+  const add = sp.add ?? '';
+  const tier = sp.tier ?? '';
+  return (
+    <BuilderShell
+      key={`${add}|${tier}`}
+      byTier={byTier as never}
+      initialAdd={add || undefined}
+      initialTier={tier || undefined}
+    />
+  );
 }
 
-export default function CollectionBuilderPage() {
+export default function CollectionBuilderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ add?: string; tier?: string }>;
+}) {
   return (
     <Suspense fallback={<div className="container builder" style={{ minHeight: '60vh' }} />}>
-      <BuilderBody />
+      <BuilderBody searchParams={searchParams} />
     </Suspense>
   );
 }

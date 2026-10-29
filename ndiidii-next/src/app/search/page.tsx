@@ -51,7 +51,7 @@ async function SearchResults({ q }: { q: string }) {
               <h2 className="serif search__section-title">Perfume Oils</h2>
               <div className="shop__grid">
                 {oilHits.map((o) => (
-                  <ShopCard key={o.id} p={o as unknown as Perfume} />
+                  <ShopCard key={o.id} p={o} />
                 ))}
               </div>
             </section>

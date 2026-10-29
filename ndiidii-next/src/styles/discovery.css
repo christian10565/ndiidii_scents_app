@@ -89,6 +89,14 @@
   letter-spacing: 0.04em;
   color: #b3aa9c;
 }
+/* Context variants. Oils use these everywhere because oil photography is a
+   copyright risk for the client — no <img> is ever rendered for an oil. */
+.dnoimg--thumb span { font-size: 13px; letter-spacing: 0.06em; }
+.dnoimg--card { background: linear-gradient(160deg, #f2eee7, #e6e0d5); }
+.dnoimg--card span { font-size: clamp(28px, 4vw, 44px); }
+.dnoimg--pdp { aspect-ratio: 3 / 4; border-radius: 4px; }
+.dnoimg--pdp span { font-size: clamp(40px, 8vw, 88px); }
+.dnoimg--builder { aspect-ratio: 3 / 4; border-radius: 4px; }
 .dslot__body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 10px; }
 .dslot__profile { font-size: 20px; line-height: 1.15; margin: 0; }
 .dslot__perfume { font-size: 14px; font-weight: 600; margin: 0; }

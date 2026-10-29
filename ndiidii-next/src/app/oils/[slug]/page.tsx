@@ -2,114 +2,117 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
-import { BOX_SIZE, OIL_BOX_PRICE_NGN } from '@/lib/store.config';
-import { getOils, getPerfume, type Oil, type Perfume } from '@/lib/catalog';
-import { toProductRef } from '@/lib/shopCards';
-import OilCartSet from '@/components/OilCartSet';
+import { BOX_SIZE, OIL_FORMATS, OIL_TYPE_LABELS, oilSetPrice } from '@/lib/store.config';
+import { getOils } from '@/lib/catalog';
+import Monogram from '@/components/Monogram';
 
 /**
- * Statically generated from the oils tab. Slugs that only exist in the perfumes
- * tab (see the `getOils()` known issue) are not in this list and render on
- * demand via the `getPerfume` fallback — `dynamicParams` defaults to true.
+ * Perfume oil detail.
+ *
+ * Oils are only sold in sets of four, so there is no add-to-cart here — the
+ * action is a handoff to the oil builder with this oil pre-picked.
+ *
+ * There is deliberately NO fallback to `getPerfume(slug)`. Under the old model
+ * any perfume with `tier === null` (325 rows) rendered here as an oil and was
+ * charged the oil price. Oils come from the oils tab or they 404.
+ *
+ * No image either: oil photography is a copyright risk for the client, so this
+ * page shows a monogram and a text-only price table.
  */
 export async function generateStaticParams() {
   const oils = await getOils();
   return oils.map((o) => ({ slug: o.slug }));
 }
 
-function isOilProduct(p: Oil | Perfume | null): p is Oil {
-  return p !== null && 'category' in p;
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const oils = await getOils();
-  let p: Oil | Perfume | undefined = oils.find((o) => o.slug === slug) ?? undefined;
-  if (!p) {
-    const maybePerfume = await getPerfume(slug);
-    if (maybePerfume && maybePerfume.tier === null) {
-      p = maybePerfume;
-    }
-  }
-  if (!p) return { title: 'Not found — Ndiidii Scents' };
+  const o = (await getOils()).find((x) => x.slug === slug);
+  if (!o) return { title: 'Not found — Ndiidii Scents' };
+  const type = o.category ? OIL_TYPE_LABELS[o.category] : 'Perfume oil';
   return {
-    title: `${p.name} — Ndiidii Scents`,
-    description: isOilProduct(p) && p.category === 'niche'
-      ? 'Niche oil decant — Middle Eastern perfume decant.'
-      : 'Designer oil decant — Middle Eastern perfume decant.',
+    title: `${o.name} — Ndiidii Scents`,
+    description: `${type} perfume oil${o.brand ? ` from ${o.brand}` : ''}. Sold as a set of ${BOX_SIZE} bottles.`,
   };
 }
 
 /** `params` is URL data — read it inside a boundary so the shell stays instant. */
 export default function OilPage({ params }: { params: Promise<{ slug: string }> }) {
   return (
-    <Suspense fallback={<PdpShell />}>
+    <Suspense fallback={<div className="container pdp" style={{ minHeight: '70vh' }} />}>
       <OilBody params={params} />
     </Suspense>
   );
 }
 
-function PdpShell() {
-  return <div className="container pdp" style={{ minHeight: '70vh' }} />;
-}
-
 async function OilBody({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const oils = await getOils();
-  const oilRefs = oils.map(toProductRef);
-  const foundOil = oils.find((o) => o.slug === slug) ?? null;
-  const maybePerfume = foundOil ? null : await getPerfume(slug);
-  const p: Oil | Perfume | null = foundOil ?? (maybePerfume && maybePerfume.tier === null ? maybePerfume : null);
-  if (!p) notFound();
+  const oil = (await getOils()).find((o) => o.slug === slug);
+  if (!oil) notFound();
 
-  const boxPrice = OIL_BOX_PRICE_NGN ?? null;
+  const type = oil.category;
+  const builderHref = `/collection-builder/oils?add=${encodeURIComponent(oil.slug)}${
+    type ? `&type=${type}` : ''
+  }`;
 
   return (
     <div className="container pdp">
       <nav className="pdp__crumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link> / <Link href="/shop">Shop</Link> / <span>{p.name}</span>
+        <Link href="/">Home</Link> / <Link href="/collection-builder/oils">Perfume Oils</Link> /{' '}
+        <span>{oil.name}</span>
       </nav>
 
       <div className="pdp__grid">
         <div className="pdp__img">
-          <ProductImage src={p.imageUrl} alt={p.name} variant="full" />
+          <Monogram name={oil.name} className="dnoimg dnoimg--pdp" />
         </div>
 
         <div className="pdp__info">
-          {p.brand && <p className="pdp__brand serif">{p.brand}</p>}
-          <h1 className="serif pdp__name">{p.name}</h1>
+          {oil.brand && <p className="pdp__brand serif">{oil.brand}</p>}
+          <h1 className="serif pdp__name">{oil.name}</h1>
 
           <div className="pdp__meta">
-            {isOilProduct(p) && p.category ? (
-              <span className="pdp__oil-category">{p.category === 'niche' ? 'Niche' : 'Designer'}</span>
-            ) : null}
-            <span className={`pdp__stock ${p.inStock ? 'in' : 'out'}`}>
-              {p.inStock ? 'In stock' : 'Out of stock'}
+            {type && <span className="pdp__oil-category">{OIL_TYPE_LABELS[type]}</span>}
+            <span className={`pdp__stock ${oil.inStock ? 'in' : 'out'}`}>
+              {oil.inStock ? 'In stock' : 'Out of stock'}
             </span>
           </div>
 
-          {boxPrice && (
-            <p className="pdp__price serif">
-              {formatNaira(boxPrice)} <small>· box of {BOX_SIZE}</small>
-            </p>
+          <p className="pdp__desc">
+            Perfume oil, sold as a set of {BOX_SIZE} bottles. Sets are built one collection type
+            at a time — Designer and Niche never mix.
+          </p>
+
+          {type && (
+            <div className="pdp__oilprices">
+              <p className="pdp__oilprices-title eyebrow">Price per set of {BOX_SIZE}</p>
+              <ul>
+                {OIL_FORMATS.map((f) => (
+                  <li key={f.value}>
+                    <span>{f.label}</span>
+                    <strong className="serif">{formatNaira(oilSetPrice(type, f.value))}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
-          {p.extra?.scentProfile && <p className="pdp__scent">{p.extra.scentProfile}</p>}
-          {p.extra?.description && <p className="pdp__desc">{p.extra.description}</p>}
-
-          <div className="pdp__notes">
-            {Object.entries(p.extra).map(([key, value]) => (
-              <div key={key}>
-                <h3>{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</h3>
-                <p>{value}</p>
-              </div>
-            ))}
-            {!Object.keys(p.extra).length && <p>No additional notes yet.</p>}
+          <div className="pdp__cart-panel">
+            <p className="pdp__cart-panel-title">Sold in sets only</p>
+            <p className="pdp__cart-panel-sub">
+              Pick {oil.name} plus three more {type ? OIL_TYPE_LABELS[type] : 'oils'} in the builder.
+            </p>
+            <Link href={builderHref} className="btn btn--white pdp__buy-cta">
+              Build a set with this oil
+            </Link>
+            <p className="pdp__cart-panel-hint">
+              Browse all oils in the{' '}
+              <Link href="/collection-builder/oils" className="link-red">
+                Oil Collection Builder
+              </Link>
+              .
+            </p>
           </div>
-
-          <OilCartSet oils={oilRefs} slug={p.slug} name={p.name} imageUrl={p.imageUrl} />
         </div>
       </div>
     </div>

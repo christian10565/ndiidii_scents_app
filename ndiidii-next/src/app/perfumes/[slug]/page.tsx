@@ -6,8 +6,7 @@ import ProductImage from '@/components/ProductImage';
 import { formatNaira } from '@/lib/format';
 import { BOX_SIZE, TIER_BOX_PRICE_NGN, TIER_LABELS } from '@/lib/store.config';
 import { getPerfume, getPerfumes } from '@/lib/catalog';
-import { toProductRef } from '@/lib/shopCards';
-import PerfumeCartSet from '@/components/PerfumeCartSet';
+import PerfumeBuyPanel from '@/components/PerfumeBuyPanel';
 
 /**
  * Statically generated: every perfume slug known to the catalogue at build time
@@ -58,15 +57,9 @@ async function PerfumeBody({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const p = await getPerfume(slug);
   if (!p) notFound();
-  // Only the products that can appear in THIS page's cart panel: the panel shows
-  // `linesFor('perfume', tier)`, and every line the builder writes is
-  // single-tier, so same-tier refs are the complete set. Shipping all 1,046 put
-  // ~205KB into each of the 1,046 prerendered product pages (~800MB of build
-  // output); same-tier refs cut that roughly 3x.
-  const tierRefs = (await getPerfumes()).filter((x) => x.tier === p.tier).map(toProductRef);
 
   const notes = [p.notes.top, p.notes.heart, p.notes.base].filter(Boolean);
-  const boxPrice = formatNaira(TIER_BOX_PRICE_NGN[p.tier!]);
+  const decantPrice = p.tier !== null ? TIER_BOX_PRICE_NGN[p.tier] : null;
 
   return (
     <div className="container pdp">
@@ -91,11 +84,20 @@ async function PerfumeBody({ params }: { params: Promise<{ slug: string }> }) {
             </span>
           </div>
 
-          {boxPrice && (
-            <p className="pdp__price serif">
-              {boxPrice} <small>· box of {BOX_SIZE}</small>
-            </p>
-          )}
+          {/* Two sizes now, so the price block states both: a decant set is
+              flat per tier, a full bottle comes from the sheet. */}
+          <div className="pdp__prices">
+            {decantPrice !== null && (
+              <p className="pdp__price serif">
+                {formatNaira(decantPrice)} <small>· decant set of {BOX_SIZE}</small>
+              </p>
+            )}
+            {p.bottlePrice !== null && (
+              <p className="pdp__price pdp__price--bottle serif">
+                {formatNaira(p.bottlePrice)} <small>· full bottle</small>
+              </p>
+            )}
+          </div>
 
           {p.scentProfile && <p className="pdp__scent">{p.scentProfile}</p>}
           {p.inspiredBy && <p className="pdp__inspired">Inspired by {p.inspiredBy}</p>}
@@ -124,7 +126,14 @@ async function PerfumeBody({ params }: { params: Promise<{ slug: string }> }) {
             </div>
           )}
 
-          <PerfumeCartSet slug={p.slug} tier={p.tier!} perfumes={tierRefs} />
+          <PerfumeBuyPanel
+            slug={p.slug}
+            name={p.name}
+            brand={p.brand}
+            tier={p.tier}
+            bottlePrice={p.bottlePrice}
+            inStock={p.inStock}
+          />
         </div>
       </div>
     </div>

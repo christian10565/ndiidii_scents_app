@@ -3,11 +3,26 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/cart';
-import { BOX_SIZE, VAT_RATE, NIGERIA_STATES, TIER_LABELS, type Tier } from '@/lib/store.config';
+import {
+  BOX_SIZE,
+  NIGERIA_STATES,
+  OIL_FORMATS,
+  OIL_TYPE_LABELS,
+  TIER_LABELS,
+  type OilFormat,
+  type Tier,
+} from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
+import { payloadFromCart, quoteFromCart, totalsOf } from '@/lib/quote';
 import ProductImage from '@/components/ProductImage';
+import Monogram from '@/components/Monogram';
 
 const TIER_LABEL: Record<Tier, string> = TIER_LABELS;
+
+const oilLabel = (type: string | null, format: OilFormat | null) =>
+  `${type ? OIL_TYPE_LABELS[type as keyof typeof OIL_TYPE_LABELS] : 'Oil'} · ${
+    OIL_FORMATS.find((f) => f.value === format)?.label ?? 'bottle'
+  }`;
 
 function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: string; name: string; imageUrl: string | null }[] }) {
   const items = slugs.map((s) => catalog.find((p) => p.slug === s)).filter(Boolean) as typeof catalog;
@@ -15,7 +30,7 @@ function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: stri
     <div className="cline__thumbs">
       {items.map((p) => (
         <span key={p.slug} className="cline__thumb" title={p.name}>
-          <ProductImage src={p.imageUrl} alt={p.name} />
+          {p.imageUrl ? <ProductImage src={p.imageUrl} alt={p.name} /> : <Monogram name={p.name} className="dnoimg dnoimg--thumb" />}
         </span>
       ))}
     </div>
@@ -29,7 +44,19 @@ export default function CheckoutClient({
   catalog: { slug: string; name: string; imageUrl: string | null }[];
   testMode?: boolean;
 }) {
-  const { lines, discovery, removeLine, setQty, removeDiscovery, setDiscoveryQty, cartTotal, cartCount, clearCart, canCheckout } = useCart();
+  const {
+    lines,
+    bottles,
+    discovery,
+    removeLine,
+    setQty,
+    removeBottle,
+    setBottleQty,
+    removeDiscovery,
+    setDiscoveryQty,
+    clearCart,
+    canCheckout,
+  } = useCart();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [giftCode, setGiftCode] = useState('');
@@ -57,14 +84,17 @@ export default function CheckoutClient({
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const shipping = cartTotal > 150000 ? 0 : cartTotal > 0 ? 2500 : 0;
-  const preVat = cartTotal + shipping;
-  const vat = Math.round(preVat * VAT_RATE);
-  const grandTotal = preVat + vat;
-  const giftCredit = giftApplied ? Math.min(giftApplied.balance, grandTotal) : 0;
-  const total = grandTotal - giftCredit;
+  // Same math as the server (lib/quote.ts) — this is a preview, not the charge.
+  const quoteLines = quoteFromCart(lines, bottles, discovery, {
+    perfume: (tier) => `${tier !== null ? TIER_LABEL[tier] : 'Perfume'} · ${BOX_SIZE} decants`,
+    oil: oilLabel,
+  });
+  const totals = totalsOf(quoteLines);
+  const giftCredit = giftApplied ? Math.min(giftApplied.balance, totals.grandTotal) : 0;
+  const total = totals.grandTotal - giftCredit;
   const checkoutReady = canCheckout();
   const incompleteCount = lines.filter((l) => l.items.length < BOX_SIZE).length;
+  const isEmpty = lines.length === 0 && bottles.length === 0 && discovery.length === 0;
 
   return (
     <div className="container checkout">
@@ -74,12 +104,13 @@ export default function CheckoutClient({
 
       <h1 className="serif checkout__title">Checkout</h1>
 
-      {lines.length === 0 && discovery.length === 0 ? (
+      {isEmpty ? (
         <div className="checkout__empty">
           <p>{hydrated ? 'Your cart is empty.' : 'Loading your cart…'}</p>
           {hydrated && (
             <div className="checkout__empty-ctas">
               <Link href="/collection-builder" className="btn btn--white">Build a collection</Link>
+              <Link href="/collection-builder/oils" className="btn btn--ghost-dark">Build an oil set</Link>
               <Link href="/discovery-sets" className="btn btn--ghost-dark">Discover a collection</Link>
             </div>
           )}
@@ -100,7 +131,10 @@ export default function CheckoutClient({
               const isOil = l.kind === 'oil';
               const tierLabel: string = isOil
                 ? 'Oil set'
-                : (l.tier !== null ? TIER_LABEL[l.tier] + ' Set' : 'Set');
+                : l.tier !== null
+                  ? `${TIER_LABEL[l.tier]} Set`
+                  : 'Set';
+              const subtitle = isOil ? oilLabel(l.oilType, l.oilFormat) : `${l.items.length}/${BOX_SIZE} decants`;
               const isIncomplete = l.items.length < BOX_SIZE;
               // One colour per product kind, echoing the homepage's black/oxblood
               // vocabulary: Tier 1 black, Tier 2 white, Tier 3 warm stone, oils red.
@@ -115,7 +149,7 @@ export default function CheckoutClient({
                 <article key={l.id} className={`cline ${variant} ${isIncomplete ? 'cline--incomplete' : ''}`}>
                   <div className="cline__info">
                     <p className="cline__tier eyebrow">
-                      {tierLabel} · {l.items.length}/{BOX_SIZE} decants
+                      {tierLabel} · {subtitle}
                     </p>
                     <LineThumbs slugs={l.items} catalog={catalog} />
                     <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
@@ -133,6 +167,38 @@ export default function CheckoutClient({
                 </article>
               );
             })}
+
+            {bottles.map((b) => {
+              const ref = catalog.find((p) => p.slug === b.slug);
+              return (
+                <article key={b.id} className="cline cline--bottle">
+                  <div className="cline__info">
+                    <p className="cline__tier eyebrow">Full bottle · 1 × {b.name}</p>
+                    <div className="cline__thumbs">
+                      <span className="cline__thumb" title={b.name}>
+                        {ref?.imageUrl ? (
+                          <ProductImage src={ref.imageUrl} alt={b.name} />
+                        ) : (
+                          <Monogram name={b.name} className="dnoimg dnoimg--thumb" />
+                        )}
+                      </span>
+                    </div>
+                    <p className="cline__names">{[b.brand, b.name].filter(Boolean).join(' · ')}</p>
+                  </div>
+                  <div className="cline__side">
+                    <div className="cline__qty">
+                      <button aria-label="Decrease" onClick={() => setBottleQty(b.id, b.qty - 1)}>−</button>
+                      <span>{b.qty}</span>
+                      <button aria-label="Increase" onClick={() => setBottleQty(b.id, b.qty + 1)}>+</button>
+                    </div>
+                    <p className="cline__price serif">{formatNaira(b.qty * b.unitPrice)}</p>
+                    <p className="cline__unit">{formatNaira(b.unitPrice)} each</p>
+                    <button className="cline__remove link-red" onClick={() => removeBottle(b.id)}>Remove</button>
+                  </div>
+                </article>
+              );
+            })}
+
             {discovery.map((d) => (
               <article key={d.id} className="cline">
                 <div className="cline__info">
@@ -140,7 +206,7 @@ export default function CheckoutClient({
                   <div className="cline__thumbs">
                     {d.items.map((it, i) => (
                       <span key={i} className="cline__thumb" title={it.name}>
-                        <ProductImage src={it.imageUrl} alt={it.name} />
+                        {it.imageUrl ? <ProductImage src={it.imageUrl} alt={it.name} /> : <Monogram name={it.name} className="dnoimg dnoimg--thumb" />}
                       </span>
                     ))}
                   </div>
@@ -211,19 +277,19 @@ export default function CheckoutClient({
               {giftError && <p className="cgift__error">{giftError}</p>}
               {giftApplied && (
                 <p className="cgift__note">
-                  Gift card applied. Complete the delivery details below to finish — {total > 0 ? `you'll pay the remaining ${formatNaira(total)}.` : 'no further payment is needed.'}
+                  Gift card applied and debited when you pay — {total > 0 ? `you'll pay the remaining ${formatNaira(total)}.` : 'no further payment is needed.'}
                 </p>
               )}
             </div>
 
             <div className="csummary">
               <p className="csummary__title eyebrow">Order Summary</p>
-              <div className="csummary__row"><span>{cartCount} item{cartCount > 1 ? 's' : ''}</span><span>{formatNaira(cartTotal)}</span></div>
-              <div className="csummary__row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : formatNaira(shipping)}</span></div>
-              <div className="csummary__row"><span>VAT (7.5%)</span><span>{formatNaira(vat)}</span></div>
+              <div className="csummary__row"><span>{totals.itemCount} item{totals.itemCount > 1 ? 's' : ''}</span><span>{formatNaira(totals.subtotal)}</span></div>
+              <div className="csummary__row"><span>Shipping</span><span>{totals.shipping === 0 ? 'Free' : formatNaira(totals.shipping)}</span></div>
+              <div className="csummary__row"><span>VAT (7.5%)</span><span>{formatNaira(totals.vat)}</span></div>
               {giftApplied && <div className="csummary__row csummary__row--gift"><span>Gift card</span><span>−{formatNaira(giftCredit)}</span></div>}
               <div className="csummary__row csummary__row--total"><span>Total</span><strong className="serif">{formatNaira(total)}</strong></div>
-              <p className="csummary__note">Free shipping over ₦150,000.</p>
+              <p className="csummary__note">Free shipping over ₦150,000. Flat ₦2,500 below that.</p>
             </div>
 
             <form
@@ -236,68 +302,44 @@ export default function CheckoutClient({
                   if (!checkoutReady) {
                     throw new Error('Please complete all sets before checkout.');
                   }
-                  const items = [
-                    ...lines.map((l) => ({ name: l.kind === 'oil' ? 'Oil set' : `${l.tier ? TIER_LABEL[l.tier] + ' Set' : 'Set'}`, qty: l.qty, price: l.unitPrice })),
-                    ...discovery.map((d) => ({ name: d.collection, qty: d.qty, price: d.unitPrice })),
-                  ];
-                  const delivery = {
-                    name: form.name,
-                    phone: form.phone,
-                    email: form.email,
-                    address: form.address,
-                    city: form.city,
-                    state: form.state,
-                    notes: form.notes,
-                  };
-                  sessionStorage.setItem(
-                    'ndiidii-order-summary',
-                    JSON.stringify({ email: form.email, items, delivery, total, grandTotal, giftCredit }),
-                  );
-
-                  if (total <= 0 && giftApplied) {
-                    const rres = await fetch('/api/giftcard/redeem', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ code: giftApplied.code, amountNaira: giftCredit }),
-                    });
-                    if (!rres.ok) {
-                      const rj = await rres.json();
-                      throw new Error(rj.error || 'Could not redeem gift card');
-                    }
-                    sessionStorage.setItem(
-                      'ndiidii-order-summary',
-                      JSON.stringify({ email: form.email, items, delivery, total, grandTotal, giftCredit }),
-                    );
-                    clearCart();
-                    window.location.href = '/checkout/callback?giftonly=1';
-                    return;
-                  }
-
                   const res = await fetch('/api/paystack/initialize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       email: form.email,
-                      amountNaira: total,
-                      items,
-                      delivery,
+                      cart: payloadFromCart(lines, bottles, discovery),
+                      delivery: {
+                        name: form.name,
+                        phone: form.phone,
+                        email: form.email,
+                        address: form.address,
+                        city: form.city,
+                        state: form.state,
+                        notes: form.notes,
+                      },
+                      giftCode: giftApplied?.code,
                     }),
                   });
                   const json = await res.json();
                   if (!res.ok) throw new Error(json.error || 'Could not start payment');
+
+                  // Fully covered by the gift card: the server already debited it.
+                  if (json.fullyCovered) {
+                    clearCart();
+                    window.location.href = `/checkout/callback?giftonly=1&ref=${encodeURIComponent(json.reference)}`;
+                    return;
+                  }
+
+                  // Remember the gift-card debit so a failed payment can restore it.
                   if (giftApplied && giftCredit > 0) {
-                    const pRes = await fetch('/api/giftcard/preauth-debit', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
-                    });
-                    const pJson = await pRes.json();
-                    if (!pRes.ok) {
-                      throw new Error(pJson.error || 'Could not apply gift card');
-                    }
                     sessionStorage.setItem(
                       'ndiidii-giftcard-pending',
-                      JSON.stringify({ redeem: false, code: giftApplied.code, amountNaira: giftCredit, reference: json.reference }),
+                      JSON.stringify({
+                        redeem: false,
+                        code: giftApplied.code,
+                        amountNaira: giftCredit,
+                        reference: json.reference,
+                      }),
                     );
                   }
                   window.location.href = json.authorization_url;

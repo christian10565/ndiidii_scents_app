@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import FilterPanel from './FilterPanel';
 import { FilterIcon } from './Icons';
 import ShopCard from './ShopCard';
-import ProductImage from './ProductImage';
 import { SHOP } from '@/config/site';
 import {
   countActive,
@@ -14,15 +13,19 @@ import {
   type Filters,
 } from '@/lib/shopQuery';
 import { hasAnyKey, noteIndexFromKeys } from '@/lib/notes';
-import type { PerfumeCard, OilCard } from '@/lib/shopCards';
+import type { PerfumeCard } from '@/lib/shopCards';
+import type { BrandCount } from '@/lib/catalog';
 
 /**
- * The shop shell. Filtering/sorting/pagination happen over the full catalog,
- * which the server already handed us as `perfumes`/`oils` — but as LEAN card
- * projections (lib/shopCards.ts), not the full `Perfume`/`Oil` objects.
+ * The shop shell. Filtering/sorting/pagination happen over the perfume catalog,
+ * which the server already handed us as LEAN card projections (lib/shopCards.ts).
  * Filters live in the URL and re-filter client-side; no per-change network call.
+ *
+ * PERFUMES ONLY. Oils are exclusive to the Oil Collection Builder, so this route
+ * neither receives them nor offers them as a filter — the `collection` param is
+ * still parsed for old links, then ignored.
  */
-export default function ShopShell({ perfumes, oils, brands }: { perfumes: PerfumeCard[]; oils: OilCard[]; brands: import('@/lib/catalog').BrandCount[] }) {
+export default function ShopShell({ perfumes, brands }: { perfumes: PerfumeCard[]; brands: BrandCount[] }) {
   const sp = useSearchParams();
   const router = useRouter();
 
@@ -31,16 +34,10 @@ export default function ShopShell({ perfumes, oils, brands }: { perfumes: Perfum
 
   const [panelOpen, setPanelOpen] = useState(true); // desktop: filter panel shown or collapsed
   const [drawerOpen, setDrawerOpen] = useState(false); // mobile: filter drawer
-  const [visible, setVisible] = useState(SHOP.pageSize);
 
   const setFilters = (next: Filters) => {
     router.push(`/shop?${writeFilters(next).toString()}`, { scroll: false });
   };
-
-  // Reset paging when filters change
-  useEffect(() => {
-    setVisible(SHOP.pageSize);
-  }, [filters]);
 
   // Stop the page scrolling behind the mobile drawer
   useEffect(() => {
@@ -51,33 +48,29 @@ export default function ShopShell({ perfumes, oils, brands }: { perfumes: Perfum
   }, [drawerOpen]);
 
   // ---- Filter the catalog (client-side, instant) ----
-  const catalog = useMemo(() => {
-    if (filters.collection === 'oils') return oils.map((o) => ({ ...o, __kind: 'oil' as const }));
-    if (filters.collection === 'perfumes') return perfumes.map((p) => ({ ...p, __kind: 'perfume' as const }));
-    return [...perfumes.map((p) => ({ ...p, __kind: 'perfume' as const })), ...oils.map((o) => ({ ...o, __kind: 'oil' as const }))];
-  }, [perfumes, oils, filters.collection]);
-
   const filtered = useMemo(() => {
-    let out = catalog;
+    let out: PerfumeCard[] = perfumes;
     if (filters.gender.length) out = out.filter((p) => p.gender && filters.gender.includes(p.gender));
-    if (filters.tier.length) out = out.filter((p) => 'tier' in p && p.tier && filters.tier.includes(String(p.tier)));
+    if (filters.tier.length) out = out.filter((p) => p.tier && filters.tier.includes(String(p.tier)));
     if (filters.brand.length) out = out.filter((p) => p.brand && filters.brand.some((b) => b.toLowerCase() === p.brand!.toLowerCase()));
-    if (filters.notes.length) out = out.filter((p) => ('noteKeys' in p ? hasAnyKey(p.noteKeys, filters.notes) : false));
+    if (filters.notes.length) out = out.filter((p) => hasAnyKey(p.noteKeys, filters.notes));
     if (filters.stock.length === 1) out = out.filter((p) => p.inStock === (filters.stock[0] === 'in'));
     if (filters.sort === 'newest') out = [...out].reverse();
     else if (filters.sort === 'name') out = [...out].sort((a, b) => a.name.localeCompare(b.name));
     return out;
-  }, [catalog, filters]);
+  }, [perfumes, filters]);
 
-  // The heading count must describe what the filters actually produced — it used
-  // to be computed from the unfiltered catalog, so tier/gender/brand changes left
-  // it stuck at the full total.
+  // The heading count must describe what the filters actually produced.
   const total = filtered.length;
 
+  // Paging resets whenever the filter set changes. Deriving it during render
+  // (instead of a setState-in-effect) keeps lint and React 19 both happy.
+  const filterKey = writeFilters(filters).toString();
+  const [paging, setPaging] = useState({ key: filterKey, visible: SHOP.pageSize });
+  const visible = paging.key === filterKey ? paging.visible : SHOP.pageSize;
   const shown = useMemo(() => filtered.slice(0, visible), [filtered, visible]);
   const hasMore = shown.length < total;
-
-  const loadMore = () => setVisible((v) => v + SHOP.pageSize);
+  const loadMore = () => setPaging({ key: filterKey, visible: visible + SHOP.pageSize });
 
   // Every distinct note in the catalogue, alphabetical, for the Notes section.
   // Built from the precomputed canonical keys — no sheet prose to re-parse.
@@ -131,16 +124,10 @@ export default function ShopShell({ perfumes, oils, brands }: { perfumes: Perfum
                   Filter{activeCount > 0 && <span className="shop__filter-count">{activeCount}</span>}
                 </button>
                 <h2 className="serif">
-                  {filters.collection === 'oils'
-                    ? 'Perfume Oils'
-                    : filters.collection === 'perfumes'
-                      ? 'Perfumes'
-                      : filters.brand.length === 1
-                        ? filters.brand[0]
-                        : 'All Products'}
+                  {filters.brand.length === 1 ? filters.brand[0] : 'All Perfumes'}
                 </h2>
                 <p className="shop__count" aria-live="polite">
-                  {total} {total === 1 ? 'Product' : 'Products'}
+                  {total} {total === 1 ? 'Perfume' : 'Perfumes'}
                 </p>
               </div>
 
@@ -167,7 +154,7 @@ export default function ShopShell({ perfumes, oils, brands }: { perfumes: Perfum
               )}
 
               {shown.map((p) => (
-                <ShopCard key={`${'category' in p ? 'oil' : 'perfume'}-${p.id}`} p={p} />
+                <ShopCard key={`perfume-${p.id}`} p={p} />
               ))}
             </div>
 

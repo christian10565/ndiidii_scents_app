@@ -129,7 +129,7 @@ export default function FilterPanel({
                     reads like a single bottle. */}
                 <span className="fsec__unit">
                   {' '}
-                  box of {BOX_SIZE}
+                  set of {BOX_SIZE}
                 </span>
               </>
             )}
@@ -146,18 +146,6 @@ export default function FilterPanel({
             {g.label}
           </Check>
         ))}
-      </Section>
-
-      <Section title="Collection">
-        <Check checked={filters.collection === null} onChange={() => set({ collection: null })}>
-          All Scents
-        </Check>
-        <Check checked={filters.collection === 'perfumes'} onChange={() => set({ collection: filters.collection === 'perfumes' ? null : 'perfumes' })}>
-          Perfumes
-        </Check>
-        <Check checked={filters.collection === 'oils'} onChange={() => set({ collection: filters.collection === 'oils' ? null : 'oils' })}>
-          Perfume Oils
-        </Check>
       </Section>
 
       <Section title="Notes">

@@ -195,3 +195,51 @@
   .builder__grid { grid-template-columns: repeat(2, 1fr); }
   .yourset { position: static; }
 }
+
+/* ---- sections (oil builder: size row, collection row) ---- */
+.builder__section { margin-bottom: 28px; }
+.builder__section-title { color: var(--oxblood); margin: 0 0 12px; }
+
+.builder__sizes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.sizebtn {
+  text-align: left;
+  padding: 16px 18px;
+  border: 1px solid var(--line-light);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.sizebtn:hover { border-color: var(--ink); }
+.sizebtn.is-active { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+.sizebtn__label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.sizebtn__price { font-size: 20px; line-height: 1.1; color: var(--ink); }
+.sizebtn__unit { font-size: 12px; color: var(--slate); }
+
+/* Oil builder has two collection types, not three tiers. */
+.builder__tiers--two { grid-template-columns: repeat(2, 1fr); }
+
+.builder__gridhead-actions { display: flex; align-items: baseline; gap: 16px; }
+.builder__gridhead-actions .builder__clear:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- text-only card (oils carry no photography) ---- */
+.bcard--text { padding-bottom: 16px; }
+.bcard__img--mono { display: block; }
+.bcard__img--mono .dnoimg {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+}
+.bcard__img--mono .dnoimg span { font-size: clamp(24px, 3vw, 34px); }
+
+@media (max-width: 900px) {
+  .builder__sizes { grid-template-columns: 1fr; }
+  .builder__tiers--two { grid-template-columns: 1fr; }
+}

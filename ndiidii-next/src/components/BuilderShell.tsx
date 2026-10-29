@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
@@ -19,8 +19,6 @@ const TIERS: { tier: Tier; label: string; blurb: string }[] = [
 type ByTier = Record<string, Perfume[]>;
 type Drafts = Record<Tier, string[]>;
 
-const EMPTY_DRAFTS: Drafts = { 1: [], 2: [], 3: [] };
-
 /**
  * The Collection Builder. Pick a tier, click products to fill BOX_SIZE (4)
  * slots in that tier, then add the set to the cart at that tier's fixed price.
@@ -33,56 +31,42 @@ const EMPTY_DRAFTS: Drafts = { 1: [], 2: [], 3: [] };
  * picked cards lose their tick, and the counter appears to bounce between two
  * sets at 3/4. A local draft has one unambiguous owner per tier, and only a
  * complete set is ever added to the cart.
+ *
+ * A perfume PDP hands off here as /collection-builder?add=<slug>&tier=<n>. The
+ * page keys this component on those params so a new handoff re-seeds the draft.
  */
-export function BuilderShell({ byTier }: { byTier: ByTier }) {
-  const [activeTier, setActiveTier] = useState<Tier>(1);
+export function BuilderShell({
+  byTier,
+  initialAdd,
+  initialTier,
+}: {
+  byTier: ByTier;
+  initialAdd?: string;
+  initialTier?: string;
+}) {
   const router = useRouter();
   const [justAdded, setJustAdded] = useState(false);
+  const { lines, addLine } = useCart();
+  const [qtyStr, setQtyStr] = useState('1');
 
-  const { lines, addLine, removeLine } = useCart();
-  const [drafts, setDrafts] = useState<Drafts>(EMPTY_DRAFTS);
+  const seed = useMemo(() => {
+    const tierNum = Number(initialTier);
+    const tier: Tier = tierNum === 2 ? 2 : tierNum === 3 ? 3 : 1;
+    const list = (byTier[String(tier)] ?? []) as Perfume[];
+    const ok = initialAdd ? list.some((p) => p.slug === initialAdd) : false;
+    const drafts: Drafts = { 1: [], 2: [], 3: [] };
+    if (ok && initialAdd) drafts[tier] = [initialAdd];
+    return { tier, drafts };
+  }, [byTier, initialAdd, initialTier]);
+
+  const [activeTier, setActiveTier] = useState<Tier>(seed.tier);
+  const [drafts, setDrafts] = useState<Drafts>(seed.drafts);
 
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
   const selected = drafts[activeTier];
   const full = selected.length === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[activeTier];
   const canPay = lines.filter((l) => l.kind === 'perfume').every((l) => l.items.length === BOX_SIZE);
-
-  /**
-   * Recover carts written by the previous builder, which left half-built sets as
-   * cart lines (sometimes several per tier). Fold the first one per tier into the
-   * draft and drop the rest, so a stale cart can't block checkout or confuse the
-   * grid on first load.
-   */
-  const migrated = useRef(false);
-  // Kept in a ref so the effect's dep array keeps a constant size across renders.
-  // Adding byTier to the deps directly made React throw "the final argument
-  // passed to useEffect changed size between renders" on hot reload.
-  const byTierRef = useRef(byTier);
-  byTierRef.current = byTier;
-
-  useEffect(() => {
-    // Wait for the cart to hydrate: on first render `lines` is still empty, so
-    // running now would find no partials and wrongly mark the migration done.
-    if (migrated.current || lines.length === 0) return;
-
-    const partials = lines.filter((l) => l.kind === 'perfume' && l.items.length < BOX_SIZE);
-    migrated.current = true;
-    if (partials.length === 0) return;
-
-    const adopted: Drafts = { 1: [], 2: [], 3: [] };
-    for (const line of partials) {
-      const tier = line.tier as Tier | null;
-      if (!tier || !(tier in adopted)) continue;
-      if (adopted[tier].length > 0) continue; // first partial per tier wins
-      // Only adopt slugs the grid can actually render, otherwise the counter and
-      // the empty slots disagree (a removed or renamed product leaves a ghost).
-      const available = new Set((byTierRef.current[String(tier)] ?? []).map((p) => p.slug));
-      adopted[tier] = [...new Set(line.items)].filter((slug) => available.has(slug)).slice(0, BOX_SIZE);
-    }
-    setDrafts((d) => ({ ...d, ...adopted }));
-    partials.forEach((line) => removeLine(line.id));
-  }, [lines, removeLine]);
 
   const togglePick = (slug: string) => {
     setJustAdded(false);
@@ -229,15 +213,20 @@ export function BuilderShell({ byTier }: { byTier: ByTier }) {
 
             <label className="yourset__qty">
               <span>Quantity</span>
-              <input type="number" min={1} max={99} defaultValue={1} id="builder-qty" />
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={qtyStr}
+                onChange={(e) => setQtyStr(e.target.value)}
+              />
             </label>
 
             <button
               className="btn btn--white yourset__cta"
               disabled={!full}
               onClick={() => {
-                const qty = Number((document.getElementById('builder-qty') as HTMLInputElement)?.value) || 1;
-                addLine('perfume', activeTier, selected, qty);
+                addLine({ kind: 'perfume', tier: activeTier, items: selected, qty: Number(qtyStr) || 1 });
                 setDrafts((d) => ({ ...d, [activeTier]: [] }));
                 setJustAdded(true);
               }}

@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -93,8 +93,25 @@ export async function saveSnapshot<T>(snapshot: Snapshot<T>): Promise<void> {
   try {
     await mkdir(dirname(SNAPSHOT_PATH), { recursive: true });
     const tmp = `${SNAPSHOT_PATH}.${randomUUID()}.tmp`;
-    await writeFile(tmp, JSON.stringify(snapshot));
-    await rename(tmp, SNAPSHOT_PATH);
+    try {
+      await writeFile(tmp, JSON.stringify(snapshot));
+      // On Windows, rename over an existing file fails (EPERM/EBUSY/EEXIST)
+      // whenever a reader — a dev server, a concurrent build worker — holds the
+      // destination open. Retry once after unlinking it, then give up.
+      try {
+        await rename(tmp, SNAPSHOT_PATH);
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code !== 'EPERM' && code !== 'EBUSY' && code !== 'EEXIST' && code !== 'EACCES') throw err;
+        await unlink(SNAPSHOT_PATH).catch(() => {});
+        await rename(tmp, SNAPSHOT_PATH);
+      }
+    } finally {
+      // No-op after a successful rename; deletes the temp file when either the
+      // write or the (retried) rename failed. Without this, a failed save left a
+      // 858KB orphan behind — 24 of them had accumulated in data/.
+      await unlink(tmp).catch(() => {});
+    }
   } catch {
     // Read-only FS (Vercel prod) or no data/ dir — non-fatal.
   }

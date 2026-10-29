@@ -225,7 +225,7 @@
 .check.is-static:hover .check__label {
   text-decoration: none;
 }
-/* Unit note next to a tier price ("box of 4") — the price is per box, not per decant. */
+/* Unit note next to a tier price ("set of 4") — the price is per set, not per decant. */
 .fsec__unit {
   margin-left: 4px;
   font-size: 11px;
@@ -434,11 +434,22 @@
 .scard__brand + .scard__name {
   margin-top: 6px; /* brand present → name hugs it */
 }
+/* Two sizes per perfume (decant set + full bottle), or "from" for oils — so this
+   is a quiet two-part line, not a single headline price. */
 .scard__price {
   margin-top: 8px;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--slate);
+  background: #fff;
+  position: relative;
+  z-index: 1;
 }
+.scard__sep { color: #c9c3b8; }
+/* Oil cards are text-only: the monogram block fills the image slot. */
+.scard--oil .scard__img .dnoimg { width: 100%; height: 100%; }
 .scard__status {
   margin-top: 8px;
   font-size: 13px;

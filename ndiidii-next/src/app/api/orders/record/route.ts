@@ -1,22 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyTransaction, isLive } from '@/lib/paystack';
-import { recordOrder, getOrder, isConfigured } from '@/lib/orders';
+import {
+  recordOrder,
+  getOrder,
+  getPendingOrder,
+  deletePendingOrder,
+  isConfigured,
+} from '@/lib/orders';
 
 /**
  * POST /api/orders/record
- * Records a completed order in the Redis audit ledger. Called by the checkout
- * callback once payment is confirmed. Best-effort — always returns 200 so a
- * ledger hiccup never blocks the customer's success screen.
+ * Body: { ref }
  *
- * Body: an OrderRecord { ref, email, items, amountCharged, total, method, ... }
+ * Finalises an order the server itself priced and parked in Redis at
+ * /api/paystack/initialize. The client contributes ONE thing: the reference.
+ * Items, totals and the gift-card portion all come from the pending order, so a
+ * browser can no longer invent an order or a discount.
+ *
+ * Best-effort on the ledger write — always 200 once verified, so a Redis hiccup
+ * never blocks the customer's success screen.
  */
-
 export async function POST(req: NextRequest) {
   if (!isConfigured()) {
     return NextResponse.json({ ok: true, recorded: false });
   }
 
-  let body: any;
+  let body: { ref?: string };
   try {
     body = await req.json();
   } catch {
@@ -24,21 +33,29 @@ export async function POST(req: NextRequest) {
   }
 
   const ref = typeof body.ref === 'string' ? body.ref.trim() : '';
-  const email = typeof body.email === 'string' ? body.email.trim() : '';
-  if (!ref || !email) {
-    return NextResponse.json({ error: 'ref and email are required' }, { status: 400 });
+  if (!ref) {
+    return NextResponse.json({ error: 'ref is required' }, { status: 400 });
   }
 
-  // Idempotency: if we already recorded this ref, accept without re-recording.
+  // Idempotency: already finalised.
   const existing = await getOrder(ref);
   if (existing) {
     return NextResponse.json({ ok: true, recorded: false, duplicate: true });
   }
 
-  // Server-side verification against Paystack for paid orders.
-  const method = body.method ?? 'paystack';
-  let amountCharged = Number(body.amountCharged) || 0;
-  if (method !== 'giftcard' && isLive()) {
+  const pending = await getPendingOrder(ref);
+  if (!pending) {
+    return NextResponse.json(
+      { error: 'Unknown order reference — it was never priced by this store, or it expired.' },
+      { status: 400 },
+    );
+  }
+
+  const giftAmount = pending.giftCard?.amount ?? 0;
+  const expectedCharge = Math.max(0, pending.grandTotal - giftAmount);
+  let amountCharged = 0;
+
+  if (pending.method !== 'giftcard' && isLive()) {
     try {
       const verified = await verifyTransaction(ref);
       if (verified.status !== 'success') {
@@ -51,20 +68,28 @@ export async function POST(req: NextRequest) {
         { status: 502 },
       );
     }
+    // The amount Paystack actually collected must equal what we priced. This is
+    // the check the Paystack docs require and the old flow never did.
+    if (Math.abs(amountCharged - expectedCharge) > 0.5) {
+      return NextResponse.json(
+        { error: 'Charged amount does not match the priced order.' },
+        { status: 400 },
+      );
+    }
   }
 
-  const order = {
+  await recordOrder({
     ref,
-    at: new Date().toISOString(),
-    email,
-    items: Array.isArray(body.items) ? body.items : [],
-    delivery: body.delivery,
+    at: pending.at,
+    email: pending.email,
+    items: pending.lines.map((l) => ({ name: `${l.label} — ${l.detail}`, qty: l.qty, price: l.price })),
+    delivery: pending.delivery,
     amountCharged,
-    giftCard: body.giftCard,
-    total: Number(body.total) || 0,
-    method,
-  };
+    giftCard: pending.giftCard,
+    total: pending.grandTotal,
+    method: pending.method,
+  });
 
-  await recordOrder(order);
+  await deletePendingOrder(ref);
   return NextResponse.json({ ok: true, recorded: true });
 }

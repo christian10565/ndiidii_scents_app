@@ -29,6 +29,8 @@ export interface PerfumeCard {
   imageUrl: string | null;
   inStock: boolean;
   tier: 1 | 2 | 3 | null;
+  /** Full-bottle price (sheet `Price` column). Card shows both sizes. */
+  bottlePrice: number | null;
   /** Canonical note names, precomputed server-side. */
   noteKeys: string[];
 }
@@ -72,6 +74,7 @@ export function toPerfumeCard(p: Perfume): PerfumeCard {
     imageUrl: p.imageUrl,
     inStock: p.inStock,
     tier: p.tier,
+    bottlePrice: p.bottlePrice,
     noteKeys: notesFromParts(p.notes),
   };
 }
@@ -83,7 +86,8 @@ export function toOilCard(o: Oil): OilCard {
     name: o.name,
     brand: o.brand,
     gender: o.gender,
-    imageUrl: o.imageUrl,
+    // Oils never carry photography — see the copyright note in catalog.ts.
+    imageUrl: null,
     inStock: o.inStock,
     category: o.category,
   };

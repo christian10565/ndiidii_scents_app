@@ -41,6 +41,11 @@ export interface Perfume {
   stock: number;
   inStock: boolean;
   tier: 1 | 2 | 3 | null;
+  /**
+   * Full-bottle price from the sheet's `Price` column, in naira.
+   * null = the row isn't priced, so it can't be bought as a bottle.
+   */
+  bottlePrice: number | null;
   scentProfile: string | null;
   inspiredBy: string | null;
   season: string | null;
@@ -95,6 +100,7 @@ function mapPerfumes(rows: Awaited<ReturnType<typeof readTab>>): Perfume[] {
       stock,
       inStock: stock > 0,
       tier: m.tier,
+      bottlePrice: m.retailPrice,
       scentProfile: m.scentProfile,
       inspiredBy: m.inspiredBy,
       season: m.season,
@@ -114,7 +120,10 @@ function mapOils(rows: Awaited<ReturnType<typeof readTab>>): Oil[] {
       name: m.name,
       brand: m.brand,
       gender: m.gender,
-      imageUrl: m.imageUrl,
+      // Deliberately dropped. Oil photography is a copyright risk for the
+      // client, so oils are rendered from text/monogram placeholders only —
+      // nulling the URL here means an oil image cannot reach any surface.
+      imageUrl: null,
       stock,
       inStock: stock > 0,
       category: m.category,
@@ -122,6 +131,16 @@ function mapOils(rows: Awaited<ReturnType<typeof readTab>>): Oil[] {
     } satisfies Oil;
   });
 }
+
+/**
+ * Can this perfume actually be bought?
+ *
+ * Two ways to buy one: a decant inside a tier set (needs `tier`), or a full
+ * bottle (needs `bottlePrice`). A row with neither can't be sold at all, so it
+ * is hidden everywhere rather than linked to a dead PDP.
+ */
+export const isSellablePerfume = (p: Perfume): boolean =>
+  p.tier !== null || (p.bottlePrice ?? 0) > 0;
 
 /**
  * Fetch the whole catalog from the live sheet with snapshot fallback.
@@ -166,7 +185,12 @@ export async function getPerfumes(): Promise<Perfume[]> {
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
   const snap = await readCatalog();
-  return snap.perfumes;
+  // Unsellable rows (no decant tier AND no bottle price — 325 of 1,046 today)
+  // are filtered here rather than in each surface. One filter keeps /shop,
+  // /search, the home rails, the brand counts, the curated-set joins and the
+  // PDPs consistent: a product nobody can buy simply does not exist on the
+  // site. They stay in the snapshot so they reappear once the sheet is filled.
+  return snap.perfumes.filter(isSellablePerfume);
 }
 
 export async function getOils(): Promise<Oil[]> {
@@ -285,9 +309,9 @@ export async function getBrands(): Promise<BrandCount[]> {
   'use cache';
   cacheTag('catalog');
   cacheLife({ revalidate: 300, expire: 3600 });
-  const snap = await readCatalog();
-  const perfumes = snap.perfumes;
-  const oils = snap.oils as Oil[];
+  // Counts must agree with what the site actually lists, so this goes through
+  // getPerfumes() (sellable only) rather than the raw snapshot.
+  const [perfumes, oils] = await Promise.all([getPerfumes(), getOils()]);
 
   const merged = new Map<string, { brand: string; perfumes: number; oils: number }>();
   const key = (b: string) => b.trim().toLowerCase();

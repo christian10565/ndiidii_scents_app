@@ -363,6 +363,58 @@
   pointer-events: none;
 }
 
+/* ---- two sizes: decant set + full bottle ---- */
+.pdp__prices { margin: 0 0 20px; }
+.pdp__prices .pdp__price { margin: 0 0 4px; }
+.pdp__price--bottle { font-size: 18px; color: #44403a; }
+
+.pdp__buy-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.pdp__buy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.pdp__buy.is-disabled { opacity: 0.55; }
+.pdp__buy-eyebrow { color: var(--oxblood-light); margin: 0; }
+.pdp__buy-price { font-size: 20px; line-height: 1.1; color: #fff; }
+.pdp__buy-price small { font-size: 12px; color: #b9b3a8; }
+.pdp__buy-cta {
+  width: 100%;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+}
+.pdp__buy-note { font-size: 12px; color: #b9b3a8; }
+.pdp__buy .pdp__cart-panel-qty { color: #b9b3a8; }
+
+/* Oil PDP: text-only price table (no photography, by request). */
+.pdp__oilprices {
+  margin: 0 0 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 18px;
+}
+.pdp__oilprices-title { color: var(--muted, #8a8378); margin: 0 0 10px; }
+.pdp__oilprices ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pdp__oilprices li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--ink, #1a1714);
+}
+.pdp__oilprices li strong { font-weight: 400; font-size: 16px; }
+
 @media (max-width: 760px) {
   .pdp__grid {
     grid-template-columns: 1fr;
@@ -372,4 +424,5 @@
     grid-template-columns: 1fr;
     gap: 14px;
   }
+  .pdp__buy-options { grid-template-columns: 1fr; }
 }

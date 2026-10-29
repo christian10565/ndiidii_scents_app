@@ -9,10 +9,12 @@
  * Keys:
  *   orders                 -> list of order JSON (most recent first)
  *   order:<ref>            -> hash of a single order (full detail)
+ *   order:pending:<ref>    -> server-priced order awaiting payment (24h TTL)
  *   giftcards:issued       -> list of issued gift-card JSON
  *
  * Env: KV_REST_API_URL, KV_REST_API_TOKEN.
  */
+import type { QuoteLine } from './quote';
 
 /** Run a Redis command via the Upstash REST command-array endpoint. */
 async function kv<T = unknown>(...args: (string | number)[]): Promise<T> {
@@ -42,6 +44,50 @@ export interface OrderRecord {
   giftCard?: { code: string; amount: number }; // gift-card portion applied
   total: number; // full order value (naira)
   method: 'paystack' | 'giftcard' | 'mixed';
+}
+
+/**
+ * An order the SERVER priced, waiting for its payment to settle.
+ *
+ * This is the trust boundary: /api/paystack/initialize writes it after
+ * rebuilding the cart from the catalog, and /api/orders/record reads it back
+ * instead of trusting whatever the browser posts. Anything not in here never
+ * becomes an order.
+ */
+export interface PendingOrder {
+  ref: string;
+  at: string;
+  email: string;
+  lines: QuoteLine[];
+  total: number;
+  grandTotal: number;
+  delivery?: OrderRecord['delivery'];
+  giftCard?: { code: string; amount: number };
+  method: 'paystack' | 'giftcard' | 'mixed';
+}
+
+export async function savePendingOrder(order: PendingOrder): Promise<void> {
+  await kv('SET', `order:pending:${order.ref}`, JSON.stringify(order), 'EX', 60 * 60 * 24);
+}
+
+/** Read a pending order. Returns null if unknown/expired. */
+export async function getPendingOrder(ref: string): Promise<PendingOrder | null> {
+  const raw = await kv<string | null>('GET', `order:pending:${ref}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as PendingOrder;
+  } catch {
+    return null;
+  }
+}
+
+/** Drop a pending order once it has been finalised (or abandoned). */
+export async function deletePendingOrder(ref: string): Promise<void> {
+  try {
+    await kv('DEL', `order:pending:${ref}`);
+  } catch {
+    /* non-fatal, the 24h TTL cleans up */
+  }
 }
 
 /** Record a completed order. Best-effort; never throws to the caller. */

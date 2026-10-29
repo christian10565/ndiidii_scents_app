@@ -1,47 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 /**
  * Live cart count for the header badge. Reads the localStorage-backed cart
- * directly and re-reads on every `ndiidii-cart-change` event, so it stays in
- * sync even though the header sits inside a Suspense boundary (context updates
- * from CartProvider don't reliably cross that boundary).
+ * directly (context updates don't reliably cross the header's Suspense
+ * boundary) and subscribes to both the in-page change event and the cross-tab
+ * `storage` event.
+ *
+ * `useSyncExternalStore` is the right primitive for an external store: no
+ * setState-in-effect, and the server snapshot is a stable 0 so hydration is
+ * clean.
  */
+const CART_KEY = 'ndiidii-cart-v2';
+
+interface RawCart {
+  lines?: { items?: unknown; qty?: unknown }[];
+  bottles?: { qty?: unknown }[];
+  discovery?: { qty?: unknown }[];
+}
+
 function readCount(): number {
   if (typeof window === 'undefined') return 0;
   try {
-    const raw = window.localStorage.getItem('ndiidii-cart-v1');
+    const raw = window.localStorage.getItem(CART_KEY);
     if (!raw) return 0;
-    const c = JSON.parse(raw);
-    const lines = Array.isArray(c.lines) ? c.lines : [];
-    const discovery = Array.isArray(c.discovery) ? c.discovery : [];
-
-    const fullLines = lines.filter((l: any) => Array.isArray(l.items) && l.items.length === 4);
-    const lineQty = fullLines.reduce((n: number, l: any) => n + (Number(l.qty) || 0), 0);
-    const discQty = discovery.reduce((n: number, l: any) => n + (Number(l.qty) || 0), 0);
-    return lineQty + discQty;
+    const c = JSON.parse(raw) as RawCart;
+    const sum = (arr?: { qty?: unknown }[]) =>
+      (arr ?? []).reduce((n, l) => n + (Number(l.qty) || 0), 0);
+    // Only complete sets are counted — a half-built set is not in the cart.
+    const sets = (c.lines ?? []).filter((l) => Array.isArray(l.items) && l.items.length === 4);
+    return sum(sets) + sum(c.bottles) + sum(c.discovery);
   } catch {
     return 0;
   }
 }
 
+function subscribe(onChange: () => void): () => void {
+  window.addEventListener('ndiidii-cart-change', onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    window.removeEventListener('ndiidii-cart-change', onChange);
+    window.removeEventListener('storage', onChange);
+  };
+}
+
 export default function CartBadge() {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    setCount(readCount());
-    const onChange = () => setCount(readCount());
-    window.addEventListener('ndiidii-cart-change', onChange);
-    // Also re-read when another tab changes the cart.
-    window.addEventListener('storage', onChange);
-    return () => {
-      window.removeEventListener('ndiidii-cart-change', onChange);
-      window.removeEventListener('storage', onChange);
-    };
-  }, []);
-
-  // suppressHydrationWarning: 0 on the server / first paint, real value after mount.
+  const count = useSyncExternalStore(subscribe, readCount, () => 0);
   return (
     <span className="icon-btn__badge" suppressHydrationWarning>
       {count}

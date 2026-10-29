@@ -7,49 +7,58 @@ import { useCart } from '@/lib/cart';
 
 /**
  * /checkout/callback — where Paystack redirects after payment (with ?reference=).
+ *
  * Verifies the transaction server-side, then shows success (and clears the cart)
  * or failure. Wrapped in Suspense by the page because it reads search params.
+ *
+ * The order itself is NOT described here. /api/orders/record is handed the
+ * reference and reads back the order the server priced at initialize time, so
+ * nothing in this component can influence what gets recorded.
  */
 export default function CheckoutCallback() {
   const params = useSearchParams();
   const reference = params.get('reference');
+  const giftRef = params.get('ref');
   const { clearCart } = useCart();
   const [state, setState] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [detail, setDetail] = useState<string>('');
   const cleared = useRef(false);
 
   useEffect(() => {
-    // Fully covered by a gift card — no Paystack reference; already redeemed.
-    const giftOnly = params.get('giftonly');
-    if (giftOnly === '1') {
-      (async () => {
-        try {
-          const summary = sessionStorage.getItem('ndiidii-order-summary');
-          if (summary) {
-            sessionStorage.removeItem('ndiidii-order-summary');
-            const s = JSON.parse(summary);
-            await fetch('/api/orders/record', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ref: `giftcard-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                email: s.email,
-                items: s.items,
-                delivery: s.delivery,
-                amountCharged: 0,
-                total: s.grandTotal ?? s.total,
-                giftCard: s.giftCredit > 0 ? { code: 'gift-only', amount: s.giftCredit } : undefined,
-                method: 'giftcard',
-              }),
-            });
-          }
-        } catch {
-          /* ledger write is best-effort */
+    const clearOnce = () => {
+      if (!cleared.current) {
+        cleared.current = true;
+        clearCart();
+      }
+    };
+
+    const record = async (ref: string) => {
+      try {
+        const res = await fetch('/api/orders/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ref }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          console.warn('[checkout] ledger write refused:', json.error ?? res.status);
         }
+      } catch {
+        /* ledger write is best-effort */
+      }
+    };
+
+    // Fully covered by a gift card — no Paystack step, the card was already
+    // debited by /api/paystack/initialize.
+    if (params.get('giftonly') === '1') {
+      (async () => {
+        if (giftRef) await record(giftRef);
+        clearOnce();
         setState('success');
       })();
       return;
     }
+
     if (!reference) {
       setState('failed');
       setDetail('No payment reference found.');
@@ -62,21 +71,14 @@ export default function CheckoutCallback() {
         const json = await res.json();
         if (cancelled) return;
         if (res.ok && json.status === 'success') {
-          let redeemedGiftCode: string | null = null;
-          // Handle a pending gift-card action (purchase a new card, or a
-          // preauth debit that was applied before Paystack checkout).
+          // A gift-card purchase (new card issued after payment).
           try {
             const pending = sessionStorage.getItem('ndiidii-giftcard-pending');
             if (pending) {
               const p = JSON.parse(pending);
               if (p.reference === reference) {
                 sessionStorage.removeItem('ndiidii-giftcard-pending');
-                if (p.redeem === false && p.code) {
-                  // Gift card was already debited server-side before redirect.
-                  // Just record it with the order; do not double-redeem.
-                  redeemedGiftCode = p.code;
-                } else if (!p.redeem && !p.code) {
-                  // Create a brand-new gift card and reveal its code.
+                if (!p.redeem && !p.code) {
                   const gres = await fetch('/api/giftcard/purchase', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -94,44 +96,18 @@ export default function CheckoutCallback() {
             /* fall through to normal order success */
           }
           setState('success');
-          // Record the order in the Redis audit ledger (best-effort).
-          try {
-            const summary = sessionStorage.getItem('ndiidii-order-summary');
-            if (summary) {
-              sessionStorage.removeItem('ndiidii-order-summary');
-              const s = JSON.parse(summary);
-              await fetch('/api/orders/record', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  ref: reference,
-                  email: s.email,
-                  items: s.items,
-                  delivery: s.delivery,
-                  amountCharged: json.amountNaira ?? s.total,
-                  total: s.grandTotal ?? s.total,
-                  giftCard: s.giftCredit > 0 && redeemedGiftCode ? { code: redeemedGiftCode, amount: s.giftCredit } : undefined,
-                  method: s.giftCredit > 0 ? (json.amountNaira > 0 ? 'mixed' : 'giftcard') : 'paystack',
-                }),
-              });
-            }
-          } catch {
-            /* ledger write is best-effort */
-          }
-          // Clear the cart once, on confirmed success.
-          if (!cleared.current) {
-            cleared.current = true;
-            clearCart();
-          }
+          await record(reference);
+          clearOnce();
         } else {
           setState('failed');
           setDetail(json.error || `Payment status: ${json.status ?? 'unknown'}`);
-          // If the payment failed but we already debited a gift card, refund it.
+          // If the payment failed but the server already debited a gift card,
+          // put the balance back.
           try {
             const pending = sessionStorage.getItem('ndiidii-giftcard-pending');
             if (pending) {
               const p = JSON.parse(pending);
-              if (p.reference === reference && p.redeem === false && p.code && p.amountNaira) {
+              if (p.reference === reference && p.code && p.amountNaira) {
                 await fetch('/api/giftcard/refund', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -153,7 +129,7 @@ export default function CheckoutCallback() {
     return () => {
       cancelled = true;
     };
-  }, [reference, clearCart]);
+  }, [reference, giftRef, clearCart, params]);
 
   return (
     <div className="container checkout">
@@ -162,7 +138,7 @@ export default function CheckoutCallback() {
           <>
             <p className="eyebrow" style={{ color: 'var(--oxblood)' }}>Confirming payment</p>
             <h1 className="serif">Verifying your payment…</h1>
-            <p>Please don't close this page.</p>
+            <p>Please don&apos;t close this page.</p>
           </>
         )}
         {state === 'success' && (
@@ -170,7 +146,7 @@ export default function CheckoutCallback() {
             <p className="eyebrow" style={{ color: 'var(--oxblood)' }}>Order received</p>
             <h1 className="serif">Thank you!</h1>
             <p>
-              Your payment was confirmed and your order is being prepared. We'll email you a
+              Your payment was confirmed and your order is being prepared. We&apos;ll email you a
               receipt and tracking details shortly.
             </p>
             <Link href="/shop" className="btn btn--white">Continue shopping</Link>

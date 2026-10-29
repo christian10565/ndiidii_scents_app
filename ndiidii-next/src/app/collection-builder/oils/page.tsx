@@ -7,15 +7,27 @@ import { OilBuilderShell } from '@/components/OilBuilderShell';
 // the Suspense child opts the route out of static prerendering (the baked-in
 // empty-selection HTML caused a hydration mismatch) and streams the shell at once.
 //
-// Catalog is cached server-side (see lib/catalog.ts); the builder filters it
-// per category (niche/designer) on the client for instant category switching.
-async function OilBuilderBody() {
+// Catalog is cached server-side (see lib/catalog.ts). Search params are read here
+// and passed down as props, and the shell is keyed on them: a PDP handoff
+// (?add=<slug>&type=<niche|designer>) must remount with the oil pre-picked
+// instead of reusing a component that already holds a draft.
+async function OilBuilderBody({
+  searchParams,
+}: {
+  searchParams: Promise<{ add?: string; type?: string }>;
+}) {
   await connection();
-  const oils = await getOils();
-  return <OilBuilderShell oils={oils} />;
+  const [oils, sp] = await Promise.all([getOils(), searchParams]);
+  const add = sp.add ?? '';
+  const type = sp.type ?? '';
+  return <OilBuilderShell key={`${add}|${type}`} oils={oils} initialAdd={add || undefined} initialType={type || undefined} />;
 }
 
-export default function OilBuilderPage() {
+export default function OilBuilderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ add?: string; type?: string }>;
+}) {
   return (
     <Suspense
       fallback={
@@ -26,7 +38,7 @@ export default function OilBuilderPage() {
         </div>
       }
     >
-      <OilBuilderBody />
+      <OilBuilderBody searchParams={searchParams} />
     </Suspense>
   );
 }
