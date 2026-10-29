@@ -102,6 +102,20 @@
 .bcard:hover { border-color: var(--ink); }
 .bcard:disabled { opacity: 0.45; cursor: not-allowed; }
 .bcard.is-selected { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+/* The card's clickable surface (image + name) is its own button so the stepper
+   buttons can sit alongside it without nesting buttons. */
+.bcard__toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.bcard__stepper { margin: 8px auto 0; }
 .bcard__img { position: relative; }
 .bcard__img .pimg { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 4px; background: #f0eee9; }
 /* Placeholder (no image yet): keep the bottle mark small inside the card box. */
@@ -253,23 +267,26 @@
   padding: 28px 24px 90px;
 }
 
-/* ---- hero (mockup banner: bottles right, blurred neutral left) — full-bleed ---- */
+/* ---- hero: full-bleed dark banner (no photo — a clean dark block) ---- */
 .ob-hero {
   position: relative;
   overflow: hidden;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #1a1512 0%, #0c0a08 55%, #17110c 100%);
   color: #fff;
 }
-/* Dark scrim over the blurred left third keeps the white text legible. */
-.ob-hero__shade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(26, 20, 14, 0.78) 0%, rgba(26, 20, 14, 0.42) 45%, rgba(26, 20, 14, 0.05) 100%);
+.ob-hero__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 72px;
 }
-.ob-hero__inner { position: relative; padding-block: 72px; }
 .ob-hero__title { font-size: 44px; line-height: 1.08; margin: 0 0 14px; max-width: 15ch; }
-.ob-hero__sub { font-size: 15px; line-height: 1.6; color: #f3efe9; margin: 0; max-width: 440px; }
+.ob-hero__sub { font-size: 15px; line-height: 1.6; color: #cfc8c0; margin: 0; max-width: 440px; }
+
+@media (max-width: 760px) {
+  .ob-hero__title { font-size: 32px; }
+}
 
 /* Centered line between the hero and the card (mockup copy). */
 .ob-intro {
@@ -382,10 +399,38 @@
   display: grid;
   place-items: center;
   color: #fff;
+  background: #fff;
+  padding: 0;
+  cursor: pointer;
 }
 .ob-row.is-selected .ob-row__check { background: var(--oxblood); border-color: var(--oxblood); }
 .ob-row__name { flex: 1; font-size: 14px; font-weight: 600; color: var(--ink); }
 .ob-row__brand { font-size: 12px; color: var(--slate); }
+
+/* Quantity stepper — a set holds BOX_SIZE bottles and the same oil may repeat. */
+.ob-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.ob-stepper button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #cfc9c0;
+  background: #fff;
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.ob-stepper button:hover:not(:disabled) { border-color: var(--ink); }
+.ob-stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+.ob-stepper__qty { min-width: 16px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink); }
 
 /* ---- summary panel (reuses the black "Your Set" vocab) ---- */
 .ob-summary .yourset__inner { border-radius: 10px; padding: 26px 24px; }

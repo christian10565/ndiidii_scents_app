@@ -28,13 +28,24 @@ function LineThumbs({ slugs, catalog }: { slugs: string[]; catalog: { slug: stri
   const items = slugs.map((s) => catalog.find((p) => p.slug === s)).filter(Boolean) as typeof catalog;
   return (
     <div className="cline__thumbs">
-      {items.map((p) => (
-        <span key={p.slug} className="cline__thumb" title={p.name}>
+      {items.map((p, i) => (
+        <span key={`${p.slug}-${i}`} className="cline__thumb" title={p.name}>
           {p.imageUrl ? <ProductImage src={p.imageUrl} alt={p.name} /> : <Monogram name={p.name} className="dnoimg dnoimg--thumb" />}
         </span>
       ))}
     </div>
   );
+}
+
+/** "2× Ameer Al Oudh · Good Girl" — same bottle added twice is one line with a count. */
+function LineNames({ slugs, catalog }: { slugs: string[]; catalog: { slug: string; name: string }[] }) {
+  const counts = new Map<string, number>();
+  for (const s of slugs) counts.set(s, (counts.get(s) ?? 0) + 1);
+  const bySlug = new Map(catalog.map((c) => [c.slug, c.name]));
+  const label = [...counts.entries()]
+    .map(([slug, n]) => `${n > 1 ? `${n}× ` : ''}${bySlug.get(slug) ?? slug}`)
+    .join(' · ');
+  return <p className="cline__names">{label}</p>;
 }
 
 export default function CheckoutClient({
@@ -125,9 +136,6 @@ export default function CheckoutClient({
               </p>
             )}
             {lines.map((l) => {
-              const items = l.items
-                .map((s) => catalog.find((p) => p.slug === s))
-                .filter((p): p is { slug: string; name: string; imageUrl: string | null } => Boolean(p));
               const isOil = l.kind === 'oil';
               const tierLabel: string = isOil
                 ? 'Oil set'
@@ -152,7 +160,7 @@ export default function CheckoutClient({
                       {tierLabel} · {subtitle}
                     </p>
                     <LineThumbs slugs={l.items} catalog={catalog} />
-                    <p className="cline__names">{items.map((p) => p.name).join(' · ')}</p>
+                    <LineNames slugs={l.items} catalog={catalog} />
                   </div>
                   <div className="cline__side">
                     <div className="cline__qty">

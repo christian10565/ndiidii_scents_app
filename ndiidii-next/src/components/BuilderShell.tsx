@@ -17,19 +17,17 @@ const TIERS: { tier: Tier; label: string; blurb: string }[] = [
 ];
 
 type ByTier = Record<string, Perfume[]>;
-type Drafts = Record<Tier, string[]>;
+/** slug -> bottle count per tier. A set is BOX_SIZE bottles; the same decant may repeat. */
+type Drafts = Record<Tier, Record<string, number>>;
+
+const EMPTY_TIER: Record<string, number> = {};
 
 /**
- * The Collection Builder. Pick a tier, click products to fill BOX_SIZE (4)
- * slots in that tier, then add the set to the cart at that tier's fixed price.
- * All three tiers can be worked on concurrently.
+ * The Collection Builder. Pick a tier, then add BOX_SIZE (4) decants — the same
+ * perfume can be added more than once, so a set may hold e.g. two of one decant
+ * and two of another. All three tiers can be worked on concurrently.
  *
- * In-progress picks live in local state (`drafts`), not in the cart. They used
- * to be written into cart lines as you clicked, and the "current set" was
- * inferred as "the first line with fewer than four items". That inference moves
- * the moment a set fills up: clicks start landing in a different line, previously
- * picked cards lose their tick, and the counter appears to bounce between two
- * sets at 3/4. A local draft has one unambiguous owner per tier, and only a
+ * In-progress picks live in local state (`drafts`), not in the cart; only a
  * complete set is ever added to the cart.
  *
  * A perfume PDP hands off here as /collection-builder?add=<slug>&tier=<n>. The
@@ -54,8 +52,8 @@ export function BuilderShell({
     const tier: Tier = tierNum === 2 ? 2 : tierNum === 3 ? 3 : 1;
     const list = (byTier[String(tier)] ?? []) as Perfume[];
     const ok = initialAdd ? list.some((p) => p.slug === initialAdd) : false;
-    const drafts: Drafts = { 1: [], 2: [], 3: [] };
-    if (ok && initialAdd) drafts[tier] = [initialAdd];
+    const drafts: Drafts = { 1: EMPTY_TIER, 2: EMPTY_TIER, 3: EMPTY_TIER };
+    if (ok && initialAdd) drafts[tier] = { [initialAdd]: 1 };
     return { tier, drafts };
   }, [byTier, initialAdd, initialTier]);
 
@@ -64,21 +62,57 @@ export function BuilderShell({
 
   const products = useMemo(() => (byTier[String(activeTier)] ?? []) as Perfume[], [byTier, activeTier]);
   const selected = drafts[activeTier];
-  const full = selected.length === BOX_SIZE;
+
+  // Ordered list of the four decant slots, duplicates allowed.
+  const slotList = useMemo(() => {
+    const arr: string[] = [];
+    for (const [slug, q] of Object.entries(selected)) for (let i = 0; i < q; i++) arr.push(slug);
+    return arr;
+  }, [selected]);
+  const totalPicked = slotList.length;
+  const full = totalPicked === BOX_SIZE;
   const price = TIER_BOX_PRICE_NGN[activeTier];
   const canPay = lines.filter((l) => l.kind === 'perfume').every((l) => l.items.length === BOX_SIZE);
+
+  const inc = (slug: string) => {
+    setJustAdded(false);
+    setDrafts((d) => {
+      const cur = d[activeTier];
+      const total = Object.values(cur).reduce((n, q) => n + q, 0);
+      if (total >= BOX_SIZE) return d;
+      return { ...d, [activeTier]: { ...cur, [slug]: (cur[slug] ?? 0) + 1 } };
+    });
+  };
+
+  const dec = (slug: string) => {
+    setJustAdded(false);
+    setDrafts((d) => {
+      const cur = d[activeTier];
+      const q = (cur[slug] ?? 0) - 1;
+      const next = { ...cur };
+      if (q <= 0) delete next[slug];
+      else next[slug] = q;
+      return { ...d, [activeTier]: next };
+    });
+  };
 
   const togglePick = (slug: string) => {
     setJustAdded(false);
     setDrafts((d) => {
       const cur = d[activeTier];
-      if (cur.includes(slug)) return { ...d, [activeTier]: cur.filter((s) => s !== slug) };
-      if (cur.length >= BOX_SIZE) return d; // full: no fifth pick
-      return { ...d, [activeTier]: [...cur, slug] };
+      const next = { ...cur };
+      if (cur[slug]) {
+        delete next[slug];
+      } else {
+        const total = Object.values(cur).reduce((n, q) => n + q, 0);
+        if (total >= BOX_SIZE) return d;
+        next[slug] = 1;
+      }
+      return { ...d, [activeTier]: next };
     });
   };
 
-  const isSelected = (slug: string) => selected.includes(slug);
+  const isSelected = (slug: string) => (selected[slug] ?? 0) > 0;
 
   /** Complete sets already in the cart for a tier. */
   const setsInCart = (tier: Tier) =>
@@ -94,8 +128,8 @@ export function BuilderShell({
         <p className="eyebrow builder__eyebrow">Signature Feature</p>
         <h1 className="serif builder__title">Build Your Perfume Collection</h1>
         <p className="builder__intro">
-          Choose one tier, then select exactly four 10ml decants from within it. Mixed tiers aren&apos;t
-          possible — that&apos;s what keeps pricing simple and fair.
+          Choose one tier, then select exactly four 10ml decants from within it — the same scent can
+          appear more than once. Mixed tiers aren&apos;t possible.
         </p>
         <p className="builder__oil-link">
           Looking to build a set from our perfume oils instead? <Link href="/collection-builder/oils" className="link-red">Try the Oil Builder</Link>
@@ -117,7 +151,11 @@ export function BuilderShell({
               <span className="tiercard__label eyebrow">{t.label}</span>
               <span className="tiercard__price serif">{formatNaira(TIER_BOX_PRICE_NGN[t.tier])}</span>
               <span className="tiercard__blurb">{t.blurb}</span>
-              {drafts[t.tier].length > 0 && <span className="tiercard__count">{drafts[t.tier].length}/{BOX_SIZE}</span>}
+              {Object.values(drafts[t.tier]).reduce((n, q) => n + q, 0) > 0 && (
+                <span className="tiercard__count">
+                  {Object.values(drafts[t.tier]).reduce((n, q) => n + q, 0)}/{BOX_SIZE}
+                </span>
+              )}
               {inCart > 0 && <span className="tiercard__count">{inCart} {inCart === 1 ? 'set' : 'sets'} in cart</span>}
             </button>
           );
@@ -131,8 +169,8 @@ export function BuilderShell({
             <h2 className="serif">{TIERS[activeTier - 1].label} — choose {BOX_SIZE}</h2>
             <button
               className="builder__clear link-red"
-              onClick={() => { setDrafts((d) => ({ ...d, [activeTier]: [] })); setJustAdded(false); }}
-              disabled={selected.length === 0}
+              onClick={() => { setDrafts((d) => ({ ...d, [activeTier]: {} })); setJustAdded(false); }}
+              disabled={totalPicked === 0}
             >
               Clear selection
             </button>
@@ -143,27 +181,48 @@ export function BuilderShell({
           ) : (
             <div className="builder__grid">
               {products.map((p) => {
-                const sel = isSelected(p.slug);
-                const disabled = !sel && full; // a full set takes no fifth pick
+                const qty = selected[p.slug] ?? 0;
+                const sel = qty > 0;
+                const incDisabled = full || qty >= BOX_SIZE;
                 return (
-                  <button
-                    key={p.id}
-                    className={`bcard ${sel ? 'is-selected' : ''}`}
-                    onClick={() => !disabled && togglePick(p.slug)}
-                    disabled={disabled}
-                    aria-pressed={sel}
-                  >
-                    <span className="bcard__img">
-                      <ProductImage src={p.imageUrl} alt={p.name} />
-                      {sel && (
-                        <span className="bcard__check" aria-hidden="true">
-                          <CheckIcon width={16} height={16} />
-                        </span>
-                      )}
-                    </span>
-                    <span className="bcard__name">{p.name}</span>
-                    <span className="bcard__family">{p.scentProfile || p.brand}</span>
-                  </button>
+                  <div key={p.id} className={`bcard ${sel ? 'is-selected' : ''}`}>
+                    <button
+                      type="button"
+                      className="bcard__toggle"
+                      onClick={() => togglePick(p.slug)}
+                      aria-pressed={sel}
+                    >
+                      <span className="bcard__img">
+                        <ProductImage src={p.imageUrl} alt={p.name} />
+                        {sel && (
+                          <span className="bcard__check" aria-hidden="true">
+                            <CheckIcon width={16} height={16} />
+                          </span>
+                        )}
+                      </span>
+                      <span className="bcard__name">{p.name}</span>
+                      <span className="bcard__family">{p.scentProfile || p.brand}</span>
+                    </button>
+                    <div className="ob-stepper bcard__stepper">
+                      <button
+                        type="button"
+                        onClick={() => dec(p.slug)}
+                        disabled={qty === 0}
+                        aria-label={`Remove one ${p.name}`}
+                      >
+                        −
+                      </button>
+                      <span className="ob-stepper__qty">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => inc(p.slug)}
+                        disabled={incDisabled}
+                        aria-label={`Add one ${p.name}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -175,12 +234,12 @@ export function BuilderShell({
           <div className="yourset__inner">
             <p className="yourset__title eyebrow">Your Set</p>
             <p className="yourset__tier">
-              {TIERS[activeTier - 1].label} · <span>{selected.length} of {BOX_SIZE} selected</span>
+              {TIERS[activeTier - 1].label} · <span>{totalPicked} of {BOX_SIZE} selected</span>
             </p>
 
             <div className="yourset__slots">
               {Array.from({ length: BOX_SIZE }, (_, i) => {
-                const slug = selected[i];
+                const slug = slotList[i];
                 const prod = slug ? products.find((product) => product.slug === slug) : null;
                 return (
                   <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
@@ -193,7 +252,7 @@ export function BuilderShell({
                         <button
                           className="slot__remove"
                           aria-label={`Remove ${prod.name}`}
-                          onClick={() => togglePick(prod.slug)}
+                          onClick={() => dec(prod.slug)}
                         >
                           ×
                         </button>
@@ -226,13 +285,13 @@ export function BuilderShell({
               className="btn btn--white yourset__cta"
               disabled={!full}
               onClick={() => {
-                addLine({ kind: 'perfume', tier: activeTier, items: selected, qty: Number(qtyStr) || 1 });
-                setDrafts((d) => ({ ...d, [activeTier]: [] }));
+                addLine({ kind: 'perfume', tier: activeTier, items: slotList, qty: Number(qtyStr) || 1 });
+                setDrafts((d) => ({ ...d, [activeTier]: {} }));
                 setJustAdded(true);
               }}
             >
               <BagIcon width={16} height={16} />
-              {full ? 'Add Set to Cart' : `Pick ${Math.max(0, BOX_SIZE - selected.length)} More`}
+              {full ? 'Add Set to Cart' : `Pick ${Math.max(0, BOX_SIZE - totalPicked)} More`}
             </button>
             {justAdded && canPay && (
               <button className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>

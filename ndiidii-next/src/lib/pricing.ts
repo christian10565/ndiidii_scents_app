@@ -70,9 +70,10 @@ export async function quoteCart(payload: CartPayload): Promise<ServerQuote> {
 
   for (const set of sets) {
     const items = Array.isArray(set.items) ? set.items.filter((s) => typeof s === 'string') : [];
-    const unique = [...new Set(items)];
-    if (unique.length !== BOX_SIZE || items.length !== BOX_SIZE) {
-      throw new PricingError(`Every set must contain exactly ${BOX_SIZE} different products.`);
+    // A set is BOX_SIZE bottles total. The same product may appear more than
+    // once (e.g. two of one decant), so we validate the COUNT, not uniqueness.
+    if (items.length !== BOX_SIZE) {
+      throw new PricingError(`Every set must contain exactly ${BOX_SIZE} bottles.`);
     }
     const qty = qtyOf(set.qty);
 
@@ -82,7 +83,7 @@ export async function quoteCart(payload: CartPayload): Promise<ServerQuote> {
       if (type !== 'designer' && type !== 'niche') throw new PricingError('Unknown oil collection type.');
       if (!OIL_FORMATS.some((f) => f.value === format)) throw new PricingError('Unknown oil bottle size.');
 
-      for (const slug of unique) {
+      for (const slug of items) {
         const oil = oilBySlug.get(slug);
         if (!oil) throw new PricingError('One of the oils in this set is no longer available.');
         if (oil.category !== type) {
@@ -105,7 +106,7 @@ export async function quoteCart(payload: CartPayload): Promise<ServerQuote> {
     const tier = Number(set.tier) as Tier;
     if (![1, 2, 3].includes(tier)) throw new PricingError('Unknown perfume tier.');
 
-    for (const slug of unique) {
+    for (const slug of items) {
       const p = perfumeBySlug.get(slug);
       if (!p) throw new PricingError('One of the perfumes in this set is no longer available.');
       if (p.tier !== tier) throw new PricingError(`${p.name} is not in ${TIER_LABELS[tier]}.`);
