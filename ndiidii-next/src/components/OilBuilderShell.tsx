@@ -60,6 +60,7 @@ export function OilBuilderShell({
   }, [initialAdd, initialType, oils]);
 
   const [oilType, setOilType] = useState<OilCategory>(seed.type);
+  const [openType, setOpenType] = useState<OilCategory | null>(seed.type);
   const [format, setFormat] = useState<OilFormat>('5ml-roller');
   const [draft, setDraft] = useState<string[]>(seed.draft);
   const [qtyStr, setQtyStr] = useState('1');
@@ -67,15 +68,33 @@ export function OilBuilderShell({
 
   const full = draft.length === BOX_SIZE;
   const price = oilSetPrice(oilType, format);
-  const pool = useMemo(() => oils.filter((o) => o.category === oilType), [oils, oilType]);
+  // Active collection's oils, alphabetical by brand then name.
+  const pool = useMemo(
+    () =>
+      oils
+        .filter((o) => o.category === oilType)
+        .sort((a, b) => {
+          const ba = (a.brand ?? '').toLowerCase();
+          const bb = (b.brand ?? '').toLowerCase();
+          return ba !== bb ? ba.localeCompare(bb) : a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+        }),
+    [oils, oilType],
+  );
   const bySlug = useMemo(() => new Map(oils.map((o) => [o.slug, o])), [oils]);
 
-  const pickType = (t: OilCategory) => {
-    if (t === oilType) return;
-    // Different pool entirely — the draft cannot carry over.
-    setOilType(t);
-    setDraft([]);
-    setJustAdded(false);
+  /** Toggle a collection accordion. Opening one makes it the active type. */
+  const toggleCollection = (t: OilCategory) => {
+    if (openType === t) {
+      setOpenType(null); // collapse — both can be closed
+      return;
+    }
+    setOpenType(t);
+    if (t !== oilType) {
+      // Different pool entirely — the draft cannot carry over.
+      setOilType(t);
+      setDraft([]);
+      setJustAdded(false);
+    }
   };
 
   const togglePick = (slug: string) => {
@@ -161,14 +180,14 @@ export function OilBuilderShell({
         </h2>
 
         {TYPES.map((t) => {
-          const active = oilType === t;
+          const active = openType === t;
           const list = active ? pool : [];
           return (
             <div key={t} className={`ob-acc ${active ? 'is-open' : ''}`}>
               <button
                 type="button"
                 className="ob-acc__head"
-                onClick={() => pickType(t)}
+                onClick={() => toggleCollection(t)}
                 aria-expanded={active}
               >
                 <span className="ob-acc__title serif">{OIL_TYPE_LABELS[t]}</span>
@@ -196,8 +215,9 @@ export function OilBuilderShell({
                             <span className="ob-row__check" aria-hidden="true">
                               {sel && <CheckIcon width={13} height={13} />}
                             </span>
-                            <span className="ob-row__name">{o.name}</span>
-                            <span className="ob-row__brand">{o.brand ?? OIL_TYPE_LABELS[t]}</span>
+                            <span className="ob-row__name">
+                              {o.brand ? `${o.brand} - ${o.name}` : o.name}
+                            </span>
                           </button>
                         );
                       })}
