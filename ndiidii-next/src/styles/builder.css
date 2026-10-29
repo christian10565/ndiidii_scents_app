@@ -253,17 +253,33 @@
   padding: 28px 24px 90px;
 }
 
-/* ---- hero ---- */
+/* ---- hero (mockup banner: bottles right, blurred neutral left) ---- */
 .ob-hero {
-  background: var(--ink);
-  color: #fff;
+  position: relative;
   border-radius: 10px;
-  padding: 46px 38px;
-  margin-bottom: 22px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
 }
-.ob-hero__eyebrow { color: var(--oxblood-light); margin: 0 0 10px; }
-.ob-hero__title { font-size: 42px; line-height: 1.08; margin: 0 0 14px; }
-.ob-hero__sub { font-size: 15px; line-height: 1.6; color: var(--slate-light); margin: 0; max-width: 560px; }
+/* Dark scrim over the blurred left third keeps the white text legible. */
+.ob-hero__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(26, 20, 14, 0.78) 0%, rgba(26, 20, 14, 0.42) 45%, rgba(26, 20, 14, 0.05) 100%);
+}
+.ob-hero__inner { position: relative; padding: 64px 40px; }
+.ob-hero__title { font-size: 44px; line-height: 1.08; margin: 0 0 14px; max-width: 15ch; }
+.ob-hero__sub { font-size: 15px; line-height: 1.6; color: #f3efe9; margin: 0; max-width: 440px; }
+
+/* Centered line between the hero and the card (mockup copy). */
+.ob-intro {
+  text-align: center;
+  font-size: 15px;
+  color: var(--slate);
+  margin: 0 0 24px;
+}
 
 /* ---- white card ---- */
 .ob-card {
@@ -272,6 +288,7 @@
   border-radius: 10px;
   padding: 28px;
   margin-bottom: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 .ob-label { color: var(--oxblood); margin: 0 0 6px; }
 .ob-title { font-size: 22px; margin: 0 0 20px; }
@@ -283,7 +300,6 @@
   gap: 12px;
 }
 .ob-size {
-  position: relative;
   text-align: left;
   padding: 16px 18px 18px;
   border: 1px solid var(--line-light);
@@ -291,18 +307,16 @@
   background: #fff;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .ob-size:hover { border-color: var(--ink); }
 .ob-size.is-active { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
 .ob-size__dot {
-  position: absolute;
-  top: 14px;
-  right: 14px;
   width: 18px;
   height: 18px;
+  flex: none;
   border-radius: 999px;
   border: 2px solid #c9c3b8;
 }
@@ -310,9 +324,7 @@
   border-color: var(--oxblood);
   background: radial-gradient(circle, var(--oxblood) 42%, #fff 50%);
 }
-.ob-size__label { font-size: 14px; font-weight: 600; color: var(--ink); padding-right: 26px; }
-.ob-size__price { font-size: 20px; line-height: 1.1; color: var(--ink); }
-.ob-size__unit { font-size: 12px; color: var(--slate); }
+.ob-size__label { font-size: 14px; font-weight: 600; color: var(--ink); }
 
 /* ---- collection accordions ---- */
 .ob-acc {
@@ -384,6 +396,21 @@
 .ob-summary__actions { display: flex; gap: 14px; width: 100%; margin-top: 4px; }
 .ob-summary__actions .link-red { font-size: 13px; }
 .ob-summary__actions .link-red:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* "Continue to Checkout" — primary CTA (white pill on the black panel). */
+.ob-cta-checkout {
+  width: 100%;
+  text-align: center;
+  background: #fff;
+  color: var(--ink);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ob-cta-checkout:hover { background: var(--oxblood); color: #fff; }
 
 @media (max-width: 640px) {
   .ob-sizes { grid-template-columns: 1fr; }

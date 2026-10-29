@@ -111,15 +111,24 @@ export function OilBuilderShell({
         <span>Perfume Oils</span>
       </nav>
 
-      {/* ---- hero ---- */}
-      <header className="ob-hero">
-        <p className="ob-hero__eyebrow eyebrow">Perfume Oils</p>
-        <h1 className="serif ob-hero__title">Build Your Collection</h1>
-        <p className="ob-hero__sub">
-          Each set contains perfume oils. Choose your bottle size and fragrance collection below —
-          or let us surprise you.
-        </p>
+      {/* ---- hero (mockup banner: bottles right, blurred neutral left) ---- */}
+      <header
+        className="ob-hero"
+        style={{ backgroundImage: "url('/images/oil-builder-hero.png')" }}
+      >
+        <div className="ob-hero__shade" />
+        <div className="ob-hero__inner">
+          <h1 className="serif ob-hero__title">Build Your Collection</h1>
+          <p className="ob-hero__sub">
+            Either let us surprise you, or choose every oil yourself from our Designer and Niche
+            collections.
+          </p>
+        </div>
       </header>
+
+      <p className="ob-intro">
+        Each set contains 4 perfume oils. Choose your bottle size and fragrance collection below.
+      </p>
 
       {/* ---- retail size ---- */}
       <section className="ob-card" aria-labelledby="ob-size">
@@ -138,8 +147,6 @@ export function OilBuilderShell({
             >
               <span className="ob-size__dot" aria-hidden="true" />
               <span className="ob-size__label">{f.label}</span>
-              <span className="ob-size__price serif">{formatNaira(oilSetPrice(oilType, f.value))}</span>
-              <span className="ob-size__unit">per set of {BOX_SIZE}</span>
             </button>
           ))}
         </div>
@@ -295,7 +302,7 @@ export function OilBuilderShell({
           </button>
 
           {justAdded && (
-            <button type="button" className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
+            <button type="button" className="ob-cta-checkout" onClick={() => router.push('/checkout')}>
               Continue to Checkout
             </button>
           )}
