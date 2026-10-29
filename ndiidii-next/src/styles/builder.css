@@ -243,3 +243,151 @@
   .builder__sizes { grid-template-columns: 1fr; }
   .builder__tiers--two { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   Oil builder — matches "Perfume oils Collection Builder (4).pdf"
+   (hero → Retail size → collection accordions → Your Oil Set)
+   ========================================================================== */
+.oilbuilder {
+  max-width: 860px;
+  padding: 28px 24px 90px;
+}
+
+/* ---- hero ---- */
+.ob-hero {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 10px;
+  padding: 46px 38px;
+  margin-bottom: 22px;
+}
+.ob-hero__eyebrow { color: var(--oxblood-light); margin: 0 0 10px; }
+.ob-hero__title { font-size: 42px; line-height: 1.08; margin: 0 0 14px; }
+.ob-hero__sub { font-size: 15px; line-height: 1.6; color: var(--slate-light); margin: 0; max-width: 560px; }
+
+/* ---- white card ---- */
+.ob-card {
+  background: #fff;
+  border: 1px solid var(--line-light);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 22px;
+}
+.ob-label { color: var(--oxblood); margin: 0 0 6px; }
+.ob-title { font-size: 22px; margin: 0 0 20px; }
+
+/* ---- retail size (radio cards) ---- */
+.ob-sizes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ob-size {
+  position: relative;
+  text-align: left;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--line-light);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ob-size:hover { border-color: var(--ink); }
+.ob-size.is-active { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+.ob-size__dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid #c9c3b8;
+}
+.ob-size.is-active .ob-size__dot {
+  border-color: var(--oxblood);
+  background: radial-gradient(circle, var(--oxblood) 42%, #fff 50%);
+}
+.ob-size__label { font-size: 14px; font-weight: 600; color: var(--ink); padding-right: 26px; }
+.ob-size__price { font-size: 20px; line-height: 1.1; color: var(--ink); }
+.ob-size__unit { font-size: 12px; color: var(--slate); }
+
+/* ---- collection accordions ---- */
+.ob-acc {
+  border: 1px solid var(--line-light);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.ob-acc.is-open { border-color: var(--ink); }
+.ob-acc__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.ob-acc__title { font-size: 18px; margin: 0; }
+.ob-acc__chev { color: var(--slate); transition: transform 0.2s; }
+.ob-acc__chev.is-flipped { transform: rotate(180deg); }
+.ob-acc__body { border-top: 1px solid var(--line-light); padding: 8px 12px 14px; }
+.ob-acc__sub {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--slate);
+  margin: 10px 8px 10px;
+}
+.ob-list { display: flex; flex-direction: column; gap: 4px; }
+.ob-empty { color: var(--slate); font-size: 14px; padding: 4px 12px 10px; }
+
+/* ---- oil row (checkbox + name + brand, text-only) ---- */
+.ob-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.ob-row:hover { background: #f6f4f0; }
+.ob-row.is-selected { border-color: var(--oxblood); }
+.ob-row__check {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #cfc9c0;
+  border-radius: 4px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.ob-row.is-selected .ob-row__check { background: var(--oxblood); border-color: var(--oxblood); }
+.ob-row__name { flex: 1; font-size: 14px; font-weight: 600; color: var(--ink); }
+.ob-row__brand { font-size: 12px; color: var(--slate); }
+
+/* ---- summary panel (reuses the black "Your Set" vocab) ---- */
+.ob-summary .yourset__inner { border-radius: 10px; padding: 26px 24px; }
+.ob-summary__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.ob-summary__head .yourset__tier { margin-left: auto; text-align: right; }
+.ob-summary__actions { display: flex; gap: 14px; width: 100%; margin-top: 4px; }
+.ob-summary__actions .link-red { font-size: 13px; }
+.ob-summary__actions .link-red:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .ob-sizes { grid-template-columns: 1fr; }
+  .ob-hero { padding: 34px 24px; }
+  .ob-hero__title { font-size: 34px; }
+  .ob-row__brand { display: none; }
+}

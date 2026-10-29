@@ -12,26 +12,31 @@ import {
   type OilFormat,
 } from '@/lib/store.config';
 import { formatNaira } from '@/lib/format';
-import Monogram from './Monogram';
-import { BagIcon, CheckIcon } from './Icons';
+import { BagIcon, CheckIcon, ChevronDown } from './Icons';
 import type { Oil } from '@/lib/catalog';
 import type { OilCategory } from '@/lib/mappers';
 
 const TYPES: OilCategory[] = ['designer', 'niche'];
 
 /**
- * Oil Collection Builder — redesigned for the two-type / three-format model.
+ * Oil Collection Builder — laid out to the client's mockup
+ * ("Perfume oils Collection Builder (4).pdf"):
  *
- * A set is 4 bottles of ONE collection type in ONE bottle format:
- *   Designer | Niche  x  5ml roller | 10ml spray | 10ml roller
- * The price is the (type, format) cell in OIL_SET_PRICE_NGN, and that is exactly
- * what "Add Set to Cart" writes — the panel total and the cart line always agree.
+ *   dark hero ("Build Your Collection")
+ *   → "Retail size" selector (three bottle formats, radio-style)
+ *   → "Perfume oils — choose your fragrance collection" (two accordions:
+ *     Designer / Niche-High End, the active one expanded into a list)
+ *   → "Your Oil Set" summary + "Continue to Checkout"
  *
- * In-progress picks live in local state (see AGENTS.md: builders own their
- * drafts). Switching type clears the draft because the pools don't overlap;
- * switching format keeps it because only the price changes.
+ * A set is 4 bottles of ONE collection type in ONE bottle format, priced by the
+ * (type, format) cell in OIL_SET_PRICE_NGN — the panel total and the cart line
+ * always agree. In-progress picks live in local state; switching collection
+ * clears the draft (different pool), switching format keeps it (only price).
  *
- * Oils carry NO imagery — copyright — so every surface here is a monogram card.
+ * The mockup's two sizes ("6ml roller", "10 spray") are overridden by the
+ * written spec: three formats (5ml roller / 10ml spray / 10ml roller).
+ *
+ * Oils carry NO imagery — copyright — so the list is text-only.
  */
 export function OilBuilderShell({
   oils,
@@ -46,8 +51,7 @@ export function OilBuilderShell({
   const { addLine } = useCart();
 
   // Seed from a PDP handoff: /collection-builder/oils?add=<slug>&type=<niche|designer>.
-  // The page keys this component on those params, so a new handoff remounts and
-  // re-seeds instead of leaving a stale draft on screen.
+  // The page keys this component on those params, so a new handoff remounts.
   const seed = useMemo(() => {
     const oil = initialAdd ? oils.find((o) => o.slug === initialAdd) : undefined;
     const type: OilCategory =
@@ -63,7 +67,6 @@ export function OilBuilderShell({
 
   const full = draft.length === BOX_SIZE;
   const price = oilSetPrice(oilType, format);
-
   const pool = useMemo(() => oils.filter((o) => o.category === oilType), [oils, oilType]);
   const bySlug = useMemo(() => new Map(oils.map((o) => [o.slug, o])), [oils]);
 
@@ -99,214 +102,205 @@ export function OilBuilderShell({
     });
   };
 
+  const activeFormatLabel = OIL_FORMATS.find((f) => f.value === format)?.label ?? format;
+
   return (
-    <div className="container builder">
+    <div className="container oilbuilder">
       <nav className="builder__crumbs" aria-label="Breadcrumb">
         <Link href="/">Home</Link> / <Link href="/collection-builder">Collection Builder</Link> /{' '}
         <span>Perfume Oils</span>
       </nav>
 
-      <header className="builder__head">
-        <p className="eyebrow builder__eyebrow">Perfume Oils</p>
-        <h1 className="serif builder__title">Build Your Collection</h1>
-        <p className="builder__intro">
-          Every set contains four perfume oils. Choose your bottle size and fragrance collection
-          below — or let us surprise you.
+      {/* ---- hero ---- */}
+      <header className="ob-hero">
+        <p className="ob-hero__eyebrow eyebrow">Perfume Oils</p>
+        <h1 className="serif ob-hero__title">Build Your Collection</h1>
+        <p className="ob-hero__sub">
+          Each set contains perfume oils. Choose your bottle size and fragrance collection below —
+          or let us surprise you.
         </p>
       </header>
 
-      {/* ---- Bottle size ---- */}
-      <section className="builder__section" aria-labelledby="oil-size">
-        <h2 id="oil-size" className="builder__section-title eyebrow">
-          Retail size
+      {/* ---- retail size ---- */}
+      <section className="ob-card" aria-labelledby="ob-size">
+        <h2 id="ob-size" className="ob-label eyebrow">
+          Retail Size
         </h2>
-        <div className="builder__sizes" role="radiogroup" aria-label="Bottle size">
+        <div className="ob-sizes" role="radiogroup" aria-label="Bottle size">
           {OIL_FORMATS.map((f) => (
             <button
               key={f.value}
               type="button"
               role="radio"
               aria-checked={format === f.value}
-              className={`sizebtn ${format === f.value ? 'is-active' : ''}`}
+              className={`ob-size ${format === f.value ? 'is-active' : ''}`}
               onClick={() => setFormat(f.value)}
             >
-              <span className="sizebtn__label">{f.label}</span>
-              <span className="sizebtn__price serif">{formatNaira(oilSetPrice(oilType, f.value))}</span>
-              <span className="sizebtn__unit">per set of {BOX_SIZE}</span>
+              <span className="ob-size__dot" aria-hidden="true" />
+              <span className="ob-size__label">{f.label}</span>
+              <span className="ob-size__price serif">{formatNaira(oilSetPrice(oilType, f.value))}</span>
+              <span className="ob-size__unit">per set of {BOX_SIZE}</span>
             </button>
           ))}
         </div>
       </section>
 
-      {/* ---- Collection type ---- */}
-      <section className="builder__section" aria-labelledby="oil-type">
-        <h2 id="oil-type" className="builder__section-title eyebrow">
+      {/* ---- choose your fragrance collection ---- */}
+      <section className="ob-card" aria-labelledby="ob-type">
+        <p className="ob-label eyebrow">Perfume Oils</p>
+        <h2 id="ob-type" className="ob-title serif">
           Choose your fragrance collection
         </h2>
-        <div className="builder__tiers builder__tiers--two" role="radiogroup" aria-label="Collection">
-          {TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="radio"
-              aria-checked={oilType === t}
-              className={`tiercard ${oilType === t ? 'is-active' : ''}`}
-              onClick={() => pickType(t)}
-            >
-              <span className="tiercard__label eyebrow">{OIL_TYPE_LABELS[t]}</span>
-              <span className="tiercard__price serif">{formatNaira(oilSetPrice(t, format))}</span>
-              <span className="tiercard__blurb">
-                {t === 'designer' ? 'Designer-house oils' : 'Niche & high-end oils'} · set of {BOX_SIZE}
-              </span>
-              {oilType === t && draft.length > 0 && (
-                <span className="tiercard__count">
-                  {draft.length}/{BOX_SIZE}
-                </span>
+
+        {TYPES.map((t) => {
+          const active = oilType === t;
+          const list = active ? pool : [];
+          return (
+            <div key={t} className={`ob-acc ${active ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                className="ob-acc__head"
+                onClick={() => pickType(t)}
+                aria-expanded={active}
+              >
+                <span className="ob-acc__title serif">{OIL_TYPE_LABELS[t]}</span>
+                <ChevronDown className={`ob-acc__chev ${active ? 'is-flipped' : ''}`} width={18} height={18} />
+              </button>
+              {active && (
+                <div className="ob-acc__body">
+                  <p className="ob-acc__sub">
+                    {t === 'designer' ? 'Designer Perfume Oils' : 'Niche & High-End Oils'}
+                  </p>
+                  {list.length === 0 ? (
+                    <p className="ob-empty">No oils in this collection yet.</p>
+                  ) : (
+                    <div className="ob-list">
+                      {list.map((o) => {
+                        const sel = draft.includes(o.slug);
+                        return (
+                          <button
+                            key={o.id}
+                            type="button"
+                            className={`ob-row ${sel ? 'is-selected' : ''}`}
+                            onClick={() => togglePick(o.slug)}
+                            aria-pressed={sel}
+                          >
+                            <span className="ob-row__check" aria-hidden="true">
+                              {sel && <CheckIcon width={13} height={13} />}
+                            </span>
+                            <span className="ob-row__name">{o.name}</span>
+                            <span className="ob-row__brand">{o.brand ?? OIL_TYPE_LABELS[t]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
-          ))}
-        </div>
+            </div>
+          );
+        })}
       </section>
 
-      <div className="builder__layout">
-        <div className="builder__grid-wrap">
-          <div className="builder__gridhead">
-            <h2 className="serif">
-              {OIL_TYPE_LABELS[oilType]} oils — pick {BOX_SIZE}
-            </h2>
-            <div className="builder__gridhead-actions">
-              <button type="button" className="builder__clear link-red" onClick={surpriseMe} disabled={full}>
+      {/* ---- your set ---- */}
+      <aside className="ob-summary" aria-label="Your set">
+        <div className="yourset__inner">
+          <div className="ob-summary__head">
+            <p className="yourset__title eyebrow">Your Oil Set</p>
+            <p className="yourset__tier">
+              {draft.length} of {BOX_SIZE} selected
+              <br />
+              <span>
+                {OIL_TYPE_LABELS[oilType]} · {activeFormatLabel}
+              </span>
+            </p>
+            <div className="ob-summary__actions">
+              <button type="button" className="link-red" onClick={surpriseMe} disabled={full}>
                 Surprise me
               </button>
               <button
                 type="button"
-                className="builder__clear link-red"
+                className="link-red"
                 onClick={() => {
                   setDraft([]);
                   setJustAdded(false);
                 }}
                 disabled={draft.length === 0}
               >
-                Clear selection
+                Clear
               </button>
             </div>
           </div>
 
-          {pool.length === 0 ? (
-            <p className="empty">No oils in this collection yet.</p>
-          ) : (
-            <div className="builder__grid">
-              {pool.map((o) => {
-                const sel = draft.includes(o.slug);
-                const disabled = !sel && full;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    className={`bcard bcard--text ${sel ? 'is-selected' : ''}`}
-                    onClick={() => !disabled && togglePick(o.slug)}
-                    disabled={disabled}
-                    aria-pressed={sel}
-                  >
-                    <span className="bcard__img bcard__img--mono">
-                      {/* No oil photography — monogram tile only. */}
-                      <Monogram name={o.name} className="dnoimg dnoimg--builder" />
-                      {sel && (
-                        <span className="bcard__check" aria-hidden="true">
-                          <CheckIcon width={16} height={16} />
-                        </span>
-                      )}
-                    </span>
-                    <span className="bcard__name">{o.name}</span>
-                    <span className="bcard__family">{o.brand ?? OIL_TYPE_LABELS[oilType]}</span>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="yourset__slots">
+            {Array.from({ length: BOX_SIZE }, (_, i) => {
+              const slug = draft[i];
+              const prod = slug ? bySlug.get(slug) : null;
+              return (
+                <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
+                  {prod ? (
+                    <>
+                      <span className="slot__name">{prod.name}</span>
+                      <button
+                        type="button"
+                        className="slot__remove"
+                        aria-label={`Remove ${prod.name}`}
+                        onClick={() => togglePick(prod.slug)}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <span className="slot__empty">Oil {i + 1}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="yourset__total">
+            <span>Total</span>
+            <strong className="serif">{formatNaira(price)}</strong>
+          </div>
+
+          <label className="yourset__qty">
+            <span>Quantity</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={qtyStr}
+              onChange={(e) => setQtyStr(e.target.value)}
+            />
+          </label>
+
+          <button
+            type="button"
+            className="btn btn--white yourset__cta"
+            disabled={!full}
+            onClick={() => {
+              addLine({
+                kind: 'oil',
+                oilType,
+                oilFormat: format,
+                items: draft,
+                qty: Number(qtyStr) || 1,
+              });
+              setDraft([]);
+              setJustAdded(true);
+            }}
+          >
+            <BagIcon width={16} height={16} />
+            {full ? 'Add Oil Set to Cart' : `Pick ${Math.max(0, BOX_SIZE - draft.length)} More`}
+          </button>
+
+          {justAdded && (
+            <button type="button" className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
+              Continue to Checkout
+            </button>
           )}
         </div>
-
-        <aside className="yourset" aria-label="Your set">
-          <div className="yourset__inner">
-            <p className="yourset__title eyebrow">Your Oil Set</p>
-            <p className="yourset__tier">
-              {draft.length} of {BOX_SIZE} selected
-              <br />
-              <span>
-                {OIL_TYPE_LABELS[oilType]} ·{' '}
-                {OIL_FORMATS.find((f) => f.value === format)?.label ?? format}
-              </span>
-            </p>
-
-            <div className="yourset__slots">
-              {Array.from({ length: BOX_SIZE }, (_, i) => {
-                const slug = draft[i];
-                const prod = slug ? bySlug.get(slug) : null;
-                return (
-                  <div key={i} className={`slot ${prod ? 'is-filled' : ''}`}>
-                    {prod ? (
-                      <>
-                        <span className="slot__name">{prod.name}</span>
-                        <button
-                          type="button"
-                          className="slot__remove"
-                          aria-label={`Remove ${prod.name}`}
-                          onClick={() => togglePick(prod.slug)}
-                        >
-                          ×
-                        </button>
-                      </>
-                    ) : (
-                      <span className="slot__empty">Oil {i + 1}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="yourset__total">
-              <span>Total</span>
-              <strong className="serif">{formatNaira(price)}</strong>
-            </div>
-
-            <label className="yourset__qty">
-              <span>Quantity</span>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={qtyStr}
-                onChange={(e) => setQtyStr(e.target.value)}
-              />
-            </label>
-
-            <button
-              type="button"
-              className="btn btn--white yourset__cta"
-              disabled={!full}
-              onClick={() => {
-                addLine({
-                  kind: 'oil',
-                  oilType,
-                  oilFormat: format,
-                  items: draft,
-                  qty: Number(qtyStr) || 1,
-                });
-                setDraft([]);
-                setJustAdded(true);
-              }}
-            >
-              <BagIcon width={16} height={16} />
-              {full ? 'Add Oil Set to Cart' : `Pick ${Math.max(0, BOX_SIZE - draft.length)} More`}
-            </button>
-            {justAdded && (
-              <button type="button" className="yourset__checkout link-red" onClick={() => router.push('/checkout')}>
-                Go to Checkout
-              </button>
-            )}
-          </div>
-        </aside>
-      </div>
+      </aside>
     </div>
   );
 }
