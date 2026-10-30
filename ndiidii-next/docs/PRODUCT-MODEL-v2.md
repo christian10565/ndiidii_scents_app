@@ -156,72 +156,55 @@ regardless, and `data/*.tmp` is gitignored.
 
 ---
 
-## 6. Curated sets — logic for review (DEFERRED, not implemented)
+## 6. Curated discovery sets — generator
 
-Client: "replace the static data in the sheet with generated sets", 4 decants
-per set, each perfume used **at most twice** across all sets, most **once**.
+Client: "replace the static data in the sheet with generated sets", 4 decants per
+set, each perfume **at most twice** across all sets, most **once**.
 
-### Inputs, and what the sheet actually has
+Grounding: observed how Fragrance Viking (`fragranceviking.co.uk`) picks its
+discovery sets — three rules, stated in their own copy:
 
-| Field | Coverage | Shape |
-|---|---|---|
-| top / heart / base notes | 889 / 891 / 889 of 1,046 | prose ("Rich Agarwood (Oud) and deep Woodsy Notes") |
-| `scentProfile` | 892 | short prose |
-| `Season` | 890 | **357 distinct free-text variants** ("autumn, winter, and the cool tropical harmattan…") |
-| `Occasion` | 890 | **727 distinct free-text values, many sentence-length** |
-| `Accords` | **0** | does not exist — must be produced |
-| `inspiredBy` | 798 | house/name |
+1. **Note/theme** — perfumes sharing a note, *across* houses ("Mad About
+   Vanilla"; homepage "Citrus / Sweet / Woods & Incense / Floral").
+2. **DNA/flanker line** — the variants of one house's line ("Lattafa Khamrah
+   Set" = Khamrah + Qahwa + Dukhan + Waha).
+3. **Occasion/vibe** — a mood bundle ("Masculine Daily Bundle").
 
-So before any scoring: canonicalise `Season` → `{spring, summer, autumn, winter,
-harmattan, rainy, all}` and `Occasion` → a fixed vibe tag list (the same
-approach `src/lib/notes.ts` already uses to turn 2,084 note fragments into 105
-chips). Accords are enriched (LLM from the existing note pyramid, or a web pass)
-and hand-reviewed on a sample.
+`scripts/generate-discovery-sets.mjs` reproduces all three, deterministically,
+off `data/catalog-snapshot.json`:
 
-### The pool is smaller than the set count
+- **note/theme** — 7 note families (Citrus & Fresh, Sweet & Gourmand, Woods &
+  Incense, Floral, Amber & Resin, Spicy & Warm, Leather & Tobacco) mapped onto
+  the canonical `notes.ts` list; 4 perfumes each, brand-diverse.
+- **dna** — same house + same first-word line root (`Khamrah`, `Club`, `9PM`),
+  stopwords stripped.
+- **vibe** — canonicalised `Occasion` → fixed tags (date night, evening, office,
+  daily, formal, party, summer, winter, fresh).
 
-Only **721** perfumes are sellable, and only those can sit in a decant set. At 4
-per set, one appearance each = **180 sets**. Today's tab has 253 sets, which
-forces an average of 1.4 appearances and starts cutting into the cap of 2.
+Selection is two-phase under the cap-of-2:
+- **Phase 1 (disjoint)** — each perfume in at most ONE set, rarity-first so the
+  popular perfumes don't hoover up all the candidate sets.
+- **Phase 2 (fill)** — cover stragglers, each set preferring never-used
+  perfumes and only allowing a *second* appearance (never a third).
 
-Target: **as many complete sets as the pool supports at 1× each (~180)**, with
-the cap of 2 as a hard ceiling rather than a target.
+Measured on today's catalog (`--seed 1`):
 
-### Scoring
+| Metric | Value |
+|---|---|
+| Pool (sellable, in-stock) | 721 |
+| Sets generated | 224 (note 117 · vibe 104 · dna 3) |
+| Coverage | **100%** (721/721) |
+| Usage | 546 once · 175 twice · 0 uncovered |
 
-1. Build each perfume's feature vector:
-   `noteKeys` (canonical, from `notes.ts`) ∪ `accordKeys` ∪ `vibeKeys` ∪
-   `seasonTags`, each field matched **longest-first** so "Orange Blossom" wins
-   over "Orange".
-2. Pairwise similarity = weighted Jaccard over the three key sets, family bonus
-   if `scentProfile` collapses to the same 2-family label:
-   `0.45·J(notes) + 0.35·J(accords) + 0.20·J(vibes/seasons)` + `0.10` if same
-   family.
-3. Grouping: **seeded greedy, deterministically** — no wall-clock randomness, so
-   a rerun produces the same file.
-   - Seed each set with the highest-degree unused perfume (most unplaced
-     neighbours), then repeatedly add the candidate that maximises
-     `Σ similarity(candidate, members)` subject to
-     `usage[perfume] < 2` **and** the set staying coherent
-     (`min pairwise similarity ≥ threshold`).
-   - When no candidate clears the threshold, close the set at 4; if it can't
-     reach 4, break it up and return its perfumes to the pool (no 3-item sets).
-   - Continue until no complete set can be formed.
-4. Report: set count, coverage (% of pool used), usage histogram (1 / 2),
-   per-set cohesion, and every perfume left unused.
+The dna family is small because this catalog has few ≥4-flanker lines — the
+data genuinely doesn't support many of them, so we don't force it.
 
-### Output
-
-A **new tab**, e.g. `Curated Sets v2`, written by
-`scripts/generate-curated-sets.mjs --dry` first (prints the diff and the
-report), then `--write`. `" Curated Discovery Sets"` is left untouched until the
-client signs off. Set names come from the dominant shared accord
-("Smoke & Amber No. 3"); slot descriptions are LLM-written from each member's
-shared notes, then human-reviewed. Batch JSON carries `confidence` + `sources`
-per row, as `data/batch_*.json` already does.
-
-Not started. The client said "we do curated sets at the very end", and asked to
-see this logic before any script is written.
+Run: `node scripts/generate-discovery-sets.mjs` (report) /
+`--write` (emit `data/discovery-sets-generated.json`) / `--seed N` (reproduce).
+Still not wired to the sheet or the `/discovery-sets` page — that is the next
+step after the client reviews the generated JSON. `Accords` remain un-enriched
+(no field exists); if the client wants accord-driven sets, that's a separate
+enrichment pass first.
 
 ---
 
