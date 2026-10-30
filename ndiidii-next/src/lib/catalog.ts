@@ -245,9 +245,10 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
-// The curated tab's real name is " Curated Discovery Sets" (leading space,
-// correct "Discovery" spelling). Resolved against actual tab titles at read time.
-const CURATED_TAB = process.env.CURATED_TAB ?? 'Curated Discovery Sets';
+// The AI-generated curated sets live in the "CDS - AI" tab. The old hand-built
+// " Curated Discovery Sets" tab (leading space) is kept for reference. Resolved
+// against actual tab titles at read time; override via CURATED_TAB.
+const CURATED_TAB = process.env.CURATED_TAB ?? 'CDS - AI';
 
 /**
  * Curated discovery sets from the sheet's curated tab.

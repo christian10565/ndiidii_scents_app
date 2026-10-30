@@ -201,10 +201,19 @@ data genuinely doesn't support many of them, so we don't force it.
 
 Run: `node scripts/generate-discovery-sets.mjs` (report) /
 `--write` (emit `data/discovery-sets-generated.json`) / `--seed N` (reproduce).
-Still not wired to the sheet or the `/discovery-sets` page — that is the next
-step after the client reviews the generated JSON. `Accords` remain un-enriched
-(no field exists); if the client wants accord-driven sets, that's a separate
-enrichment pass first.
+
+`scripts/write-cds-ai.mjs` pushes the sets to a **"CDS - AI"** tab in the same
+spreadsheet, mirroring the old " Curated Discovery Sets" layout (Collection Name
+/ Scent Profile / Description / Perfume Option 1 / Perfume Option 2, 4 slots +
+blank/title separators). It assigns an evocative name per set from a per-family
+pool and fills each slot's profile + description from real catalog notes. The
+write uses `valueInputOption: RAW` — `USER_ENTERED` makes Sheets parse `9AM`
+into a time (`09:00`), RAW stores the literal string.
+
+`src/lib/catalog.ts` reads `CURATED_TAB` (env, default **`CDS - AI`**), so
+`/discovery-sets` is served from the AI tab; the old hand-built tab is kept for
+reference only. `Accords` remain un-enriched (no field exists); accord-driven
+sets would need a separate enrichment pass first.
 
 ---
 
