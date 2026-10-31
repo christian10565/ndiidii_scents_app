@@ -139,18 +139,20 @@ export const COLLECTIONS = [
 ];
 
 // Put logo files in /public/brands (e.g. lattafa.png). If a file is missing, the name still shows.
+// Every name here must be a brand that actually has products (matches the Brands page,
+// which derives from getBrands()); Zaoud / Ministry of Oud / Ajmal were removed — zero products.
 export const BRAND_LOGOS = [
-  { name: 'Lattafa', logo: '/brands/lattafa.png' },
-  { name: 'Zaoud', logo: '/brands/zaoud.png' },
-  { name: 'Rayhaan', logo: '/brands/rayhaan.png' },
-  { name: 'Khadlaj', logo: '/brands/khadlaj.png' },
-  { name: 'Maison Alhambra', logo: '/brands/maison-alhambra.png' },
-  { name: 'French Avenue', logo: '/brands/french-avenue.png' },
-  { name: 'Fragrance World', logo: '/brands/fragrance-world.png' },
-  { name: 'Gulf Orchid', logo: '/brands/gulf-orchid.png' },
-  { name: 'Ministry of Oud', logo: '/brands/ministry-of-oud.png' },
   { name: 'Afnan', logo: '/brands/afnan.png' },
-  { name: 'Ajmal', logo: '/brands/ajmal.png' },
+  { name: 'Armaf', logo: '/brands/armaf.png' },
+  { name: 'Fragrance World', logo: '/brands/fragrance-world.png' },
+  { name: 'French Avenue', logo: '/brands/french-avenue.png' },
+  { name: 'Gulf Orchid', logo: '/brands/gulf-orchid.png' },
+  { name: 'Khadlaj', logo: '/brands/khadlaj.png' },
+  { name: 'Lattafa', logo: '/brands/lattafa.png' },
+  { name: 'Maison Alhambra', logo: '/brands/maison-alhambra.png' },
+  { name: 'Paris Corner', logo: '/brands/paris-corner.png' },
+  { name: 'Rayhaan', logo: '/brands/rayhaan.png' },
+  { name: 'RiiFFS', logo: '/brands/riiffs.png' },
 ];
 
 export const FOOTER = {
