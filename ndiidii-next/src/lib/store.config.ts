@@ -55,6 +55,9 @@ export const oilSetPrice = (type: OilCategory, format: OilFormat): number =>
 /** Price of one curated discovery set (4 x 10ml decants), in naira. */
 export const DISCOVERY_SET_PRICE_NGN = 40000;
 
+/** Fixed gift-card denominations offered at purchase, in naira. */
+export const GIFT_CARD_AMOUNTS_NGN = [20000, 50000, 100000, 150000];
+
 /* ------------------------------------------------------------------ *
  * Money
  * ------------------------------------------------------------------ */

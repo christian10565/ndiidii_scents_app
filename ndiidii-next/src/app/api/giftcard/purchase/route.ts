@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createGiftCard, isConfigured } from '@/lib/giftcard';
+import { recordGiftCardIssued } from '@/lib/orders';
 
 /**
  * POST /api/giftcard/purchase
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
   }
   try {
     const card = await createGiftCard({ amountNaira, note: body.note });
+    // Record the card in the issuance ledger (best-effort audit trail — the
+    // function swallows its own errors, so a ledger write can't fail the purchase).
+    await recordGiftCardIssued({
+      code: card.code,
+      amount: card.initial,
+      at: card.createdAt,
+      orderRef: body.orderRef,
+    });
     return NextResponse.json({ code: card.code, balance: card.balance, initial: card.initial });
   } catch (err) {
     return NextResponse.json(

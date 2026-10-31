@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyTransaction, isLive } from '@/lib/paystack';
-import {
-  recordOrder,
-  getOrder,
-  getPendingOrder,
-  deletePendingOrder,
-  isConfigured,
-} from '@/lib/orders';
+import { finalizeOrder, isConfigured } from '@/lib/orders';
 
 /**
  * POST /api/orders/record
@@ -37,59 +30,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'ref is required' }, { status: 400 });
   }
 
-  // Idempotency: already finalised.
-  const existing = await getOrder(ref);
-  if (existing) {
-    return NextResponse.json({ ok: true, recorded: false, duplicate: true });
+  const outcome = await finalizeOrder(ref);
+  if (!outcome.ok) {
+    return NextResponse.json({ error: outcome.error }, { status: outcome.status ?? 500 });
   }
-
-  const pending = await getPendingOrder(ref);
-  if (!pending) {
-    return NextResponse.json(
-      { error: 'Unknown order reference — it was never priced by this store, or it expired.' },
-      { status: 400 },
-    );
-  }
-
-  const giftAmount = pending.giftCard?.amount ?? 0;
-  const expectedCharge = Math.max(0, pending.grandTotal - giftAmount);
-  let amountCharged = 0;
-
-  if (pending.method !== 'giftcard' && isLive()) {
-    try {
-      const verified = await verifyTransaction(ref);
-      if (verified.status !== 'success') {
-        return NextResponse.json({ error: `Payment not successful: ${verified.status}` }, { status: 400 });
-      }
-      amountCharged = verified.amountNaira;
-    } catch (err) {
-      return NextResponse.json(
-        { error: err instanceof Error ? err.message : 'Verification failed' },
-        { status: 502 },
-      );
-    }
-    // The amount Paystack actually collected must equal what we priced. This is
-    // the check the Paystack docs require and the old flow never did.
-    if (Math.abs(amountCharged - expectedCharge) > 0.5) {
-      return NextResponse.json(
-        { error: 'Charged amount does not match the priced order.' },
-        { status: 400 },
-      );
-    }
-  }
-
-  await recordOrder({
-    ref,
-    at: pending.at,
-    email: pending.email,
-    items: pending.lines.map((l) => ({ name: `${l.label} — ${l.detail}`, qty: l.qty, price: l.price })),
-    delivery: pending.delivery,
-    amountCharged,
-    giftCard: pending.giftCard,
-    total: pending.grandTotal,
-    method: pending.method,
+  return NextResponse.json({
+    ok: true,
+    recorded: outcome.recorded,
+    ...(outcome.duplicate ? { duplicate: true } : {}),
   });
-
-  await deletePendingOrder(ref);
-  return NextResponse.json({ ok: true, recorded: true });
 }

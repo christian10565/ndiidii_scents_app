@@ -5,8 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { formatNaira } from '@/lib/format';
-
-const AMOUNTS = [20000, 50000, 100000, 150000];
+import { GIFT_CARD_AMOUNTS_NGN } from '@/lib/store.config';
 
 function GiftCardsInner() {
   const params = useSearchParams();
@@ -36,14 +35,13 @@ function GiftCardsInner() {
     setPaying(true);
     try {
       // 1. Initialize a Paystack transaction for the gift card amount.
-      const res = await fetch('/api/paystack/initialize', {
+      const res = await fetch('/api/giftcard/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: email.trim(),
           amountNaira: amount,
-          items: [{ name: `Gift Card ${formatNaira(amount)}`, qty: 1, price: amount }],
-          delivery: { name: recipient || 'Gift card recipient' },
+          note: message,
         }),
       });
       const json = await res.json();
@@ -141,7 +139,7 @@ function GiftCardsInner() {
           <div className="gform__group">
             <span className="gform__label">Choose an amount</span>
             <div className="gform__amounts">
-              {AMOUNTS.map((a) => (
+              {GIFT_CARD_AMOUNTS_NGN.map((a) => (
                 <button
                   type="button"
                   key={a}

@@ -15,6 +15,7 @@
  * Env: KV_REST_API_URL, KV_REST_API_TOKEN.
  */
 import type { QuoteLine } from './quote';
+import { isLive, verifyTransaction } from './paystack';
 
 /** Run a Redis command via the Upstash REST command-array endpoint. */
 async function kv<T = unknown>(...args: (string | number)[]): Promise<T> {
@@ -140,4 +141,84 @@ export async function getOrder(ref: string): Promise<OrderRecord | null> {
     }
   }
   return null;
+}
+
+/** Outcome of finalising a pending order. */
+export interface FinalizeOutcome {
+  ok: boolean;
+  recorded?: boolean;
+  duplicate?: boolean;
+  error?: string;
+  status?: number;
+}
+
+/**
+ * Finalise a pending order once its payment is confirmed.
+ *
+ * Shared by the callback route (/api/orders/record) and the Paystack webhook,
+ * so the amount-match check lives in exactly one place. The callback passes no
+ * `confirmed` and this verifies via the Paystack API when live; the webhook
+ * passes `confirmed` straight from the signed charge.success event (no second
+ * verify round-trip). Idempotent: re-finalising an already-recorded reference
+ * is a no-op.
+ */
+export async function finalizeOrder(
+  ref: string,
+  confirmed?: { status: string; amountNaira: number },
+): Promise<FinalizeOutcome> {
+  const existing = await getOrder(ref);
+  if (existing) return { ok: true, recorded: false, duplicate: true };
+
+  const pending = await getPendingOrder(ref);
+  if (!pending) {
+    return {
+      ok: false,
+      error: 'Unknown order reference — it was never priced by this store, or it expired.',
+      status: 400,
+    };
+  }
+
+  const giftAmount = pending.giftCard?.amount ?? 0;
+  const expectedCharge = Math.max(0, pending.grandTotal - giftAmount);
+  let amountCharged = 0;
+
+  if (pending.method !== 'giftcard') {
+    let c = confirmed;
+    if (!c && isLive()) {
+      try {
+        const v = await verifyTransaction(ref);
+        c = { status: v.status, amountNaira: v.amountNaira };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : 'Verification failed',
+          status: 502,
+        };
+      }
+    }
+    if (c) {
+      if (c.status !== 'success') {
+        return { ok: false, error: `Payment not successful: ${c.status}`, status: 400 };
+      }
+      amountCharged = c.amountNaira;
+      if (Math.abs(amountCharged - expectedCharge) > 0.5) {
+        return { ok: false, error: 'Charged amount does not match the priced order.', status: 400 };
+      }
+    }
+  }
+
+  await recordOrder({
+    ref,
+    at: pending.at,
+    email: pending.email,
+    items: pending.lines.map((l) => ({ name: `${l.label} — ${l.detail}`, qty: l.qty, price: l.price })),
+    delivery: pending.delivery,
+    amountCharged,
+    giftCard: pending.giftCard,
+    total: pending.grandTotal,
+    method: pending.method,
+  });
+
+  await deletePendingOrder(ref);
+  return { ok: true, recorded: true };
 }
