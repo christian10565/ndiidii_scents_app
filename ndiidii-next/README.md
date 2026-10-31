@@ -322,6 +322,24 @@ project carries `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Both are in the local
 `.env`; confirm them with `vercel env ls` before assuming the fallback works
 there.
 
+## Payments & gift cards
+
+- Paystack **redirect flow** (`src/lib/paystack.ts`): `/api/paystack/initialize`
+  reprices the cart server-side and parks a pending order in Redis;
+  `/checkout/callback` verifies, then `/api/orders/record` finalises it.
+- **Webhook built** — `/api/paystack/webhook` verifies `x-paystack-signature`
+  (HMAC-SHA512 of the raw body) and finalises the pending order on
+  `charge.success` via the shared `finalizeOrder()` in `src/lib/orders.ts`, so a
+  paid order isn't lost if the customer closes the tab before the callback.
+  Not live yet: register `https://ndiidii-scents-app.vercel.app/api/paystack/webhook`
+  in the Paystack dashboard.
+- **Gift-card delivery gap (not built):** a purchased card is created only via the
+  redirect callback and revealed on screen. If the buyer closes the tab after
+  paying, no card is issued and no email goes out — money taken, no code.
+  Intended fix: on `charge.success`, email the code to the buyer ("once the
+  paystack is a success, it sends an email to the user"). An email provider is
+  not wired up yet — that's the blocker.
+
 ## Collection builder
 
 `/collection-builder` (perfumes, picked per tier) and `/collection-builder/oils`

@@ -70,13 +70,14 @@ Next.js 16 storefront. Google Sheet is the catalog (no DB). Repo is Cyriacus's f
 - Order items + delivery ride on the receipt via `metadata.custom_fields` (`{display_name, variable_name, value}`).
 - **VAT 7.5%** (`VAT_RATE`) added to every order total. Discovery sets ₦40,000 (`DISCOVERY_SET_PRICE_NGN`).
 - Test card: `4084 0840 8408 4081`, any future expiry, CVV `408`.
-- **Webhook NOT built yet** — needed before real launch (callback can fail if the customer drops connection post-pay). Needs a public URL + setting it in the Paystack dashboard.
+- **Webhook built** — `/api/paystack/webhook`: verifies `x-paystack-signature` (HMAC-SHA512 of the raw body, secret key), then on `charge.success` finalises the pending order via the shared `finalizeOrder()` in `src/lib/orders.ts` (same amount-match check the callback uses). **Not live yet**: register `https://ndiidii-scents-app.vercel.app/api/paystack/webhook` in the Paystack dashboard.
 
 ### Gift cards + order ledger (Vercel KV / Upstash Redis)
 - Env: `KV_REST_API_URL`, `KV_REST_API_TOKEN` in `.env`.
 - `src/lib/giftcard.ts`: codes `NDII-XXXX-XXXX`, balances atomic `DECRBY` (no double-spend). Upstash REST = command-array POST (`['DECRBY', key, amt]`); **`HGETALL` returns a flat `[k,v,k,v]` array** — parse manually, not as an object.
 - `src/lib/orders.ts` + `/api/orders/record`: durable order ledger in Redis (best-effort, never blocks a payment).
 - `/gift-cards` page: buy → Paystack → reveal code on screen (virtual only; physical not built). Checkout applies a code to deduct from the total; Paystack charges the remainder, or nothing if fully covered (button then reads "Complete Transaction"). Delivery form stays required — we still ship physical decants.
+- **Gift-card delivery gap (not built)**: the card is created only via the redirect callback (client `sessionStorage`). If the buyer closes the tab after paying, no card is issued and no email goes out — money taken, no code. Intended fix: on `charge.success` the webhook should issue the card AND email the code to the buyer ("once the paystack is a success, it sends an email to the user"). Email provider is not wired up yet — that's the blocker.
 
 ### Conventions
 - Keep commit messages SHORT (user asks every time). **Ask before every `git push`** — never push autonomously.
