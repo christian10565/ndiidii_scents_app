@@ -41,7 +41,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount
     setHovered(null);
   }, [pathname]);
 
-  const items = NAV.filter((i) => !i.feature || FEATURES[i.feature as keyof typeof FEATURES]);
+  const items = NAV;
 
   return (
     <header className="header">

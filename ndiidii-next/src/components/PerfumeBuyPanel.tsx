@@ -60,7 +60,7 @@ export default function PerfumeBuyPanel({
           </span>
           {canBuildSet ? (
             <Link
-              className="btn btn--ghost-dark pdp__buy-cta"
+              className="btn btn--ghost-light pdp__buy-cta"
               href={`/collection-builder?add=${encodeURIComponent(slug)}&tier=${tier}`}
             >
               Add decant to set

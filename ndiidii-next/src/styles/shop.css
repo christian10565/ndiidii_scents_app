@@ -438,7 +438,7 @@
    is a quiet two-part line, not a single headline price. */
 .scard__price {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.45;
   letter-spacing: 0.02em;

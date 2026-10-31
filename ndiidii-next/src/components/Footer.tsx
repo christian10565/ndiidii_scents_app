@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FEATURES, FOOTER } from '@/config/site';
+import { FOOTER } from '@/config/site';
 import { InstagramIcon, WhatsappIcon, XIcon } from './Icons';
 import Year from './Year';
 import NewsletterForm from './NewsletterForm';
@@ -30,7 +30,6 @@ export default function Footer() {
             <h3 className="footer__title">{col.title}</h3>
             <ul>
               {col.links
-                .filter((l) => !l.feature || FEATURES[l.feature as keyof typeof FEATURES])
                 .map((l) => (
                   <li key={l.label}>
                     <Link href={l.to}>{l.label}</Link>

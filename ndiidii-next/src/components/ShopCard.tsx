@@ -75,7 +75,7 @@ export default function ShopCard({ p }: { p: CardProduct }) {
             <>
               {decantPrice !== null && <>Decant set {formatNaira(decantPrice)}</>}
               {decantPrice !== null && bottlePrice !== null && <span className="scard__sep"> · </span>}
-              {bottlePrice !== null && <>Bottle {formatNaira(bottlePrice)}</>}
+              {bottlePrice !== null && <>Full Bottle {formatNaira(bottlePrice)}</>}
             </>
           )}
         </p>

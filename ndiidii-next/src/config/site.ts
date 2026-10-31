@@ -30,7 +30,7 @@ export const NAV = [
     children: [
       { label: 'All Scents', to: '/shop' },
       { label: 'Perfumes', to: '/shop?collection=perfumes' },
-      { label: 'Perfume Oils', to: '/shop?collection=oils' },
+      { label: 'Perfume Oils', to: '/collection-builder/oils' },
     ],
   },
   {
@@ -38,17 +38,9 @@ export const NAV = [
     to: '/brands',
     children: [{ label: 'All Brands (A–Z)', to: '/brands' }],
   },
-  {
-    label: 'Collection Builder',
-    to: '/collection-builder',
-    children: [
-      { label: 'Perfume Collection', to: '/collection-builder' },
-      { label: 'Perfume Oils Collection', to: '/collection-builder/oils' },
-    ],
-  },
+  { label: 'Perfume Collection Builder', to: '/collection-builder' },
+  { label: 'Oil Collection Builder', to: '/collection-builder/oils' },
   { label: 'Discovery Sets', to: '/discovery-sets' },
-  { label: 'Subscription', to: '/subscription', feature: 'subscription' },
-  { label: 'Guide', to: '/guide', feature: 'guide' },
 ];
 
 // Hero background lives at /public/images/hero.png (from the Home mockup).
@@ -168,31 +160,9 @@ export const FOOTER = {
       title: 'Shop',
       links: [
         { label: 'All Scents', to: '/shop' },
-        { label: 'Collection Builder', to: '/collection-builder' },
-        { label: 'Perfume Oils', to: '/oils' },
+        { label: 'Perfume Collection Builder', to: '/collection-builder' },
+        { label: 'Oil Collection Builder', to: '/collection-builder/oils' },
         { label: 'Gift Cards', to: '/gift-cards' },
-        { label: 'Request a Perfume', to: '/request-a-perfume', feature: 'requestPerfume' },
-      ],
-    },
-    {
-      title: 'Account',
-      links: [
-        { label: 'My Orders', to: '/account/orders', feature: 'account' },
-        { label: 'Wishlist', to: '/wishlist', feature: 'wishlist' },
-        { label: 'Subscription Club', to: '/subscription', feature: 'subscription' },
-        { label: 'Affiliate Program', to: '/affiliate', feature: 'affiliate' },
-        { label: 'Track Order', to: '/track-order' },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { label: 'About', to: '/about' },
-        { label: 'Guide', to: '/guide', feature: 'guide' },
-        { label: 'Contact', to: '/contact' },
-        { label: 'Returns Policy', to: '/returns' },
-        { label: 'FAQ', to: '/faq' },
-        { label: 'Terms of Service', to: '/terms' },
       ],
     },
   ],
