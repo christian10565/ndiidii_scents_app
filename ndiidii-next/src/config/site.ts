@@ -29,9 +29,8 @@ export const NAV = [
     to: '/shop',
     children: [
       { label: 'All Scents', to: '/shop' },
-      { label: 'Men', to: '/shop?gender=men' },
-      { label: 'Women', to: '/shop?gender=women' },
-      { label: 'Unisex', to: '/shop?gender=unisex' },
+      { label: 'Perfumes', to: '/shop?collection=perfumes' },
+      { label: 'Perfume Oils', to: '/collection-builder/oils' },
     ],
   },
   {
@@ -39,37 +38,15 @@ export const NAV = [
     to: '/brands',
     children: [{ label: 'All Brands (A–Z)', to: '/brands' }],
   },
-  {
-    label: 'Collection Builder',
-    to: '/collection-builder',
-    children: [
-      { label: 'Perfume Collection', to: '/collection-builder/perfume' },
-      { label: 'Perfume Oils Collection', to: '/collection-builder/oils' },
-    ],
-  },
+  { label: 'Perfume Collection Builder', to: '/collection-builder' },
+  { label: 'Oil Collection Builder', to: '/collection-builder/oils' },
   { label: 'Discovery Sets', to: '/discovery-sets' },
-  { label: 'Subscription', to: '/subscription', feature: 'subscription' },
-  { label: 'Guide', to: '/guide', feature: 'guide' },
 ];
 
-// Add real photos to /public/images and these paths just work. Until then a dark gradient shows.
+// Hero background lives at /public/images/hero.png (from the Home mockup).
 export const HERO_SLIDES = [
   {
-    image: '/images/hero-1.jpg',
-    eyebrow: 'Middle Eastern perfume decants',
-    titleTop: 'Your scents.',
-    titleItalic: 'One story, told your way.',
-    text: 'Pick a bundle size, then choose every scent yourself or let us surprise you.',
-  },
-  {
-    image: '/images/hero-2.jpg',
-    eyebrow: 'Middle Eastern perfume decants',
-    titleTop: 'Your scents.',
-    titleItalic: 'One story, told your way.',
-    text: 'Pick a bundle size, then choose every scent yourself or let us surprise you.',
-  },
-  {
-    image: '/images/hero-3.jpg',
+    image: '/images/hero.png',
     eyebrow: 'Middle Eastern perfume decants',
     titleTop: 'Your scents.',
     titleItalic: 'One story, told your way.',
@@ -154,18 +131,20 @@ export const COLLECTIONS = [
 ];
 
 // Put logo files in /public/brands (e.g. lattafa.png). If a file is missing, the name still shows.
+// Every name here must be a brand that actually has products (matches the Brands page,
+// which derives from getBrands()); Zaoud / Ministry of Oud / Ajmal were removed — zero products.
 export const BRAND_LOGOS = [
-  { name: 'Lattafa', logo: '/brands/lattafa.png' },
-  { name: 'Zaoud', logo: '/brands/zaoud.png' },
-  { name: 'Rayhaan', logo: '/brands/rayhaan.png' },
-  { name: 'Khadlaj', logo: '/brands/khadlaj.png' },
-  { name: 'Maison Alhambra', logo: '/brands/maison-alhambra.png' },
-  { name: 'French Avenue', logo: '/brands/french-avenue.png' },
-  { name: 'Fragrance World', logo: '/brands/fragrance-world.png' },
-  { name: 'Gulf Orchid', logo: '/brands/gulf-orchid.png' },
-  { name: 'Ministry of Oud', logo: '/brands/ministry-of-oud.png' },
   { name: 'Afnan', logo: '/brands/afnan.png' },
-  { name: 'Ajmal', logo: '/brands/ajmal.png' },
+  { name: 'Armaf', logo: '/brands/armaf.png' },
+  { name: 'Fragrance World', logo: '/brands/fragrance-world.png' },
+  { name: 'French Avenue', logo: '/brands/french-avenue.png' },
+  { name: 'Gulf Orchid', logo: '/brands/gulf-orchid.png' },
+  { name: 'Khadlaj', logo: '/brands/khadlaj.png' },
+  { name: 'Lattafa', logo: '/brands/lattafa.png' },
+  { name: 'Maison Alhambra', logo: '/brands/maison-alhambra.png' },
+  { name: 'Paris Corner', logo: '/brands/paris-corner.png' },
+  { name: 'Rayhaan', logo: '/brands/rayhaan.png' },
+  { name: 'RiiFFS', logo: '/brands/riiffs.png' },
 ];
 
 export const FOOTER = {
@@ -181,31 +160,9 @@ export const FOOTER = {
       title: 'Shop',
       links: [
         { label: 'All Scents', to: '/shop' },
-        { label: 'Collection Builder', to: '/collection-builder' },
-        { label: 'Perfume Oils', to: '/oils' },
+        { label: 'Perfume Collection Builder', to: '/collection-builder' },
+        { label: 'Oil Collection Builder', to: '/collection-builder/oils' },
         { label: 'Gift Cards', to: '/gift-cards' },
-        { label: 'Request a Perfume', to: '/request-a-perfume', feature: 'requestPerfume' },
-      ],
-    },
-    {
-      title: 'Account',
-      links: [
-        { label: 'My Orders', to: '/account/orders', feature: 'account' },
-        { label: 'Wishlist', to: '/wishlist', feature: 'wishlist' },
-        { label: 'Subscription Club', to: '/subscription', feature: 'subscription' },
-        { label: 'Affiliate Program', to: '/affiliate', feature: 'affiliate' },
-        { label: 'Track Order', to: '/track-order' },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { label: 'About', to: '/about' },
-        { label: 'Guide', to: '/guide', feature: 'guide' },
-        { label: 'Contact', to: '/contact' },
-        { label: 'Returns Policy', to: '/returns' },
-        { label: 'FAQ', to: '/faq' },
-        { label: 'Terms of Service', to: '/terms' },
       ],
     },
   ],

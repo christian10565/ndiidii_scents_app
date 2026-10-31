@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-verify/
 /out/
 
 # production
@@ -46,3 +47,10 @@ scripts/*.png
 
 # Zaoud catalog cache — re-fetchable via scripts/fetch-zaoud.mjs, don't commit (12MB)
 data/zaoud-products.json
+
+# Catalog snapshot atomic-write temp files (see src/lib/snapshot.ts). A failed
+# rename used to leave these behind — 24 × 858KB had piled up in data/.
+data/*.tmp
+
+# Shopify supplier catalog caches — re-fetchable via scripts/fetch-shopify.mjs, don't commit
+data/shopify-*.json

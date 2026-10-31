@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import { SHOP } from '@/config/site';
 import { formatNaira } from '@/lib/format';
-import { TIER_BOX_PRICE_NGN } from '@/lib/store.config';
+import { TIER_BOX_PRICE_NGN, BOX_SIZE } from '@/lib/store.config';
 import { toggle, type Filters } from '@/lib/shopQuery';
 import { ArrowRight, ChevronDown, ChevronLeft, CloseIcon, FilterIcon } from './Icons';
 import type { BrandCount } from '@/lib/catalog';
@@ -43,6 +43,9 @@ const GENDERS = [
   { value: 'unisex', label: 'Unisex' },
 ];
 
+/** How many notes show before "Show more". */
+const NOTES_PREVIEW = 12;
+
 /**
  * `filters` is the object from lib/shopQuery.ts; `onChange(nextFilters)` writes it back to the URL.
  * Tier prices come from store.config so they are only ever changed in one place.
@@ -53,16 +56,29 @@ export default function FilterPanel({
   activeCount,
   onClose,
   brands,
+  notes,
 }: {
   filters: Filters;
   onChange: (next: Filters) => void;
   activeCount: number;
   onClose: () => void;
   brands: BrandCount[];
+  notes: string[];
 }) {
   const price = (t: string) => formatNaira(TIER_BOX_PRICE_NGN[Number(t) as 1 | 2 | 3]);
 
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
+
+  // Notes are a long list, so only a preview shows until expanded. Selected notes
+  // are always kept visible, otherwise a checked note could be hidden behind
+  // "Show more" and look like it had been dropped.
+  const [notesExpanded, setNotesExpanded] = useState(false);
+  const selectedNotes = notes.filter((n) => filters.notes.some((x) => x.toLowerCase() === n.toLowerCase()));
+  const previewNotes = [...new Set([...notes.slice(0, NOTES_PREVIEW), ...selectedNotes])].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const shownNotes = notesExpanded ? notes : previewNotes;
+  const hiddenNoteCount = notes.length - previewNotes.length;
 
   // Brands that have perfumes, most stocked first. Selected brands are pinned so they never disappear.
   const all = brands.filter((b) => b.perfumes > 0).sort((a, b) => b.perfumes - a.perfumes);
@@ -83,7 +99,7 @@ export default function FilterPanel({
         <button
           className="fpanel__clear"
           disabled={activeCount === 0}
-          onClick={() => set({ stock: [], tier: [], gender: [], brand: [] })}
+          onClick={() => set({ stock: [], tier: [], gender: [], notes: [], brand: [] })}
         >
           Clear all <CloseIcon width={14} height={14} />
         </button>
@@ -105,7 +121,18 @@ export default function FilterPanel({
         {['1', '2', '3'].map((t) => (
           <Check key={t} checked={filters.tier.includes(t)} onChange={() => set({ tier: toggle(filters.tier, t) })}>
             Tier {t}
-            {price(t) && <> — {price(t)}</>}
+            {price(t) && (
+              <>
+                {' — '}
+                {price(t)}
+                {/* The tier price is per BOX, not per decant — say so, or ₦50,000
+                    reads like a single bottle. */}
+                <span className="fsec__unit">
+                  {' '}
+                  set of {BOX_SIZE}
+                </span>
+              </>
+            )}
           </Check>
         ))}
       </Section>
@@ -121,19 +148,35 @@ export default function FilterPanel({
         ))}
       </Section>
 
-      <Section title="Collection">
-        <span className="check is-static">
-          <span className="check__box is-on" aria-hidden="true" />
-          <span className="check__label">All Scents</span>
-        </span>
-        {SHOP.collections
-          .filter((c) => !c.hidden)
-          .map((c) => (
-            <Link key={c.label} href={c.to} className="check">
-              <span className="check__box" aria-hidden="true" />
-              <span className="check__label">{c.label}</span>
-            </Link>
+      <Section title="Notes">
+        <Check checked={filters.notes.length === 0} onChange={() => set({ notes: [] })}>
+          All Notes
+        </Check>
+        <div className="fnotes">
+          {shownNotes.map((n) => (
+            <Check
+              key={n}
+              checked={filters.notes.some((x) => x.toLowerCase() === n.toLowerCase())}
+              onChange={() => set({ notes: toggle(filters.notes, n) })}
+            >
+              {n}
+            </Check>
           ))}
+        </div>
+        {notes.length > NOTES_PREVIEW && (
+          <button className="fnotes__toggle" onClick={() => setNotesExpanded((o) => !o)} aria-expanded={notesExpanded}>
+            {notesExpanded ? (
+              <>
+                Show less <ArrowRight width={13} height={13} style={{ transform: 'rotate(180deg)' }} />
+              </>
+            ) : (
+              <>
+                Show more <span className="fnotes__count">({hiddenNoteCount})</span>
+                <ArrowRight width={13} height={13} style={{ transform: 'rotate(90deg)' }} />
+              </>
+            )}
+          </button>
+        )}
       </Section>
 
       <Section title="Brand">

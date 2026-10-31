@@ -19,6 +19,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { config } from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
+import { google } from 'googleapis';
 
 config();
 
@@ -39,6 +40,32 @@ function argVal(flag, dflt) {
 const has = (f) => process.argv.includes(f);
 const LIMIT = has('--limit') ? Number(argVal('--limit', '5')) : Infinity;
 const MIN_SCORE = Number(argVal('--min-score', '0.85'));
+const ONLY_MISSING = has('--no-only-missing') ? false : true;
+const REVIEW_FILE = has('--review-file') ? argVal('--review-file', '') : '';
+const USE_REVIEW = REVIEW_FILE !== '' && !has('--no-review-file');
+
+// ---- read sheet: which rows already have an image? ----
+// With --only-missing we skip rows whose Image column is already filled, so a
+// re-run after adding new supplier sources only uploads the genuinely new ones.
+let filledNames = new Set();
+if (ONLY_MISSING) {
+  const auth = new google.auth.JWT({
+    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.GOOGLE_SHEET_ID, range: 'Perfumes' });
+  const rows = res.data.values ?? [];
+  const headers = rows[0].map((h) => String(h ?? '').trim());
+  const iName = headers.findIndex((h) => /name/i.test(h) && !/oil/i.test(h));
+  const iImg = headers.findIndex((h) => /image/i.test(h));
+  for (const r of rows.slice(1)) {
+    const name = String(r[iName] ?? '').trim();
+    if (name && String(r[iImg] ?? '').trim()) filledNames.add(name.toLowerCase());
+  }
+  console.log(`sheet: ${filledNames.size} rows already have an image — these will be skipped`);
+}
 
 // ---- normalise for a stable public_id ----
 const slug = (s) =>
@@ -50,13 +77,54 @@ const slug = (s) =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
 
+// ---- load existing upload map if present (merge mode) ----
+const uploadMapPath = join(process.cwd(), 'data', 'upload-map.json');
+let existing = [];
+try {
+  existing = JSON.parse(await readFile(uploadMapPath, 'utf8'));
+} catch {
+  existing = [];
+}
+const existingByKey = new Map();
+for (const row of existing) {
+  if (!row.cloudinaryUrl) continue;
+  existingByKey.set(`${(row.sheetBrand || '').toLowerCase()}||${(row.sheetName || '').toLowerCase()}`, row);
+}
+
+// ---- optionally load pre-approved review candidates ----
+let reviewApproved = [];
+if (REVIEW_FILE) {
+  try {
+    reviewApproved = JSON.parse(await readFile(join(process.cwd(), REVIEW_FILE), 'utf8'));
+  } catch {
+    console.error(`Failed to load review file: ${REVIEW_FILE}`);
+    process.exit(1);
+  }
+}
+
 // ---- load match map ----
 const map = JSON.parse(await readFile(join(process.cwd(), 'data', 'match-map.json'), 'utf8'));
-const todo = map.filter((m) => m.matched && m.matched.score >= MIN_SCORE && m.matched.imageUrl);
+let todo;
+if (USE_REVIEW && reviewApproved.length) {
+  // Use only the pre-approved review entries
+  todo = reviewApproved.filter((r) => r.imageUrl).map((r) => {
+    const m = map.find((mm) => mm.sheetName === r.name && mm.sheetBrand === r.brand);
+    return m || { sheetName: r.name, sheetBrand: r.brand, matched: { imageUrl: r.imageUrl, title: r.title, source: r.source, score: r.score } };
+  });
+} else {
+  todo = map.filter((m) => m.matched && m.matched.score >= MIN_SCORE && m.matched.imageUrl);
+}
+if (ONLY_MISSING) todo = todo.filter((m) => !filledNames.has(m.sheetName.toLowerCase()));
+// skip already-uploaded rows so batches are additive
+todo = todo.filter((m) => !existingByKey.has(`${(m.sheetBrand || '').toLowerCase()}||${(m.sheetName || '').toLowerCase()}`));
 const targets = LIMIT === Infinity ? todo : todo.slice(0, LIMIT);
-console.log(`matches >= ${MIN_SCORE}: ${todo.length}; uploading ${targets.length} this run\n`);
+console.log(`${USE_REVIEW ? 'review-approved' : 'confident'}: ${todo.length}${ONLY_MISSING ? ' (new only)' : ''}; uploading ${targets.length} this run`);
 
-const out = map.map((m) => ({ ...m })); // preserve everything, add cloudinaryUrl
+const out = [...existing];
+const outByKey = new Map();
+for (const row of out) {
+  outByKey.set(`${(row.sheetBrand || '').toLowerCase()}||${(row.sheetName || '').toLowerCase()}`, row);
+}
 let ok = 0;
 let fail = 0;
 
@@ -71,12 +139,17 @@ for (let i = 0; i < targets.length; i++) {
       invalidate: true,
       resource_type: 'image',
     });
-    // Attach the cloudinary URL back onto the matching entry in `out`.
-    const target = out.find((o) => o.sheetName === m.sheetName && o.sheetBrand === m.sheetBrand);
-    if (target) {
-      target.cloudinaryUrl = res.secure_url;
-      target.cloudinaryPublicId = res.public_id;
+    const key = `${(m.sheetBrand || '').toLowerCase()}||${(m.sheetName || '').toLowerCase()}`;
+    let target = outByKey.get(key);
+    if (!target) {
+      target = { ...m };
+      out.push(target);
+      outByKey.set(key, target);
+    } else {
+      Object.assign(target, m);
     }
+    target.cloudinaryUrl = res.secure_url;
+    target.cloudinaryPublicId = res.public_id;
     ok++;
     console.log(`✓ [${i + 1}/${targets.length}] ${m.sheetBrand} — ${m.sheetName}  →  ${res.secure_url}`);
   } catch (e) {
@@ -86,6 +159,6 @@ for (let i = 0; i < targets.length; i++) {
 }
 
 await mkdir(join(process.cwd(), 'data'), { recursive: true });
-await writeFile(join(process.cwd(), 'data', 'upload-map.json'), JSON.stringify(out, null, 0));
+await writeFile(uploadMapPath, JSON.stringify(out, null, 0));
 console.log(`\ndone: ${ok} uploaded, ${fail} failed`);
-console.log('wrote data/upload-map.json (has cloudinaryUrl on matched rows)');
+console.log('wrote data/upload-map.json');

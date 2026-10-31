@@ -30,15 +30,18 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount
   const [open, setOpen] = useState(false);
   // Which top-level dropdown is expanded (mobile accordion). null = none.
   const [openSub, setOpenSub] = useState<string | null>(null);
+  // Which desktop dropdown is hovered-open (null = none). Drives desktop visibility.
+  const [hovered, setHovered] = useState<string | null>(null);
   const pathname = usePathname();
 
   // Close the mobile menu (and any open dropdown) after navigating
   useEffect(() => {
     setOpen(false);
     setOpenSub(null);
+    setHovered(null);
   }, [pathname]);
 
-  const items = NAV.filter((i) => !i.feature || FEATURES[i.feature as keyof typeof FEATURES]);
+  const items = NAV;
 
   return (
     <header className="header">
@@ -59,12 +62,15 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: { cartCount
           <ul className="nav__list">
             {items.map((item) => {
               const subOpen = openSub === item.label;
+              const isHovered = hovered === item.label;
               return (
                 <li
                   key={item.label}
                   className={`nav__item ${item.children ? 'nav__item--parent' : ''} ${
                     item.children && subOpen ? 'is-open' : ''
-                  }`}
+                  } ${item.children && isHovered ? 'is-hovered' : ''}`}
+                  onMouseEnter={() => item.children && setHovered(item.label)}
+                  onMouseLeave={() => item.children && setHovered(null)}
                 >
                   <Link
                     href={item.to}

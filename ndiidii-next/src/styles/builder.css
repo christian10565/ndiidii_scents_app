@@ -102,8 +102,25 @@
 .bcard:hover { border-color: var(--ink); }
 .bcard:disabled { opacity: 0.45; cursor: not-allowed; }
 .bcard.is-selected { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+/* The card's clickable surface (image + name) is its own button so the stepper
+   buttons can sit alongside it without nesting buttons. */
+.bcard__toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.bcard__stepper { margin: 8px auto 0; }
 .bcard__img { position: relative; }
 .bcard__img .pimg { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 4px; background: #f0eee9; }
+/* Placeholder (no image yet): keep the bottle mark small inside the card box. */
+.bcard__img .pimg--empty { display: grid; place-items: center; }
+.bcard__img .pimg--empty svg { width: 40%; height: auto; max-height: 60%; }
 .bcard__check {
   position: absolute;
   top: 8px;
@@ -191,4 +208,273 @@
   .builder__tiers { grid-template-columns: 1fr; }
   .builder__grid { grid-template-columns: repeat(2, 1fr); }
   .yourset { position: static; }
+}
+
+/* ---- sections (oil builder: size row, collection row) ---- */
+.builder__section { margin-bottom: 28px; }
+.builder__section-title { color: var(--oxblood); margin: 0 0 12px; }
+
+.builder__sizes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.sizebtn {
+  text-align: left;
+  padding: 16px 18px;
+  border: 1px solid var(--line-light);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.sizebtn:hover { border-color: var(--ink); }
+.sizebtn.is-active { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+.sizebtn__label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.sizebtn__price { font-size: 20px; line-height: 1.1; color: var(--ink); }
+.sizebtn__unit { font-size: 12px; color: var(--slate); }
+
+/* Oil builder has two collection types, not three tiers. */
+.builder__tiers--two { grid-template-columns: repeat(2, 1fr); }
+
+.builder__gridhead-actions { display: flex; align-items: baseline; gap: 16px; }
+.builder__gridhead-actions .builder__clear:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- text-only card (oils carry no photography) ---- */
+.bcard--text { padding-bottom: 16px; }
+.bcard__img--mono { display: block; }
+.bcard__img--mono .dnoimg {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+}
+.bcard__img--mono .dnoimg span { font-size: clamp(24px, 3vw, 34px); }
+
+@media (max-width: 900px) {
+  .builder__sizes { grid-template-columns: 1fr; }
+  .builder__tiers--two { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   Oil builder — matches "Perfume oils Collection Builder (4).pdf"
+   (hero → Retail size → collection accordions → Your Oil Set)
+   ========================================================================== */
+.oilbuilder {
+  max-width: 860px;
+  padding: 28px 24px 90px;
+}
+
+/* ---- hero: full-bleed photo banner (bottles right, dark scrim left) ---- */
+.ob-hero {
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  aspect-ratio: 2172 / 455; /* match the banner asset so cover shows it uncropped */
+  min-height: 220px;
+}
+/* Dark scrim keeps the white text legible on the left and clears before the
+   bottle photo so the right side stays bright, not grey. */
+.ob-hero__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #16110c 0%,
+    rgba(22, 17, 12, 0.8) 40%,
+    rgba(22, 17, 12, 0.18) 66%,
+    rgba(22, 17, 12, 0) 85%
+  );
+}
+.ob-hero__inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ob-hero__title { font-size: 44px; line-height: 1.08; margin: 0 0 14px; max-width: 15ch; }
+.ob-hero__sub { font-size: 15px; line-height: 1.6; color: #f3efe9; margin: 0; max-width: 440px; }
+
+@media (max-width: 760px) {
+  .ob-hero { aspect-ratio: auto; min-height: 240px; background-position: 72% center; }
+  .ob-hero__title { font-size: 32px; }
+}
+
+/* Centered line between the hero and the card (mockup copy). */
+.ob-intro {
+  text-align: center;
+  font-size: 15px;
+  color: var(--slate);
+  margin: 0 0 24px;
+}
+
+/* ---- white card ---- */
+.ob-card {
+  background: #fff;
+  border: 1px solid var(--line-light);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.ob-label { color: var(--oxblood); margin: 0 0 6px; }
+.ob-title { font-size: 22px; margin: 0 0 20px; }
+
+/* ---- retail size (radio cards) ---- */
+.ob-sizes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ob-size {
+  text-align: left;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--line-light);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ob-size:hover { border-color: var(--ink); }
+.ob-size.is-active { border-color: var(--oxblood); box-shadow: 0 0 0 1px var(--oxblood); }
+.ob-size__dot {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 999px;
+  border: 2px solid #c9c3b8;
+}
+.ob-size.is-active .ob-size__dot {
+  border-color: var(--oxblood);
+  background: radial-gradient(circle, var(--oxblood) 42%, #fff 50%);
+}
+.ob-size__label { font-size: 14px; font-weight: 600; color: var(--ink); }
+
+/* ---- collection accordions ---- */
+.ob-acc {
+  border: 1px solid var(--line-light);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.ob-acc.is-open { border-color: var(--ink); }
+.ob-acc__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.ob-acc__title { font-size: 18px; margin: 0; }
+.ob-acc__chev { color: var(--slate); transition: transform 0.2s; }
+.ob-acc__chev.is-flipped { transform: rotate(180deg); }
+.ob-acc__body { border-top: 1px solid var(--line-light); padding: 8px 12px 14px; }
+.ob-acc__sub {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--slate);
+  margin: 10px 8px 10px;
+}
+.ob-list { display: flex; flex-direction: column; gap: 4px; }
+.ob-empty { color: var(--slate); font-size: 14px; padding: 4px 12px 10px; }
+
+/* ---- oil row (checkbox + name + brand, text-only) ---- */
+.ob-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.ob-row:hover { background: #f6f4f0; }
+.ob-row.is-selected { border-color: var(--oxblood); }
+.ob-row__check {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #cfc9c0;
+  border-radius: 4px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #fff;
+  padding: 0;
+  cursor: pointer;
+}
+.ob-row.is-selected .ob-row__check { background: var(--oxblood); border-color: var(--oxblood); }
+.ob-row__name { flex: 1; font-size: 14px; font-weight: 600; color: var(--ink); }
+.ob-row__brand { font-size: 12px; color: var(--slate); }
+
+/* Quantity stepper — a set holds BOX_SIZE bottles and the same oil may repeat. */
+.ob-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.ob-stepper button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #cfc9c0;
+  background: #fff;
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.ob-stepper button:hover:not(:disabled) { border-color: var(--ink); }
+.ob-stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+.ob-stepper__qty { min-width: 16px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink); }
+
+/* ---- summary panel (reuses the black "Your Set" vocab) ---- */
+.ob-summary .yourset__inner { border-radius: 10px; padding: 26px 24px; }
+.ob-summary__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.ob-summary__head .yourset__tier { margin-left: auto; text-align: right; }
+.ob-summary__actions { display: flex; gap: 14px; width: 100%; margin-top: 4px; }
+.ob-summary__actions .link-red { font-size: 13px; }
+.ob-summary__actions .link-red:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* "Continue to Checkout" — primary CTA (white pill on the black panel). */
+.ob-cta-checkout {
+  width: 100%;
+  text-align: center;
+  background: #fff;
+  color: var(--ink);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ob-cta-checkout:hover { background: var(--oxblood); color: #fff; }
+
+@media (max-width: 640px) {
+  .ob-sizes { grid-template-columns: 1fr; }
+  .ob-hero { padding: 34px 24px; }
+  .ob-hero__title { font-size: 34px; }
+  .ob-row__brand { display: none; }
 }

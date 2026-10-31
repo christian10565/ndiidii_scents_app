@@ -55,7 +55,6 @@ export async function readTab(tabName: string): Promise<SheetRow[]> {
     range,
     valueRenderOption: 'FORMATTED_VALUE',
   });
-
   const values = res.data.values ?? [];
   if (values.length < 2) return [];
 
@@ -82,4 +81,29 @@ export async function readTab(tabName: string): Promise<SheetRow[]> {
   }
 
   return rows;
+}
+
+let cachedTabNames: string[] | null = null;
+
+/**
+ * Resolve a tab name against the sheet's actual tab titles. The client's tab
+ * names have quirks (a leading space, "Discoovery" typo), so we match fuzzily:
+ * exact → trimmed-equal → normalized-substring. Cached for the process.
+ */
+export async function resolveTab(want: string): Promise<string> {
+  if (!cachedTabNames) {
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    if (!spreadsheetId) throw new Error('Missing GOOGLE_SHEET_ID');
+    const meta = await client().spreadsheets.get({ spreadsheetId });
+    cachedTabNames = (meta.data.sheets ?? []).map((s) => s.properties?.title ?? '').filter(Boolean);
+  }
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const w = norm(want);
+  return (
+    cachedTabNames.find((t) => t === want) ??
+    cachedTabNames.find((t) => t.trim() === want.trim()) ??
+    cachedTabNames.find((t) => norm(t) === w) ??
+    cachedTabNames.find((t) => norm(t).includes(w) || w.includes(norm(t))) ??
+    want
+  );
 }

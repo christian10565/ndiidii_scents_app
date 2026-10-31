@@ -9,6 +9,7 @@
 
 .checkout__empty { text-align: center; padding: 60px 0; display: flex; flex-direction: column; gap: 18px; align-items: center; }
 .checkout__empty .btn--white { background: var(--ink); color: #fff; }
+.checkout__empty-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
 .checkout__layout { display: grid; grid-template-columns: 1fr 340px; gap: 34px; align-items: start; }
 
@@ -36,6 +37,38 @@
 .cline__unit { font-size: 12px; color: var(--slate); margin: 0; }
 .cline__remove { background: none; border: 0; cursor: pointer; }
 
+/* ---- line colour coding (homepage black/oxblood vocabulary) ----
+   Tier 1 = black, Tier 2 = white, Tier 3 = warm stone, oils = oxblood.
+   Discovery sets stay white: they are a different product, not a tier. */
+.cline--black { background: var(--ink); border-color: var(--ink); color: #fff; }
+.cline--stone { background: #f4f0ea; border-color: #e2dbd1; }
+.cline--red { background: var(--oxblood); border-color: var(--oxblood); color: #fff; }
+
+/* The kicker: on black it can stay red (--oxblood-light reads fine there), but on
+   the oxblood card a red kicker is unreadable, so it goes near-white instead. */
+.cline--black .cline__tier { color: var(--oxblood-light); }
+.cline--red .cline__tier { color: rgba(255, 255, 255, 0.88); }
+.cline--black .cline__names,
+.cline--red .cline__names { color: rgba(255, 255, 255, 0.78); }
+.cline--black .cline__unit { color: rgba(255, 255, 255, 0.62); }
+.cline--red .cline__unit { color: rgba(255, 255, 255, 0.76); }
+.cline--black .cline__price,
+.cline--red .cline__price { color: #fff; }
+.cline--black .cline__qty,
+.cline--red .cline__qty { border-color: rgba(255, 255, 255, 0.28); }
+.cline--black .cline__qty button,
+.cline--red .cline__qty button { color: #fff; }
+.cline--black .cline__qty button:hover,
+.cline--red .cline__qty button:hover { background: rgba(255, 255, 255, 0.12); }
+/* .link-red's oxblood would vanish on these two, so Remove goes white */
+.cline--black .cline__remove,
+.cline--red .cline__remove { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.45); }
+.cline--black .cline__remove:hover,
+.cline--red .cline__remove:hover { color: var(--oxblood-light); border-bottom-color: var(--oxblood-light); }
+/* product shots are cut-outs on white — give them a white tile so they don't float */
+.cline--black .cline__thumb,
+.cline--red .cline__thumb { background: #fff; }
+
 /* ---- summary + form ---- */
 .checkout__side { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 24px; }
 .csummary { border: 1px solid var(--line-light); border-radius: 8px; padding: 20px; }
@@ -59,7 +92,23 @@
 .cform input:focus, .cform select:focus, .cform textarea:focus { outline: none; border-color: var(--ink); }
 .cform__submit { width: 100%; background: var(--ink); color: #fff; margin-top: 6px; }
 .cform__submit:hover { background: #000; }
+.cform__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.cform__error { color: #b00020; font-size: 13px; margin: 8px 0 0; }
+.cform__testmode { background: #fff7e6; border: 1px solid #f0c36d; color: #7a5b13; font-size: 12px; line-height: 1.5; margin: 10px 0 0; padding: 10px 12px; border-radius: 6px; }
+.cform__testmode code { background: #ffe9bf; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
 .cform__disclaimer { font-size: 11px; color: var(--slate); margin: 0; line-height: 1.5; }
+
+/* ---- gift card at checkout ---- */
+.cgift { margin-bottom: 20px; }
+.cgift__row { display: flex; gap: 8px; }
+.cgift__row input { flex: 1; border: 1px solid var(--line, #ddd6cb); border-radius: 8px; padding: 10px 12px; font-size: 13px; letter-spacing: 0.03em; }
+.cgift__row button { background: #fff; color: var(--ink); border: 1px solid var(--ink); border-radius: 8px; padding: 0 16px; font-size: 13px; cursor: pointer; }
+.cgift__row button:hover { background: var(--ink); color: #fff; }
+.cgift__row button:disabled { opacity: 0.5; cursor: not-allowed; }
+.cgift__applied { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff7e6; border: 1px solid #f0c36d; border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.cgift__error { color: #b00020; font-size: 12px; margin: 8px 0 0; }
+.cgift__note { font-size: 12px; color: var(--slate); line-height: 1.5; margin: 10px 0 0; }
+.csummary__row--gift span:last-child { color: #2e7d32; font-weight: 600; }
 
 /* ---- success ---- */
 .checkout__done { text-align: center; padding: 70px 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; max-width: 480px; margin-inline: auto; }

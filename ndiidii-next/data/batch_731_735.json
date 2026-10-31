@@ -1,0 +1,97 @@
+[
+  {
+    "brand": "Lattafa Pride",
+    "name": "Stop Wait Go Kids Perfume",
+    "inspired_by": "",
+    "top_notes": "Peach, Lavender, Pear",
+    "heart_notes": "Orchid, Praline, Coconut",
+    "base_notes": "Amber, Musk, Sandalwood",
+    "season": "Spring and Summer",
+    "occasion": "Everyday wear, school, birthday parties, casual outings",
+    "gender": "Unisex",
+    "scent_profile": "Fruity Gourmand",
+    "confidence": "medium",
+    "sources": [
+      "https://www.lattafa-usa.com/products/stop-wait-go",
+      "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Stop-Wait-Go-98249.html",
+      "https://www.intenseoud.com/products/stop-wait-go-eau-de-parfum-spray-75ml-2-5-oz-by-lattafa-pride"
+    ],
+    "flags": "Marketed for kids but notes are unisex; season inferred from sweet-fruity-gourmand profile."
+  },
+  {
+    "brand": "La Fede",
+    "name": "SYMBOL OF LOVE",
+    "inspired_by": "",
+    "top_notes": "Lemon, Orange, Mandarin",
+    "heart_notes": "Jasmine, Blossom",
+    "base_notes": "Ambroxan, Vanilla",
+    "season": "Spring and Summer",
+    "occasion": "Date nights, special occasions, everyday elegance, gifting",
+    "gender": "Women",
+    "scent_profile": "Floral Citrus",
+    "confidence": "high",
+    "sources": [
+      "https://khadlaj-perfumes.com/products/la-fede-symbol-of-love-100-ml-eau-de-parfum-for-women-scents-by-khadlaj",
+      "https://www.fragrantica.com/perfume/Khadlaj-Perfumes/La-Fede-Symbol-of-Love-111212.html",
+      "https://www.ulta.com/p/la-fede-symbol-of-love-eau-de-parfum-spray-women-mkt77010846"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Rave",
+    "name": "Royal Supreme Noble",
+    "inspired_by": "",
+    "top_notes": "Red fruits, Orange",
+    "heart_notes": "Marshmallow, Lily of the valley, Jasmine",
+    "base_notes": "Vanilla, Moss, Musk",
+    "season": "Autumn and Winter",
+    "occasion": "Daily use, office, evening wear, special events, weddings, birthdays",
+    "gender": "Unisex",
+    "scent_profile": "Floral Fruity Gourmand",
+    "confidence": "medium",
+    "sources": [
+      "https://www.walmart.com/ip/Lattafa-Unisex-Rave-Royal-Supreme-Noble-EDP-Spray-3-4-oz-Fragrances-6290360594125/5450421342",
+      "https://beautyhouse.com/products/rave-royal-supreme-noble-eau-de-parfum-for-everyone",
+      "https://www.fragrancenet.com/fragrances/rave/rave-royal-supreme-noble/eau-de-parfum"
+    ],
+    "flags": "Inspired-by sources conflict and were omitted; majority-supported notes and occasions used."
+  },
+  {
+    "brand": "Hamidi",
+    "name": "ADDICTED MADAME",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Grapefruit, Peach, Orange",
+    "heart_notes": "Geranium, Jasmine, Litchi, Rose",
+    "base_notes": "Musk, Patchouli, Vanilla, Vetiver",
+    "season": "All Seasons",
+    "occasion": "Everyday wear, office, dates, dinners, clubbing, special occasions",
+    "gender": "Women",
+    "scent_profile": "Floral Woody Musk",
+    "confidence": "high",
+    "sources": [
+      "https://www.hamidi.us/products/hamidi-addicted-madame-eau-de-perfume-spray",
+      "https://www.fragrantica.com/perfume/Hamidi/Addicted-Madame-94315.html",
+      "https://www.intenseoud.com/products/hamidi-addicted-madame-edp-spray-120ml-4-oz-by-hamidi-indulge-in-the-delicate-sweetness-of-this-floral-fragrance"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Gissah",
+    "name": "One &Only",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Passion Fruit, Peach",
+    "heart_notes": "Jasmine, Geranium Flower, Caramel",
+    "base_notes": "Madagascar Patchouli, Ambergris, White Musk",
+    "season": "Autumn and Winter",
+    "occasion": "Work, date nights, dinner, events, weddings, vacation, everyday",
+    "gender": "Women",
+    "scent_profile": "Oriental Sweet",
+    "confidence": "high",
+    "sources": [
+      "https://sa.gissah.com/shop/g00132-one-and-only-200-ml-2253",
+      "https://luluatalmusk.com/products/gissah-coming-soon",
+      "https://www.fragrantica.com/perfume/Gissah/One-Only-126197.html"
+    ],
+    "flags": ""
+  }
+]

@@ -121,8 +121,9 @@
   transform: translateY(6px);
   transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
 }
-.nav__item--parent:hover .nav__menu,
-.nav__item--parent:focus-within .nav__menu {
+/* Desktop: dropdown visibility is JS-driven via .is-hovered (hover state in React),
+   so it closes on navigation (hovered resets to null) and on mouse-leave. */
+.nav__item--parent.is-hovered > .nav__menu {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -561,11 +562,13 @@
   margin-top: 14px;
   font-size: 10.5px;
   color: var(--slate);
+  text-align: center;
 }
 .tier-card__name {
   margin-top: 4px;
   font-size: 17px;
   line-height: 1.25;
+  text-align: center;
 }
 .tier-card__price {
   margin-top: 6px;

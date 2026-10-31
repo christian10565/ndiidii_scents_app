@@ -93,3 +93,29 @@ export const WhatsappIcon = (p: React.SVGProps<SVGSVGElement>) => (
     <path d="M9 9.5c.3 2 2.5 4.2 4.5 4.5l1.3-1.2-1.8-1-.8.6c-.8-.4-1.5-1.1-1.9-1.9l.6-.8-1-1.8L9 9.5Z" />
   </svg>
 );
+
+// Scent-attribute icons for the discovery set slot cards.
+export const SeasonIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} width={16} height={16} {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </svg>
+);
+export const NotesIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} width={16} height={16} {...p}>
+    <path d="M11 20A7 7 0 0 1 4 13c0-4 3-8 7-9 1 3 3 4 5 4 1.5 0 3-1 3-3 2 2 3 4.5 3 8a7 7 0 0 1-11 7Z" />
+    <path d="M11 20c0-3 1-5 3-7" />
+  </svg>
+);
+export const GenderIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} width={16} height={16} {...p}>
+    <circle cx="10" cy="14" r="5" />
+    <path d="M15 9l5-5M15 4h5v5" />
+  </svg>
+);
+export const ProfileIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} width={16} height={16} {...p}>
+    <path d="M12 3c1.5 3 4.5 4 4.5 8a4.5 4.5 0 0 1-9 0c0-1.5.5-2.5 1-3 .3 1.2 1 2 2 2 0-2-.5-4-1.5-5 .8-.5 1.7-.5 3-2Z" />
+    <path d="M12 21a9 9 0 0 1-4-1" />
+  </svg>
+);

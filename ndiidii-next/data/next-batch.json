@@ -1,0 +1,242 @@
+[
+  {
+    "id": "117",
+    "slug": "queen-of-arabia-lattafa-pride",
+    "name": "Queen of Arabia",
+    "brand": "Lattafa Pride",
+    "gender": "women",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800604/ndiidii/lattafa-pride-queen-of-arabia.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Oriental-floral gourmand",
+    "inspiredBy": "Olympea by Paco Rabanne (subverting its aquatic notes for an opulent, creamy-solar Middle Eastern twist)",
+    "season": "Spring, Summer, and all-year tropical climates.",
+    "notes": {
+      "top": "Coconut Accord, Nutmeg, and Grapefruit Zest.",
+      "heart": "Royal Jasmine, Crimson Rose, and White Florals",
+      "base": "Madagascar Vanilla, Salted Amber, and Soft Woods."
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Premium resort vacations, sun-drenched pool lounge parties, casual evening mixers, and stylish daytime dates.",
+      "Price": "60,000.00"
+    }
+  },
+  {
+    "id": "141",
+    "slug": "le-prestige-bold-khadlaj",
+    "name": "Le Prestige Bold",
+    "brand": "Khadlaj",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800617/ndiidii/khadlaj-le-prestige-bold.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Amber-floral-gourmand",
+    "inspiredBy": "Baccarat Rouge 540 Eau de Parfum by Maison Francis Kurkdjian (MFK)",
+    "season": "All-Season master key, performing optimally during late Autumn, Winter, and pleasant tropical day-to-night transitions",
+    "notes": {
+      "top": "Exotic Saffron, juicy Bergamot, and creamy Coconut",
+      "heart": "Violet Petals, Royal Jasmine, and Driftwood (Dry Wood).",
+      "base": "Creamy Sandalwood, Earthy Patchouli, and Madagascar Vanilla"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "High-stakes evening business dates, exclusive penthouse parties, vibrant late-night lounge gatherings, and bold nightlife statement wear",
+      "Price": "45,000.00"
+    }
+  },
+  {
+    "id": "142",
+    "slug": "le-prestige-king-khadlaj",
+    "name": "Le Prestige King",
+    "brand": "Khadlaj",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800618/ndiidii/khadlaj-le-prestige-king.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Woody-chypre",
+    "inspiredBy": "Gris Dior by Christian Dior",
+    "season": "Spring, Autumn, and pleasant day-to-night transitional climates (performing with magnificent crispness during rainy season afternoons or cool Harmattan evenings)",
+    "notes": {
+      "top": "Bergamot, Elemi Resin, and Crisp Green Notes",
+      "heart": "Rosy Geranium and Rich Leather.",
+      "base": "Powdery Orris (Iris Root) and Earthy Patchouli."
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Formal corporate boardrooms, executive business meetings, professional daytime networking events, and sharp afternoon interviews",
+      "Price": "45,000.00"
+    }
+  },
+  {
+    "id": "144",
+    "slug": "gharam-lattafa-pride",
+    "name": "Gharam",
+    "brand": "Lattafa Pride",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800620/ndiidii/lattafa-pride-gharam.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Amber-floral-gourmand",
+    "inspiredBy": "Baccarat Rouge 540 Extrait by Maison Francis Kurkdjian (MFK) + Instant Crush by Mancera",
+    "season": "All-Season master key, performing with magnificent depth through Autumn, Winter, and cool tropical day-to-night transitions",
+    "notes": {
+      "top": "Saffron, Bitter Almond, and Jasmine",
+      "heart": "Amberwood, Ambergris, and Egyptian Jasmine",
+      "base": "Madagascar Vanilla, Cedarwood, and Fluffy Musk"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Intimate candlelit dinner dates, exclusive evening lounge settings, high-stakes business mixers, and glamorous nightlife outings.",
+      "Price": "70,000.00"
+    }
+  },
+  {
+    "id": "146",
+    "slug": "kismet-magic-maison-alhambra",
+    "name": "Kismet Magic",
+    "brand": "Maison Alhambra",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800622/ndiidii/maison-alhambra-kismet-magic.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Amber-vanilla gourmand",
+    "inspiredBy": "Angels' Share by Kilian",
+    "season": "Winter, Autumn, and intense cool tropical rainy or Harmattan seasons",
+    "notes": {
+      "top": "Aged Cognac.",
+      "heart": "Warm Cinnamon, Tonka Bean, and Oak Wood",
+      "base": "Pralines, Sweet Vanilla, and Sandalwood"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Formal evening banquets, holiday family dinners, cozy late-night jazz or coffee shop lounges, and intimate winter date nights",
+      "Price": "45,000.00"
+    }
+  },
+  {
+    "id": "147",
+    "slug": "island-vanilla-dunes-khadlaj",
+    "name": "Island Vanilla Dunes",
+    "brand": "Khadlaj",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791800623/ndiidii/khadlaj-island-vanilla-dunes.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Amber-vanilla gourmand",
+    "inspiredBy": "Althaïr by Parfums de Marly",
+    "season": "Autumn, Winter, and the cool tropical Harmattan or heavy rainy seasons",
+    "notes": {
+      "top": "Rich Vanilla, Warm Cinnamon, Cardamom, and Bergamot",
+      "heart": "Orange Blossom, Guaiac Wood, and smooth Bourbon",
+      "base": "Creamy Praline, Golden Amber, and Soft Musk"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Cozy evening stay-ins, intimate late-night coffee shop visits, winter holiday family gatherings, and sophisticated date nights",
+      "Price": "40,000.00"
+    }
+  },
+  {
+    "id": "150",
+    "slug": "sceptre-oceana-maison-alhambra",
+    "name": "Sceptre Oceana",
+    "brand": "Maison Alhambra",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791821946/ndiidii/maison-alhambra-sceptre-oceana.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Amber-woody gourmand",
+    "inspiredBy": "Orom by Bvlgari (Le Gemme Collection)",
+    "season": "Winter, Autumn, and intense cool tropical rainy or Harmattan seasons (The heavy resinous weight requires crisp, lower temperatures to project gracefully)",
+    "notes": {
+      "top": "Bourbon Vanilla Absolute",
+      "heart": "Siam Benzoin Resin",
+      "base": "Precious Assam Agarwood (Oud)"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Formal black-tie evening galas, prestigious red-carpet banquets, elite winter milestone celebrations, and authoritative nighttime statement wear.",
+      "Price": "50,000.00"
+    }
+  },
+  {
+    "id": "154",
+    "slug": "cascade-blue-maison-asrar",
+    "name": "Cascade Blue",
+    "brand": "Maison Asrar",
+    "gender": "unisex",
+    "imageUrl": null,
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Aromatic-fougère",
+    "inspiredBy": "Sedley by Parfums de Marly with the metallic lavender-fruity framework of Montblanc Legend and Percival.",
+    "season": "Summer, Spring, and high-temperature tropical weather (acting as an ultimate, ice-cold high-heat performance shield",
+    "notes": {
+      "top": "Sweet Melon, Fresh Lemon, and Zingy Ginger.",
+      "heart": "Marine Notes, Calming Lavender, Crisp Apple, and Dry Wood",
+      "base": "Creamy Sandalwood, Earthy Patchouli, Golden Amber, and Soft Musk"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "High-temperature outdoor daytime excursions, active gym sessions, professional corporate office settings, and casual weekend social events.",
+      "Price": "50,000.00"
+    }
+  },
+  {
+    "id": "170",
+    "slug": "aseel-maison-asrar",
+    "name": "Aseel",
+    "brand": "Maison Asrar",
+    "gender": "unisex",
+    "imageUrl": "https://res.cloudinary.com/deejgpias/image/upload/v1791823247/ndiidii/maison-asrar-aseel.jpg",
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Oriental-fougere",
+    "inspiredBy": "Interlude Black Iris by Amouage mixed with Oud Ispahan by Dior.",
+    "season": "Winter, Autumn, and the cool tropical Harmattan or heavy rainy seasons (The multi-layered, smoky-powdery resinous weight thrives exquisitely in lower temperatures)",
+    "notes": {
+      "top": "Pink Pepper, Cardamom, Incense, Tea, Lemon, and Juniper Berries",
+      "heart": "Orris Root (Iris), Lily of the Valley, Rose, and Jasmine.",
+      "base": "Clean Oud, Tonka Bean, Cashmere Wood, Ambergris, and Earthy Patchouli."
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Elite cultural evening galas, high-end fine dining dates, professional evening networking functions, and authoritative late-night statement wear.",
+      "Price": "50,000.00"
+    }
+  },
+  {
+    "id": "184",
+    "slug": "ramad-louban-arabiyat-prestige",
+    "name": "Ramad Louban",
+    "brand": "Arabiyat Prestige",
+    "gender": "unisex",
+    "imageUrl": null,
+    "stock": 1,
+    "inStock": true,
+    "tier": 2,
+    "scentProfile": "Woody-spicy amber",
+    "inspiredBy": "Guidance by Amouage",
+    "season": "Autumn, Winter, and cool tropical Harmattan or heavy rainy season",
+    "notes": {
+      "top": "Black Pepper, Myrrh, Cardamom, Roasted Hazelnut, and Cinnamon",
+      "heart": "Davana, Labdanum Resin, Pine Timber, and Cypriol Oil (Nagarmotha)",
+      "base": "Cedarwood, Golden Amber, Benzoin, Vetiver, and Earthy Oakmoss"
+    },
+    "description": null,
+    "extra": {
+      "Occasion": "Elegant evening lounge settings, traditional cultural ceremonies, formal dinner dates, and commanding executive authority at nighttime functions",
+      "Price": "45,000.00"
+    }
+  }
+]

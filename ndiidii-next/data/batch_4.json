@@ -1,0 +1,107 @@
+[
+  {
+    "brand": "Rayhaan",
+    "name": "Opulence Chandos",
+    "inspired_by": "",
+    "top_notes": "Saffron, Elemi Oil, Rosemary, Black Pepper",
+    "heart_notes": "Cedarwood, Agarwood, Orris, Rose",
+    "base_notes": "Vetiver, Vanilla, Labdanum",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, special occasions",
+    "gender": "Unisex",
+    "scent_profile": "Woody Oud",
+    "confidence": "high",
+    "sources": [
+      "https://shop.seindesignature.com/products/opulence-by-chandos-edp-100ml-niche-perfume"
+    ],
+    "flags": "This is 'Opulence by Chandos' — the sheet lists brand as Rayhaan. Brand may need correcting."
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Floriana",
+    "inspired_by": "",
+    "top_notes": "Orange Blossom, Bergamot",
+    "heart_notes": "Tuberose, Indian Jasmine, Amberwood, Ambergris",
+    "base_notes": "Madagascar Vanilla, Fir Resin, White Musk, Virginia Cedar",
+    "season": "Spring and Summer",
+    "occasion": "Date nights, daytime elegance, special occasions",
+    "gender": "Women",
+    "scent_profile": "Floral Woody Musk",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Rayhaan/Floriana-145926.html",
+      "https://fragrances.com.ng/rayhaan-floriana-floral-collection-for-her-edp-100ml"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Cal Cologne Tiger",
+    "inspired_by": "Penhaligon's Halfeti",
+    "top_notes": "Cypress Leaf, Saffron, Cardamom, Bergamot, Grapefruit, Rooibos Tea",
+    "heart_notes": "Rose, Nutmeg, Jasmine",
+    "base_notes": "Agarwood, Cedar, Leather, Sandalwood, Amber, Tonka Bean, Vanilla, Musk",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Woody Oud",
+    "confidence": "medium",
+    "sources": [
+      "https://zaoud.com/",
+      "https://www.fragrantica.com/perfume/Rayhaan/Tiger-112886.html"
+    ],
+    "flags": "Fragrantica's base listing differs from retailer pyramid; used the fuller retailer pyramid. Inspired-by per TikTok reviewer."
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Pharaoh",
+    "inspired_by": "",
+    "top_notes": "Saffron, Cardamom, Boozy Notes, Cade Oil",
+    "heart_notes": "Suede, Coffee, Benzoin",
+    "base_notes": "Vanilla, Guaiac Wood, Tonka Bean, Amberwood, Labdanum",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Amber Gourmand",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/Rayhaan/Pharaoh-122656.html"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Jungle Vibe",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Grapefruit, Fig",
+    "heart_notes": "Fig Leaf, Violet Leaf, Green Notes, Aquatic Accord",
+    "base_notes": "Sandalwood, White Musk, Patchouli",
+    "season": "Spring and Summer",
+    "occasion": "Office, daytime wear, casual outings",
+    "gender": "Unisex",
+    "scent_profile": "Woody Green",
+    "confidence": "high",
+    "sources": [
+      "https://fragrances.com.ng/rayhaan-jungle-vibe-edp-100ml",
+      "https://www.mkhasa.com/products/rayhaan-jungle-vibe-eau-de-parfum-100ml"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Rayhaan",
+    "name": "Kiss",
+    "inspired_by": "",
+    "top_notes": "Strawberry, Raspberry, Coconut, Praline",
+    "heart_notes": "Condensed Milk, Caramel, Orange Blossom, White Florals",
+    "base_notes": "Vanilla, Tonka Bean, Sandalwood, Musk",
+    "season": "Autumn and Winter",
+    "occasion": "Date nights, evening wear, cool weather",
+    "gender": "Women",
+    "scent_profile": "Fruity Gourmand",
+    "confidence": "high",
+    "sources": [
+      "https://fragrances.com.ng/rayhaan-kiss-edp-100ml"
+    ],
+    "flags": ""
+  }
+]

@@ -1,0 +1,147 @@
+[
+  {
+    "brand": "Lattafa Pride",
+    "name": "Play kids Perfume",
+    "inspired_by": "",
+    "top_notes": "Ginger, Mandarin, Lemon",
+    "heart_notes": "Rhubarb, Plum, Jasmine, Violet",
+    "base_notes": "Amber, Precious Woods, Musk",
+    "season": "Spring and Summer",
+    "occasion": "Everyday wear, school, casual outings, birthday parties",
+    "gender": "Unisex",
+    "scent_profile": "Floral Fruity",
+    "confidence": "medium",
+    "sources": [
+      "https://www.instagram.com/scentsessence_/",
+      "https://lattafascent.com/"
+    ],
+    "flags": "Season inferred from fruity-floral kids profile; notes confirmed by retailer listing."
+  },
+  {
+    "brand": "Lattafa Pride",
+    "name": "Sing kids Perfume",
+    "inspired_by": "",
+    "top_notes": "Tuberose",
+    "heart_notes": "Jasmine, Patchouli",
+    "base_notes": "Cedarwood, Vanilla, Musk",
+    "season": "All Seasons",
+    "occasion": "Everyday wear, school, casual outings",
+    "gender": "Unisex",
+    "scent_profile": "Floral Woody",
+    "confidence": "high",
+    "sources": [
+      "https://www.orientaldream.it/",
+      "https://www.intenseoud.com/products/sing-eau-de-parfum-spray-75ml-2-5-oz-by-lattafa-pride",
+      "https://perfumebox.com/"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Atyaab",
+    "name": "Qamar",
+    "inspired_by": "",
+    "top_notes": "Citrus oils, Aromatic spices, Aldehydes",
+    "heart_notes": "Clean florals, Rose, Light Amber",
+    "base_notes": "Musk, Sandalwood, Earthy resins",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Oriental Musky",
+    "confidence": "low",
+    "sources": [
+      "https://www.instagram.com/shop_with_saif/"
+    ],
+    "flags": "Single-source (retailer Instagram) note pyramid; treat as best-available, not verified."
+  },
+  {
+    "brand": "MPF",
+    "name": "Rhapsody",
+    "inspired_by": "",
+    "top_notes": "Bergamot, Magnolia",
+    "heart_notes": "Jasmine, Rose",
+    "base_notes": "Amber, Musk",
+    "season": "Spring and Summer",
+    "occasion": "Everyday wear, office, daytime outings",
+    "gender": "Unisex",
+    "scent_profile": "Floral",
+    "confidence": "high",
+    "sources": [
+      "https://www.fragrantica.com/perfume/MPF/Rhapsody-128957.html",
+      "https://la-barfumerie.com/products/rhapsody-eau-de-parfum-100-ml-mpf",
+      "https://sinbadsupermarket.com/products/mpf-rhapsody-eau-de-parfum-85ml"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Gulf Orchid",
+    "name": "Honey Moon",
+    "inspired_by": "Dior J'adore",
+    "top_notes": "Mandarin, Peach",
+    "heart_notes": "Orange Blossom, Jasmine, Gardenia",
+    "base_notes": "Honey, Patchouli, Vanilla",
+    "season": "Spring and Summer",
+    "occasion": "Date nights, daytime elegance, special occasions",
+    "gender": "Women",
+    "scent_profile": "Fruity Floral",
+    "confidence": "high",
+    "sources": [
+      "https://la-barfumerie.com/en-ao/products/honey-moon-eau-de-parfum-100-ml-gulf-orchid",
+      "https://www.instagram.com/gulforchid.perfumes/"
+    ],
+    "flags": "Retailer explicitly states inspired by Dior J'Adore."
+  },
+  {
+    "brand": "Gulf Orchid",
+    "name": "Sweet Heaven Tobacco",
+    "inspired_by": "",
+    "top_notes": "Spicy notes, Mandarin, Davana",
+    "heart_notes": "Myrrh, Black Pepper, Sandalwood",
+    "base_notes": "Tonka Bean, Vanilla, Tobacco",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, formal events, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Oriental Sweet",
+    "confidence": "high",
+    "sources": [
+      "https://shop-gulforchid.com/products/sweet_heaven_tobacco",
+      "https://www.fragrantica.com/perfume/Gulf-Orchid/Sweet-Heaven-Tobacco-102183.html"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "Gulf Orchid",
+    "name": "Sweet Heaven",
+    "inspired_by": "",
+    "top_notes": "Cocoa, Hazelnut, Orange",
+    "heart_notes": "Amber, Cashmere Wood, Myrrh",
+    "base_notes": "Musk, Sandalwood, Tonka Bean, Vanilla",
+    "season": "Autumn and Winter",
+    "occasion": "Evening wear, date nights, cool weather",
+    "gender": "Unisex",
+    "scent_profile": "Woody Sweet Gourmand",
+    "confidence": "high",
+    "sources": [
+      "https://shop-gulforchid.com/products/sweet-heaven",
+      "https://www.orientaldream.it/"
+    ],
+    "flags": ""
+  },
+  {
+    "brand": "MPF",
+    "name": "GOLD AND BLACK",
+    "inspired_by": "",
+    "top_notes": "",
+    "heart_notes": "",
+    "base_notes": "",
+    "season": "",
+    "occasion": "",
+    "gender": "Unisex",
+    "scent_profile": "Citrus Woody",
+    "confidence": "low",
+    "sources": [
+      "https://www.instagram.com/aresiaperfumestore/",
+      "https://x.com/JustFragrance1"
+    ],
+    "flags": "Notes conflict across social sources (mandarin/patchouli vs peach/fruity/amber/musk). Only gender and rough profile filled."
+  }
+]
